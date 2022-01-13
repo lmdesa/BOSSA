@@ -1,0 +1,48 @@
+This site contains the results of calculations described in the paper:
+"The effect of the environment-dependent IMF on the formation 
+and metallicities of stars over the cosmic history" 
+by Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z., 2020, A&A
+If you use this data in your research please reference the above paper.
+_________________________________________________________________________________________
+___________
+DATA FILES:
+
+1.Distribution of the cosmic star formation rate density over metallicity and redshift:
+  Stellar mass density formed in different metallicity (12+log(O/H)) and redshift 
+  bins in the universal and non-universal IMF scenario for the different assumptions
+  discussed in the paper (used e.g. in Sec. 3.1 and Fig. 3 in the paper)
+    --SFRD_Z_z_data.tar.gz
+    File DESCRIPTION contained within the archive explains the naming convention.
+    The archive contains a python script that can be used to visualize the data
+    and a file "Time_redshift_deltaT.dat" that is necessary to run the script.
+
+2.Formation of stars of different masses:
+  Number density of stars formed in different metallicity (12+log(O/H)) and redshift 
+  bins in the universal and non-universal IMF scenario for the different assumptions
+  discussed in the paper (used e.g. in Sec. 3.1 in Fig. 5 & 6 in the paper)
+    --N_Z_z_below_1.tar.gz
+      stars with masses between 0.08 and 1 solar mass; 
+      referred to as low mass white dwarf progenitors throughout the paper
+    --N_Z_z_1_8.tar.gz : stars with masses between 1 and 8 solar masses
+      called (high mass) white dwarf progenitors in the paper
+    --N_Z_z_8_20.tar.gz
+      stars with masses between 8 and 20 solar masses; 
+      referred to as neutron star progenitors throughout the paper
+    --N_Z_z_above_20.tar.gz
+      stars with masses between 20 and 120 solar masses; 
+      referred to as black hole progenitors throughout the paper
+    --N_Z_z_above_50.tar.gz
+      stars with masses between 50 and 120 solar masses; 
+      additional mass cut consitered in the paper for the progenitors of black holes
+    --N_Z_z_3_8.tar.gz : stars with masses between 3 and 8 solar masses
+      additional mass cut used in the discussion of the impact on type Ia SN progenitors
+    File DESCRIPTION contained within each archive explains the naming convention.
+    Each archive contains a python script that can be used to visualize the data
+    and a file "Time_redshift_deltaT.dat" that is necessary to run the script.
+
+3.Correction factors used to correct the universal IMF-based SFR for the environment dependent IMF 
+(described by the IGIMF3 model) for several metallicity ([Fe/H]) values; 
+as shown in Fig. 2 in the paper
+    --IGIMF3_SFR_corrections.dat
+_______________
+
