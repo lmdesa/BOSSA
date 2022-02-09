@@ -1,5 +1,80 @@
 import numpy as np
-from scipy.optimize import fsolve
+from scipy.interpolate import interp1d
+
+class RandomSampling:
+
+    def __init__(self, imf):
+        self.imf = imf
+        self.m_trunc_min = 0.08
+        self.m_trunc_max = 150
+        self._discretization_points = 100
+        self._discretization_masses = None
+        self.discrete_imf = None
+        self.sample = None
+
+    @property
+    def discretization_masses(self):
+        if self._discretization_masses is None:
+            self._discretization_masses = np.logspace(np.log10(self.m_trunc_min), np.log10(self.m_trunc_max), self._discretization_points)
+        return self._discretization_masses
+
+    def _interpolate(self, ipX, ipY, X):
+        """Interpolate between each line of a pair of arrays.
+
+        Parameters
+        ----------
+        ipX : numpy array
+            2-dimensional array. Each line corresponds to the x coordinates of one set of points between which to
+            interpolate.
+        ipY : numpy array
+            2-dimensional array. Each line corresponds to the y coordinates of one set of points between which to
+            interpolate.
+        X : numpy array
+            1-dimensional array. x coordinates for which each line of ipX and ipY will be interpolated.
+
+        Returns
+        -------
+        Y : numpy array
+            1-dimensional array. Results of interpolation of ipX and ipY for each element of X.
+        """
+
+        Y = []
+        for ipx, ipy in zip(ipX, ipY):
+            f = interp1d(ipx, ipy, kind='cubic')
+            Y.append(f(X))
+        Y = np.array(Y)
+        return Y
+
+    def compute_imf(self):
+        self.discrete_imf = np.empty((0,), np.float64)
+        discretization_masses = np.empty((0,), np.float64)
+        for m in self.discretization_masses:
+            imf = self.imf.imf(m)[0]
+            if imf >= 0:
+                self.discrete_imf = np.append(self.discrete_imf, imf)
+                discretization_masses = np.append(discretization_masses, m)
+        self._discretization_masses = discretization_masses
+
+    def _get_probabilities(self, sampling_masses):
+        ipX = self.discretization_masses.reshape((1,self._discretization_points))
+        ipY = self.discrete_imf.reshape((1,self._discretization_points))
+        sampling_probs = self._interpolate(ipX, ipY, sampling_masses)[0]
+        sampling_probs /= sampling_probs.sum()
+        for i, prob in enumerate(sampling_probs):
+            if prob < 0:
+                sampling_probs[i] = 0
+        sampling_probs /= sampling_probs.sum()
+        return sampling_probs
+
+    def get_sample(self, m_min, m_max, n):
+        n = int(n)
+        sampling_masses = np.logspace(np.log10(m_min), np.log10(m_max), n)
+        probabilities = self._get_probabilities(sampling_masses)
+        self.sample = np.sort(np.random.choice(sampling_masses, p=probabilities, size=n))
+        return self.sample
+
+
+
 
 class OptimalSampling:
 
@@ -23,7 +98,7 @@ class OptimalSampling:
         return self._multi_power_law_imf
 
     def _f(self, m1, m2, a, k):
-        if a == 1:
+        if np.abs(a-1) <= 1e-4:
             return k*np.log(m2/m1)
         else:
             b = 1 - a
@@ -134,8 +209,6 @@ class OptimalSampling:
             #if fraction >= 0.1:
             #    print(f'{i} of {int(self.n_tot)}')
             #    fraction = 0
-        self._upper_limits = np.append(self._upper_limits, self.m_min)
-
 
     def get_sample(self):
         #print('Sampling IMF...')
