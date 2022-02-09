@@ -38,7 +38,7 @@ class Star:
         Absolute minimum stellar mass.
     m_max : float
         Maximum stellar mass. Embedded cluster-specific.
-    m_abs_max : float
+    m_trunc : float
         Absolute maximum stellar mass.
     a1 : float
         m<0.5 IMF exponent.
@@ -84,7 +84,7 @@ class Star:
         self.m_ecl_min = 5
         self.m_min = 0.08
         self.m_max = None
-        self.m_abs_max = 150
+        self.m_trunc = 150
         self._a1 = None
         self._a2 = None
         self._a3 = None
@@ -95,6 +95,30 @@ class Star:
         self._x = None
         self._g1 = None
         self._g2 = None
+        self._limits = None
+        self._exponents = None
+        self._norms = None
+
+    @property
+    def limits(self):
+        if self._limits is None:
+            self._limits = [self.m_min, 0.5, 1.0, self.m_max]
+        return self._limits
+
+    @property
+    def exponents(self):
+        if self._exponents is None:
+            self._exponents = [self.a1, self.a2, self.a3]
+        return self._exponents
+
+    @property
+    def norms(self):
+        if self._norms is None:
+            if self.k1 is None:
+                raise Warning('Normalization coefficients not yet set.')
+                return
+            self._norms = [self.k1, self.k2, self.k3]
+        return self._norms
 
     def _h1(self, a, m1, m2):
         """Auxiliary function of any two masses used in calculating auxiliary variables and constraints."""
@@ -170,7 +194,7 @@ class Star:
 
     def _f1(self, k1, m_max):
         """Constraint on k1 and m_max for the existence of only one star with mass equal to or higher than m_max."""
-        return 1 - self.a_factor * k1 * self._h1(self.a3, m_max, self.m_abs_max)
+        return 1 - self.a_factor * k1 * self._h1(self.a3, m_max, self.m_trunc)
 
     def _f2(self, k1, m_max):
         """Constraint on k1 and m_max for the total stellar mass being equal to the mass of the star-forming region."""
@@ -219,9 +243,9 @@ class Star:
         norm = 10 ** (int(np.log10(self.m_ecl)) // 2)
         k1 = 2 ** (1 - self.a1) * self.m_ecl / norm
         if self.a3 == 0:
-            m_max = self.m_abs_max
+            m_max = self.m_trunc
         else:
-            m_max = min(self.m_abs_max, max(0.08, k1 ** (1 / self.a3)))
+            m_max = min(self.m_trunc, max(0.08, k1 ** (1 / self.a3)))
         return k1, m_max
 
     def _set_k2_k3(self):
@@ -302,18 +326,18 @@ class EmbeddedCluster:
         Minimum mass of an ECL.
     m_max : float
         Maximum mass of an ECL. Galaxy specific.
-    abs_m_max : float
+    m_trunc : float
         Absolute maximum mass of an ECL.
     k : float
         Normalization constant of the ECL IMF.
     beta : float
         Exponent of the ECL IMF.
     g0 : float
-        Auxiliary variable. Function of m_min and abs_m_max.
+        Auxiliary variable. Function of m_min and m_trunc.
     g1 : float
-        Auxiliary variable. Function of m_min and abs_m_max.
+        Auxiliary variable. Function of m_min and m_trunc.
     g2 : float
-        Auxiliary variable. Function of m_min and abs_m_max.
+        Auxiliary variable. Function of m_min and m_trunc.
 
     Methods
     -------
@@ -334,12 +358,33 @@ class EmbeddedCluster:
         self.m_tot = sfr * time
         self.m_min = 5
         self.m_max = None
-        self.abs_m_max = 1e9
+        self.m_trunc = 1e9
         self.k = None
         self._beta = None
         self._g0 = None
         self._g1 = None
         self._g2 = None
+        self._limits = None
+        self._exponents = None
+        self._norms = None
+
+    @property
+    def limits(self):
+        if self._limits is None:
+            self._limits = [self.m_min, self.m_max]
+        return self._limits
+
+    @property
+    def exponents(self):
+        if self._exponents is None:
+            self._exponents = [self.beta]
+        return self._exponents
+
+    @property
+    def norms(self):
+        if self._norms is None:
+            self._norms = [self.k]
+        return self._norms
 
     def _h0(self, m1, m2):
         """Auxiliary function of any two masses used in computing auxiliary variables and constraints."""
@@ -362,23 +407,23 @@ class EmbeddedCluster:
 
     @property
     def g0(self):
-        """Sets auxiliary variable g0 if not yet set, then gets it. Function of m_min and abs_m_max."""
+        """Sets auxiliary variable g0 if not yet set, then gets it. Function of m_min and m_trunc."""
         if self._g0 is None:
-            self._g0 = self._h0(self.m_min, self.abs_m_max)
+            self._g0 = self._h0(self.m_min, self.m_trunc)
         return self._g0
 
     @property
     def g1(self):
-        """Sets auxiliary variable g1 if not yet set, then gets it. Function of m_min and abs_m_max."""
+        """Sets auxiliary variable g1 if not yet set, then gets it. Function of m_min and m_trunc."""
         if self._g1 is None:
-            self._g1 = self._h1(self.m_min, self.abs_m_max)
+            self._g1 = self._h1(self.m_min, self.m_trunc)
         return self._g1
 
     @property
     def g2(self):
-        """Sets auxiliary variable g2 if not yet set, then gets it. Function of m_min and abs_m_max."""
+        """Sets auxiliary variable g2 if not yet set, then gets it. Function of m_min and m_trunc."""
         if self._g2 is None:
-            self._g2 = self._h2(self.m_min, self.abs_m_max)
+            self._g2 = self._h2(self.m_min, self.m_trunc)
         return self._g2
 
     def _f0(self, m_max):
@@ -401,7 +446,7 @@ class EmbeddedCluster:
         values between 10**-2.3 and 10**1.3 solar masses per year with good behavior.
         """
 
-        return min(self.abs_m_max, 1e6 * self.sfr)
+        return min(self.m_trunc, 1e6 * self.sfr)
 
     def _constraints(self, m_max):
         """For a value of m_max, compute the constraint and return it.
@@ -434,13 +479,11 @@ class EmbeddedCluster:
         depending on the value of beta.
         """
 
-        if self.beta == 2:
-            self.k = 1 / (1 / self.m_max - self.abs_m_max)
-        elif self.beta == 1:
-            self.k = self.m_tot / (self.m_max - self.m_min)
+        if self.beta == 1:
+            self.k = 1/np.log(self.m_trunc/self.m_max)
         else:
             a = 1 - self.beta
-            self.k = a / (self.abs_m_max ** a - self.m_max ** a)
+            self.k = a/(self.m_trunc**a - self.m_max**a)
 
     def get_mmax_k(self):
         """Use Scipy's fsolve to solve the constraint for m_max, then calculate the normalization constant k.
@@ -556,6 +599,5 @@ class Galaxy:
         Integrates the product of the stellar and ECL IMFs with respect to the ECL mass, for a given stellar mass, using
         Scipy's quad function. Must called only after calling get_clusters, otherwise the ECL IMF will not be avaialble.
         """
-        print('imf for ', m)
         imf = quad(self._integrand, self.m_ecl_min, self.m_ecl_max, args=m)
         return imf
