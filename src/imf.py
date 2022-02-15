@@ -32,6 +32,17 @@ class IMF:
     """
 
     def __init__(self, m_tot, m_trunc_min, m_trunc_max):
+        """
+        Parameters
+        ----------
+        m_tot : float
+            Total mass of the population described by the IMF.
+        m_trunc_min : float
+            Minimum possible mass of an object from the IMF.
+        m_trunc_max : float
+            Maximum possible mass of an object from the IMF.
+        """
+
         self.m_tot = m_tot
         self.m_trunc_min = m_trunc_min
         self.m_trunc_max = m_trunc_max
@@ -105,20 +116,18 @@ class Star(IMF):
 
     Methods
     -------
-    get_mmax_k1() :
+    get_mmax_k() :
         Solves the system of equations made up of methods f1 and f2 to determine mmax and k1.
-    imf(m) :
-        Calculates dN/dm for the given stellar mass m.
     """
 
     def __init__(self, m_ecl, feh):
         """
         Parameters
         ----------
-        feh : float
-            Embedded cluster metallicity in [Fe/H].
         m_ecl : float
             Embedded cluster mass in solar masses.
+        feh : float
+            Embedded cluster metallicity in [Fe/H].
         """
 
         IMF.__init__(self,
@@ -294,7 +303,7 @@ class Star(IMF):
         self.k2 = self.a_factor * self.k1
         self.k3 = self.k2
 
-    def get_mmax_k1(self):
+    def get_mmax_k(self):
         """Use Scipy's fsolve to solve the two constraints with adequate initial guesses for k1 and m_max.
 
         After solving for k1 and m_max, k2 and k3 are immediately determined. Automatically sets the IMF to zero for all
@@ -355,6 +364,8 @@ class EmbeddedCluster(IMF):
 
     Methods
     -------
+    get_mmax_k() :
+        Solves the system of equations made up of methods f1 and f2 to determine mmax and k.
     """
 
     def __init__(self, sfr, time):
@@ -542,6 +553,10 @@ class Galaxy:
 
     Methods
     -------
+    get_clusters() :
+        Instantiate an EmbeddedCluster object and compute the maximum embedded cluster mass.
+    imf(m) :
+        Integrate the product of the stellar and ECL IMFs with respect to the ECL mass, for a given stellar mass.
     """
 
     def __init__(self, sfr, feh):
@@ -564,7 +579,7 @@ class Galaxy:
         self.clusters = None
 
     def get_clusters(self):
-        """Instantiate an EmbeddedCluster object and compute the maximum ECL mass.
+        """Instantiate an EmbeddedCluster object and compute the maximum embedded cluster mass.
 
         Instantiates an EmbeddedCluster object and computes the maximum ECL mass, which is also saved as an instance
         attribute of this Galaxy object. Must be called before the imf method, otherwise the ECL IMF will not be
@@ -578,7 +593,7 @@ class Galaxy:
     def _get_stars(self, m_ecl, m):
         """For a given ECL mass, instantiate a Star object, compute the IMF and return dN/dm for a stellar mass m."""
         stellar = Star(m_ecl, self.feh)
-        stellar.get_mmax_k1()
+        stellar.get_mmax_k()
         stellar._set_k2_k3()
         return stellar.imf(m)
 
