@@ -23,6 +23,13 @@ class RandomSampling:
         IMF values calculated at each value of discretization_masses, to be used for interpolation.
     sample : numpy array
         The mass values resulting from the last random sampling.
+
+    Methods
+    -------
+    compute_imf() :
+        Compute the IMF at each value in discretization_masses and append it to discrete_imf.
+    get_sample(m_min, m_max, n) :
+        Samples the IMF for n masses between m_min and m_max.
     """
 
     def __init__(self, imf, discretization_points=100):
@@ -34,6 +41,7 @@ class RandomSampling:
         discretization_points : int
             Number of mass values on which the IMF will be computed for interpolation.
         """
+
         self.imf = imf
         self.m_trunc_min = imf.m_trunc_min
         self.m_trunc_max = imf.m_trunc_max
@@ -51,6 +59,13 @@ class RandomSampling:
 
 
     def compute_imf(self):
+        """Compute the IMF at each value in discretization_masses and append it to discrete_imf.
+
+        Computes the IMF at each value in discretization_masses and appends it to discrete_imf. Before appending, checks
+        for negative values, which appear for values close to the limits of the IMF itself, and only appends the IMF if
+        it is non-negative.
+        """
+
         self.discrete_imf = np.empty((0,), np.float64)
         discretization_masses = np.empty((0,), np.float64)
         for m in self.discretization_masses:
@@ -61,6 +76,24 @@ class RandomSampling:
         self._discretization_masses = discretization_masses
 
     def _get_probabilities(self, sampling_masses):
+        """Compute probability of a star forming within a mass interval for each mass in sampling_masses.
+
+        By treating the IMF as a probability density function, the IMF at each mass M corresponds to the probability of
+        a star forming with mass between M and M+dM. This functions computes that probability for each mass in an array
+        sampling_masses and appends it to an array sampling_probs, which is normalized to 1. The normalized
+        sampling_probs then works as a probability distribution for random sampling over sampling_masses.
+
+        Parameters
+        ----------
+        sampling_masses : numpy array
+            Array of masses for which to compute the probability.
+
+        Returns
+        -------
+        sampling_probs : numpy array
+            Normalized array of probabilities corresponding to the masses in sampling_masses.
+        """
+
         ipX = self.discretization_masses.reshape((1,self._discretization_points))
         ipY = self.discrete_imf.reshape((1,self._discretization_points))
         sampling_probs = interpolate(ipX, ipY, sampling_masses)[0]
@@ -72,6 +105,27 @@ class RandomSampling:
         return sampling_probs
 
     def get_sample(self, m_min, m_max, n):
+        """Sample the IMF for n masses between m_min and m_max.
+
+        First generates an array sampling_masses of n log-uniform masses between m_min and m_max, for which
+        probabilities are then computed by get_probabilities(). Random sampling of n mass values is performed using
+        numpy over sampling_masses with probabilities as weights.
+
+        Parameters
+        ----------
+        m_min : float
+            Minimum of the mass sampling interval.
+        m_max : float
+            Maximum of the mass sampling interval.
+        n : int
+            Number of mass values to sample.
+
+        Returns
+        -------
+        sample : numpy array
+            Array containing the sampled masses.
+        """
+        
         n = int(n)
         sampling_masses = np.logspace(np.log10(m_min), np.log10(m_max), n)
         probabilities = self._get_probabilities(sampling_masses)
