@@ -1,9 +1,8 @@
 import numpy as np
-from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit
 import constants as ct
 from pathlib import Path
-from utils import ZOH_to_FeH
+from utils import ZOH_to_FeH, interpolate
 
 
 class SFMR:
@@ -158,7 +157,7 @@ class Corrections:
         sfr_kroupa : numpy array
             Array of Kroupa SFR values for which to compute corrections.
         """
-        self.data_path = Path('..', 'data', 'C20_Results', 'IGIMF3_SFR_corrections.dat')
+        self.data_path = Path('..', 'Data', 'C20_Results', 'IGIMF3_SFR_corrections.dat')
         self.metallicity = metallicity
         self.sfr_kroupa = sfr
         self.corrections = np.empty((0, self.sfr_kroupa.shape[0]), np.float64)
@@ -188,40 +187,16 @@ class Corrections:
         self.sfr_kroupa_data = np.array(sfr_kroupa_array)
         self.sfr_correction_data = np.array(sfr_correction_array)
 
-    def _interpolate(self, ipX, ipY, X):
-        """Interpolate between each line of a pair of arrays.
-
-        Parameters
-        ----------
-        ipX : numpy array
-            2-dimensional array. Each line corresponds to the x coordinates of one set of points between which to
-            interpolate.
-        ipY : numpy array
-            2-dimensional array. Each line corresponds to the y coordinates of one set of points between which to
-            interpolate.
-        X : numpy array
-            1-dimensional array. x coordinates for which each line of ipX and ipY will be interpolated.
-
-        Returns
-        -------
-        Y : numpy array
-            1-dimensional array. Results of interpolation of ipX and ipY for each element of X.
-        """
-
-        Y = []
-        for ipx, ipy in zip(ipX, ipY):
-            f = interp1d(ipx, ipy, kind='cubic')
-            Y.append(f(X))
-        Y = np.array(Y)
-        return Y
-
     def get_corrections(self):
         """Compute corrections for the grid of metallicities and Kroupa SFR values provided."""
         metallicity_ip = np.tile(self.metallicity_data, (self.sfr_correction_data.shape[1], 1))
-        metallicity_ip_corrections = self._interpolate(metallicity_ip, self.sfr_correction_data.T, self.metallicity).T
+        metallicity_ip_corrections = interpolate(metallicity_ip, self.sfr_correction_data.T, self.metallicity).T
         sfr_kroupa_ip = np.unique(self.sfr_kroupa_data)
         for i, sfr in enumerate(self.sfr_kroupa):
-            correction = self._interpolate(sfr_kroupa_ip.reshape(1,sfr_kroupa_ip.shape[0]), metallicity_ip_corrections[i].reshape(1,metallicity_ip_corrections[i].shape[0]), sfr)
+            correction = interpolate(sfr_kroupa_ip.reshape(1, sfr_kroupa_ip.shape[0]),
+                                          metallicity_ip_corrections[i].reshape(1,
+                                                                                metallicity_ip_corrections[i].shape[0]),
+                                          sfr)
             self.corrections = np.append(self.corrections, correction, axis=0)
 
 
@@ -283,33 +258,6 @@ class SFZR:
             mzr = MZR(*MZR_params)
             self.ip_zoh = np.append(self.ip_zoh, np.array([mzr.zoh(self.ip_logm)]), axis=0)
 
-    def _interpolate(self, ipX, ipY, X):
-        """Interpolate between each line of a pair of arrays.
-
-        Parameters
-        ----------
-        ipX : numpy array
-            2-dimensional array. Each line corresponds to the x coordinates of one set of points between which to
-            interpolate.
-        ipY : numpy array
-            2-dimensional array. Each line corresponds to the y coordinates of one set of points between which to
-            interpolate.
-        X : numpy a
-        rray
-            1-dimensional array. x coordinates for which each line of ipX and ipY will be interpolated.
-
-        Returns
-        -------
-        Y : numpy array
-            1-dimensional array. Results of interpolation of ipX and ipY for each element of X.
-        """
-        Y = []
-        for ipx, ipy in zip(ipX, ipY):
-            f = interp1d(ipx, ipy, kind='cubic')
-            Y.append(f(X))
-        Y = np.array(Y)
-        return Y
-
     def get_MZR_params(self):
         """Interpolate the MZR to desired redshifts, then fit the MZR to obtain the corresponding SFZR parameters.
 
@@ -320,7 +268,7 @@ class SFZR:
 
         self._get_ip_arrays()
         ip_redshift = np.tile(self.ip_redshift, (self.ip_zoh.shape[1], 1))
-        mzr_array = self._interpolate(ip_redshift, self.ip_zoh.T, self.redshift).T
+        mzr_array = interpolate(ip_redshift, self.ip_zoh.T, self.redshift).T
         fit_params = []
         for mzr in mzr_array:
             def f_fit(m, z_a, logm_to, gamma): return MZR(z_a, logm_to, gamma).zoh(m)

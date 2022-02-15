@@ -350,7 +350,7 @@ class EmbeddedCluster(IMF):
     time : float
         Duration of ECL formation.
     m_max : float
-        Maximum mass of an ECL. Galaxy specific.
+        Maximum mass of an ECL. IGIMF specific.
     k : float
         Normalization constant of the ECL IMF.
     beta : float
@@ -518,7 +518,7 @@ class EmbeddedCluster(IMF):
         self._get_k()
 
 
-class Galaxy:
+class IGIMF:
     """Class dedicated to computing the galaxy wide initial mass function.
 
     The galaxy wide IMF (gwIMF) is computed according to the integrated galactic IMF (IGIMF) framework as described in
@@ -582,7 +582,7 @@ class Galaxy:
         """Instantiate an EmbeddedCluster object and compute the maximum embedded cluster mass.
 
         Instantiates an EmbeddedCluster object and computes the maximum ECL mass, which is also saved as an instance
-        attribute of this Galaxy object. Must be called before the imf method, otherwise the ECL IMF will not be
+        attribute of this IGIMF object. Must be called before the imf method, otherwise the ECL IMF will not be
         available for integration.
         """
 

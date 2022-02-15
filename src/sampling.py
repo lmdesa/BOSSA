@@ -1,13 +1,43 @@
 import numpy as np
-from scipy.interpolate import interp1d
+from utils import interpolate
 
 class RandomSampling:
+    """Sample an arbitrary IMF by pure random sampling.
 
-    def __init__(self, imf):
+    This class performs pure, unrestrained, sampling of an IMF. The sampling is not constrained by a total sample mass,
+    thus it cannot represent a physical group of stars; instead, only a number of objects is specified.
+
+    Attributes
+    ----------
+    imf : EmbeddedCluster or Star object
+        Instance of an IMF class that holds the imf itself as well as relevant physical information.
+    m_trunc_min : float
+        Minimum possible mass for the objects being sampled.
+    m_trunc_max : float
+        Maximum possible mass for the objects being sampled.
+    discretization_points : float
+        Number of mass values for which to calculate IMF values to be used for interpolation.
+    discretization_masses : numpy array
+        Mass values for which to calculate the IMF values to be used for interpolation.
+    discrete_imf : numpy array
+        IMF values calculated at each value of discretization_masses, to be used for interpolation.
+    sample : numpy array
+        The mass values resulting from the last random sampling.
+    """
+
+    def __init__(self, imf, discretization_points=100):
+        """
+        Parameters
+        ----------
+        imf : IMF or IGIMF object
+            Instance of an IMF class that holds the imf itself as well as relevant physical information.
+        discretization_points : int
+            Number of mass values on which the IMF will be computed for interpolation.
+        """
         self.imf = imf
-        self.m_trunc_min = 0.08
-        self.m_trunc_max = 150
-        self._discretization_points = 100
+        self.m_trunc_min = imf.m_trunc_min
+        self.m_trunc_max = imf.m_trunc_max
+        self._discretization_points = discretization_points
         self._discretization_masses = None
         self.discrete_imf = None
         self.sample = None
@@ -18,32 +48,7 @@ class RandomSampling:
             self._discretization_masses = np.logspace(np.log10(self.m_trunc_min), np.log10(self.m_trunc_max), self._discretization_points)
         return self._discretization_masses
 
-    def _interpolate(self, ipX, ipY, X):
-        """Interpolate between each line of a pair of arrays.
 
-        Parameters
-        ----------
-        ipX : numpy array
-            2-dimensional array. Each line corresponds to the x coordinates of one set of points between which to
-            interpolate.
-        ipY : numpy array
-            2-dimensional array. Each line corresponds to the y coordinates of one set of points between which to
-            interpolate.
-        X : numpy array
-            1-dimensional array. x coordinates for which each line of ipX and ipY will be interpolated.
-
-        Returns
-        -------
-        Y : numpy array
-            1-dimensional array. Results of interpolation of ipX and ipY for each element of X.
-        """
-
-        Y = []
-        for ipx, ipy in zip(ipX, ipY):
-            f = interp1d(ipx, ipy, kind='cubic')
-            Y.append(f(X))
-        Y = np.array(Y)
-        return Y
 
     def compute_imf(self):
         self.discrete_imf = np.empty((0,), np.float64)
@@ -58,7 +63,7 @@ class RandomSampling:
     def _get_probabilities(self, sampling_masses):
         ipX = self.discretization_masses.reshape((1,self._discretization_points))
         ipY = self.discrete_imf.reshape((1,self._discretization_points))
-        sampling_probs = self._interpolate(ipX, ipY, sampling_masses)[0]
+        sampling_probs = interpolate(ipX, ipY, sampling_masses)[0]
         sampling_probs /= sampling_probs.sum()
         for i, prob in enumerate(sampling_probs):
             if prob < 0:
@@ -74,15 +79,13 @@ class RandomSampling:
         return self.sample
 
 
-
-
 class OptimalSampling:
 
     def __init__(self, imf):
         self.imf = imf
-        self.m_min = imf.m_min
+        self.m_min = imf.m_trunc_min
         self.m_max = imf.m_max
-        self.m_trunc = imf.m_trunc
+        self.m_trunc = imf.m_trunc_max
         self._upper_limits = np.empty((0,), np.float64)
         self._multi_power_law_imf = None
         self.n_tot = None
@@ -132,13 +135,13 @@ class OptimalSampling:
             m2 = self.m_max
         if self.multi_power_law_imf:
             index, m_th = next((i, m) for i, m in enumerate(self.imf.limits) if m >= m1) #find the first next threshold
-            a1 = self.imf.exponents[index - 1] - 1
-            k1 = self.imf.norms[index - 1]
+            a1 = self.imf.exponents[index] - 1
+            k1 = self.imf.norms[index]
             if m2 <= m_th:
                 integrated_imf = self._f(m1, m2, a1, k1)
             else:
-                a2 = self.imf.exponents[index] - 1
-                k2 = self.imf.norms[index]
+                a2 = self.imf.exponents[index + 1] - 1
+                k2 = self.imf.norms[index + 1]
                 integrated_imf = self._f(m1, m_th, a1, k1) + self._f(m_th, m2, a2, k2)
         else:
             k = self.imf.norms[0]
@@ -154,12 +157,12 @@ class OptimalSampling:
             #if the resulting upper limit is in the next power law, then we do the integral again by splitting it at
             #the threshold mass m_th between the two regions
             index, m_th = next((i, m) for i, m in enumerate(self.imf.limits) if m >= m_i) #find the first next threshold
-            a1 = self.imf.exponents[index-1] #get power law exp. and coef. for both regions
-            k1 = self.imf.norms[index-1]
+            a1 = self.imf.exponents[index] #get power law exp. and coef. for both regions
+            k1 = self.imf.norms[index]
             m_iplus1 = self._h(m_i, a1, k1)
             if m_iplus1 > m_th: #check whether there is a solution within a single power law region; if not
-                a2 = self.imf.exponents[index]
-                k2 = self.imf.norms[index]
+                a2 = self.imf.exponents[index + 1]
+                k2 = self.imf.norms[index + 1]
                 if a1 == 1: #then the integral changes but is still analytical
                     m_iplus1 = self._g1(m_i, m_th, a2, k1, k2)
                 elif a2 == 1:
