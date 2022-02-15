@@ -125,7 +125,7 @@ class RandomSampling:
         sample : numpy array
             Array containing the sampled masses.
         """
-        
+
         n = int(n)
         sampling_masses = np.logspace(np.log10(m_min), np.log10(m_max), n)
         probabilities = self._get_probabilities(sampling_masses)
@@ -134,8 +134,79 @@ class RandomSampling:
 
 
 class OptimalSampling:
+    """Sample an arbitrary IMF by optimal sampling.
+
+    This class performs the optimal sampling of the passed IMF. Optimal sampling is an entirely deterministic sampling
+    method; given the physical conditions, the resulting sample will be always the same, unlike random sampling, which
+    shows Poisson noise. This includes the number of objects in the sample, which is fixed for each IMF, and not a free
+    parameter like in RandomSampling.
+
+    Instead, two conditions are imposed on the sampling. The interval between m_min and m_max is divided is a number
+    n_tot of bins, defined as containing exactly one object each. This means that n_tot is the number of objects in the
+    sample, and imposes the first condition: that the integral of the IMF over each bin (between m_i and m_iplus1) be
+    equal to 1. With the IMF being a power law, the integral is solved analitically, and the resulting expression is
+    solved for i_plus1 in terms of m_i. Setting m_1=m_max, this allows us to iteratively find all m_i which serve as
+    integration limits. This is implemented as the methods get_m_iplus1(m_i) and set_limits().
+
+    Because each bin contains exactly one object, our second conditions is that the integral of M*IMF(M) over each bin
+    be equal to the mass M_i of the object contained within. Thus, with the m_i limits determined by the first
+    condition, this second condition allows us to find all M_i and fill our sample by integrating the mass on each bin.
+    This is implemented as the method get_sample(), which should be run after set_limits().
+
+    While m_min is a free parameter (by default 0.08 Msun for stars, 5 Msun for clusters), m_max is not due to the SFR-
+    M_{ecl,max} and M_ecl-M_{star,max} relations. These relations are implemented in the IMF classes EmbeddedCluster and
+    Star in the imf module, and are described in their respective docstrings.
+
+    The expected n_tot value is given by integrating the IMF between m_min and m_max, while the actual value is the
+    count of objects in the sample; both are calculated by the method set_n_tot(). Likewise, the expected m_tot is found
+    by integrating M*IMF(M) between m_min and m_max, while the actual m_tot is the sum over all sampled masses; both are
+    calculated by the method set_m_tot().
+
+    Attributes
+    ----------
+    imf : IMF object
+        Either an EmbeddedCluster or Star instance with m_max already set by its get_mmax_k() method.
+    m_min : float
+        Minimum integration limit for optimal sampling. Equal to the minimum possible object mass.
+    m_max : float
+        Maximum integration limit for optimal sampling. Given by the SFR-M_{ecl,max} or analogous relation.
+    m_trunc : float
+        Maximum possible object mass.
+    upper_limits : numpy array
+        Array of integration limits for optimal sampling.
+    multi_power_law_imf : boolean
+        Tells the class whether the IMF is a simple (False) or multi (True) power law.
+    n_tot : float
+        Number of objects in the sample.
+    expected_n_tot : float
+        Expected value of n_tot from integrating IMF(M).
+    m_tot : float
+        Total mass of the sample.
+    expected_m_tot : float
+        Expected value of m_tot from integrating M*IMF(M).
+    sample : numpy array
+        The sample resulting from optimal sampling of the passed IMF.
+
+    Methods
+    -------
+    set_limits() :
+        Iterate over the integration limits starting from m_1=m_max until m_iplus1 < m_min.
+    get_sample() :
+        Set the sample by integrating M*IMF(M) over each mass bin, then return the sample.
+    set_n_tot() :
+        Calculate and set the expected and actual number of objects in the sample.
+    set_m_tot() :
+        Calculate and set the expected and actual total mass of the sample.
+    """
 
     def __init__(self, imf):
+        """
+        Parameters
+        ----------
+        imf : IMF object
+            Either an EmbeddedCluster or Star instance with m_max already set by its get_mmax_k() method.
+        """
+
         self.imf = imf
         self.m_min = imf.m_trunc_min
         self.m_max = imf.m_max
@@ -155,45 +226,106 @@ class OptimalSampling:
         return self._multi_power_law_imf
 
     def _f(self, m1, m2, a, k):
-        if np.abs(a-1) <= 1e-4:
+        """Return the antiderivative of a power law with norm k and index a, between m1 and m2."""
+        if a == 1:
             return k*np.log(m2/m1)
         else:
             b = 1 - a
             return (k/b)*(m2**b - m1**b)
 
-    def _h(self, m, a, k):
+    def _h(self, m2, a, k):
+        """For the integral of a power law between m1 and m2, return the m1 for which the integral is unity.
+
+        For a simple power law of normalization constant k and index a, returns the lower limit m1 for which its
+        integration with upper limit m2 is 1.
+
+        Parameters
+        ----------
+        m2 : float
+            Upper limit of integration.
+        a : float
+            Power law exponent.
+        k : float
+            Power law normalization constant.
+
+        Returns
+        -------
+        m1 : float
+            Lower limit of integration for which the integration results in 1.
+        """
+
         if a == 1:
-            return np.exp(np.log(m) - 1/k)
+            m1 = np.exp(np.log(m2) - 1 / k)
         else:
             b = 1 - a
-            return (m**b - b/k) ** (1/b)
+            m1 = (m2 ** b - b / k) ** (1 / b)
+        return m1
 
-    def _g1(self, m, m_th, a2, k1, k2):
-        b2 = 1 - a2
-        k = k2 / (k1*b2)
-        return np.exp(np.log(m_th) + k*(m**b2 - m_th**b2) - 1/k1)
+    def _g(self, m2, m_th, a1, a2, k1, k2):
+        """For the integral of a multi power law between m1 and m2, return the m1 for which the integral is unity.
 
-    def _g2(self, m, m_th, a1, k1, k2):
-        b1 = 1 - a1
-        k = (k2*b1) / k1
-        return (m_th**b1 + k*np.log(m/m_th) - b1/k1)**(1/b1)
+        For the integral of a multi power law between m1 and m2, return the m1 for which the integral is unity, when the
+        integration interval crosses the threshold at mass m_th between a power law with norm k1 and index a1, and a
+        power law with norm k2 and index a2.
 
-    def _g3(self, m, m_th, a1, a2, k1, k2):
-        b1 = 1 - a1
-        b2 = 1 - a2
-        k = (k2*b1) / (k1*b2)
-        return (m_th**b1 + k*(m**b2 - m_th**b2) - b1/k1)**(1/b1)
+        Parameters
+        ----------
+        m2 : float
+            Upper limit of integration
+        m_th : float
+            Power law threshold crossed by the integration.
+        a1 : float
+            Power law exponent in the lower region.
+        a2 : float
+            Power law exponent in the upper region.
+        k1 : float
+            Power law normalization constant in the lower region.
+        k2 : float
+            Power law normalization constant in the upper region.
+
+        Returns
+        -------
+        m1 : float
+            Lower limit of integration for which the integration results in 1.
+        """
+
+        if a1 == 1:
+            b2 = 1 - a2
+            k = k2 / (k1 * b2)
+            m1 = np.exp(np.log(m_th) + k * (m2 ** b2 - m_th ** b2) - 1 / k1)
+        elif a2 == 1:
+            b1 = 1 - a1
+            k = (k2 * b1) / k1
+            m1 = (m_th ** b1 + k * np.log(m2 / m_th) - b1 / k1) ** (1 / b1)
+        else:
+            b1 = 1 - a1
+            b2 = 1 - a2
+            k = (k2 * b1) / (k1 * b2)
+            m1 = (m_th ** b1 + k * (m2 ** b2 - m_th ** b2) - b1 / k1) ** (1 / b1)
+        return m1
 
     def _integrate_imf(self, m1, m2):
+        """Analitically compute the integral of the IMF from m1 to m2.
+
+        Analitically computes the integral of the IMF from m1 to m2 for a simple power law, or a multi power law if
+        (m1,m2) contains no more than one power law threshold. As it is, this function will split the integral
+        appropriately between two power laws if the integration interval crosses a threshold, but it will not work if
+        two or more thresholds are crossed.
+        """
+
         if m2 > self.m_max:
+            # reset the m2 to m_max because the IMF is zero beyond m_max, in case m_2>m_max
             m2 = self.m_max
         if self.multi_power_law_imf:
-            index, m_th = next((i, m) for i, m in enumerate(self.imf.limits) if m >= m1) #find the first next threshold
+            # if the IMF is a multi power law, the line below will get the next power law threshold mass, m_th
+            index, m_th = next((i, m) for i, m in enumerate(self.imf.limits) if m >= m1)
             a1 = self.imf.exponents[index] - 1
             k1 = self.imf.norms[index]
             if m2 <= m_th:
+                # if m2 <= m_th, integration goes as in a simple power law
                 integrated_imf = self._f(m1, m2, a1, k1)
             else:
+                # if not, then we split the integration at m_th
                 a2 = self.imf.exponents[index + 1] - 1
                 k2 = self.imf.norms[index + 1]
                 integrated_imf = self._f(m1, m_th, a1, k1) + self._f(m_th, m2, a2, k2)
@@ -204,33 +336,52 @@ class OptimalSampling:
         return integrated_imf
 
     def _get_m_iplus1(self, m_i):
+        """Get the next integration limit, m_iplus1, for the current one, m_i.
+
+        Main step of optimal sampling. The integration of a power law IMF is solved analitically in the case of a simple
+        power law and a multi power law with one threshold crossing. With m_i as a variable, the expression is solved
+        for m_iplus1.
+        """
+
         if self.multi_power_law_imf:
-            #if the imf is a multi-power law, we need to check whether the integration crosses boundaries
-            #because we do not know in advance whether the upper limit is within the same power-law as the lower limit,
-            #we first integrate for the power law in the region of the lower limit to find the upper limit
-            #if the resulting upper limit is in the next power law, then we do the integral again by splitting it at
-            #the threshold mass m_th between the two regions
-            index, m_th = next((i, m) for i, m in enumerate(self.imf.limits) if m >= m_i) #find the first next threshold
-            a1 = self.imf.exponents[index] #get power law exp. and coef. for both regions
+            # if the IMF is a multi power law, the line below will get the next power law threshold mass, m_th
+            index, m_th = next((i, m) for i, m in enumerate(self.imf.limits) if m >= m_i)
+            a1 = self.imf.exponents[index]
             k1 = self.imf.norms[index]
+            # because m_iplus1 is initially unknown, we first solve for the simple power law case and check whether
+            # there exists a solution with no threshold crossings, i.e., m_iplus1<m_th
             m_iplus1 = self._h(m_i, a1, k1)
-            if m_iplus1 > m_th: #check whether there is a solution within a single power law region; if not
+            if m_iplus1 > m_th:
+                # if not, then we recalculate m_iplus1 for the multi power law threhsold crossing case
                 a2 = self.imf.exponents[index + 1]
                 k2 = self.imf.norms[index + 1]
-                if a1 == 1: #then the integral changes but is still analytical
-                    m_iplus1 = self._g1(m_i, m_th, a2, k1, k2)
-                elif a2 == 1:
-                    m_iplus1 = self._g2(m_i, m_th, a1, k1, k2)
-                else:
-                    m_iplus1 = self._g3(m_i, m_th, a1, a2, k1, k2)
+                m_iplus1 = self._g(m_i, m_th, a1, a2, k1, k2)
         else:
-            #if the imf isn't a power law, then do not need to check for boundaries
             k = self.imf.norms[0]
             a = self.imf.exponents[0]
             m_iplus1 = self._h(m_i, a, k)
         return m_iplus1
 
+    def set_limits(self):
+        """Iterate over the integration limits starting from m_1=m_max until m_iplus1 < m_min."""
+        i = 1
+        m_iplus1 = self.m_max
+        while m_iplus1 > self.m_min:
+            self._upper_limits = np.append(self._upper_limits, m_iplus1)
+            m_i = m_iplus1
+            m_iplus1 = self._get_m_iplus1(m_i)
+            i += 1
+
+    def get_sample(self):
+        """Set the sample by integrating M*IMF(M) over each mass bin, then return the sample."""
+        for i, m_i in enumerate(self._upper_limits[:-1]):
+            m_iplus1 = self._upper_limits[i+1]
+            mass_i = self._integrate_imf(m_iplus1, m_i)
+            self.sample = np.append(self.sample, mass_i)
+        return self.sample
+
     def set_n_tot(self):
+        """Calculate and set the expected and actual number of objects in the sample."""
         expected_n_tot = 0
         for i, m1 in enumerate(self.imf.limits[:1]):
             m2 = self.imf.limits[i+1]
@@ -241,6 +392,7 @@ class OptimalSampling:
         self.n_tot = self.sample.shape[0]
 
     def set_m_tot(self):
+        """Calculate and set the expected and actual total mass of the sample."""
         expected_m_tot = 0
         for i, m1 in enumerate(self.imf.limits[:-1]):
             m2 = self.imf.limits[i+1]
@@ -249,33 +401,3 @@ class OptimalSampling:
             expected_m_tot += self._f(m1, m2, a, k)
         self.expected_m_tot = expected_m_tot
         self.m_tot = self.sample.sum()
-
-    def set_upper_limits(self, i_limit=0):
-        #print('Setting integration limits...')
-        i = 1
-        m_iplus1 = self.m_max
-        fraction = 0
-        while m_iplus1 > self.m_min:
-            self._upper_limits = np.append(self._upper_limits, m_iplus1)
-            m_i = m_iplus1
-            m_iplus1 = self._get_m_iplus1(m_i)
-            i += 1
-            if i==i_limit:
-                break
-            #fraction += 1/self.n_tot
-            #if fraction >= 0.1:
-            #    print(f'{i} of {int(self.n_tot)}')
-            #    fraction = 0
-
-    def get_sample(self):
-        #print('Sampling IMF...')
-        fraction = 0
-        for i, m_i in enumerate(self._upper_limits[:-1]):
-            m_iplus1 = self._upper_limits[i+1]
-            mass_i = self._integrate_imf(m_iplus1, m_i)
-            self.sample = np.append(self.sample, mass_i)
-            #fraction += 1 / self.n_tot
-            #if fraction >= 0.1:
-             #   print(f'{i} of {int(self.n_tot)}')
-            #    fraction = 0
-        return self.sample
