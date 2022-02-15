@@ -47,7 +47,7 @@ def invgeoarange(a, b, n):
     array = [a+b-x for x in array[::-1]]
     return np.array(array)
 
-def interpolate(self, ipX, ipY, X):
+def interpolate(ipX, ipY, X):
     """Interpolate between each line of a pair of arrays.
 
     Parameters
