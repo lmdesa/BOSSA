@@ -1,7 +1,7 @@
 import numpy as np
 
 from sfr import SFZR
-from imf import Galaxy
+from imf import IGIMF
 from utils import ZOH_from_FeH
 
 z = np.array([0.2, 0.5])
@@ -16,6 +16,6 @@ sfrs = np.array(sfzr.get_sfr(zoh))
 for sfr, fehh in zip(sfrs[:,0], feh):
     print('now SFR', sfr, 'FEH', fehh)
 
-    galaxy = Galaxy(sfr, fehh)
+    galaxy = IGIMF(sfr, fehh)
     galaxy.get_clusters()
     imf = np.array([galaxy.imf(m) for m in ms])

@@ -2,24 +2,83 @@ import numpy as np
 from scipy.optimize import fsolve
 from scipy.integrate import quad
 
+class IMF:
+    """Generic initial mass function class.
 
-class Star:
+    This class contains the attributes that should be specified by every IMF, as well as a method that computes the
+    IMF as a power law or multi power law with an arbitrary number of regions. In particular, these general attributes
+    are required by the sampling classes in the sampling module.
+
+    Attributes
+    ----------
+    m_tot : float
+        Total mass of the population described by the IMF. A normalization constraint.
+    m_trunc_min : float
+        The absolute minimum mass of an object in the described population.
+    m_trunc_max : float
+        The absolute maximum mass of an object in the described population.
+    limits : list
+        List of threshold masses. In ascending order, should contain 0, np.infty and the IMF's minimum and maximum mass,
+        as well as any other limits in the case of multi power law IMFs.
+    exponents : list
+        Power law exponents for each power law region. The first and last items should be 0.
+    norms : list
+        Power law normalization constants for each power law region. The first and last items should be 0.
+
+    Methods
+    -------
+    imf(m) :
+        Calculate the IMF at a given mass m.
+    """
+
+    def __init__(self, m_tot, m_trunc_min, m_trunc_max):
+        """
+        Parameters
+        ----------
+        m_tot : float
+            Total mass of the population described by the IMF.
+        m_trunc_min : float
+            Minimum possible mass of an object from the IMF.
+        m_trunc_max : float
+            Maximum possible mass of an object from the IMF.
+        """
+
+        self.m_tot = m_tot
+        self.m_trunc_min = m_trunc_min
+        self.m_trunc_max = m_trunc_max
+        self._limits = None
+        self._exponents = None
+        self._norms = None
+
+    def imf(self, m):
+        """If m_max has already been computed, calculate dN/dm for a given stellar mass m. Otherwise warn the user."""
+        if self.m_max is None:
+            print('m_max not defined')
+            return
+        # Below we determine which power law region the mass m is in. With limits, exponents and norms properly set up
+        # according to the class docstring, this should work for both simple and multi power laws.
+        index, m_th = next((i, m_th) for i, m_th in enumerate(self.limits) if m_th >= m)
+        k = self.norms[index]
+        a = self.exponents[index]
+        return k * m**-a
+
+class Star(IMF):
     """Class dedicated to computing the stellar initial mass function.
 
     Class dedicated to computing the stellar initial mass function (IMF) as given by Jerabkova et al. (2018). The
     stellar IMF is specific to a given star-forming region (an embedded cluster, or ECL), with a set metallicity, as
-    [Fe/H], and the total embedded cluster mass, m_ecl. The IMF is a series of three power laws between a minimum
-    stellar mass m_min, and a maximum stellar mass m_max, with exponents k1, k2 and k3 given by analytic formulae, and
+    [Fe/H], and the total embedded cluster mass, m_tot. The IMF is a series of three power laws between a minimum
+    stellar mass m_trunc_min, and a maximum stellar mass m_max, with exponents k1, k2 and k3 given by analytic formulae, and
     normalization coefficients k1, k2 and k3 set by adequate constraints. M_min is set at the hydrogen burning threshold
     of 0.08 Msun. Exponents k2 and k3 are found from k1 by continuity.
 
-    m_ecl sets the maximum formable stellar mass m_max but is not equal to it. Thus the first constraint is obtained by
+    m_tot sets the maximum formable stellar mass m_max but is not equal to it. Thus the first constraint is obtained by
     imposing that the number of stars found with mass equal to or higher than m_max be one, i.e., by equaling the
     integral of the IMF between m_max and the absolute maximum 150 Msun to unity. This constraint is expressed in method
     f1.
 
-    m_ecl does set the total stellar formed. Thus the second constraint is obtained by intergrating m*IMF(m) between
-    m_min and m_max. This constraint is expressed in method f1 and f2.
+    m_tot does set the total stellar formed. Thus the second constraint is obtained by intergrating m*IMF(m) between
+    m_trunc_min and m_max. This constraint is expressed in method f1 and f2.
 
     Solving f1 and f2 simultaneously determines m_max and k1, which also determines k2 and k3. This is done by the
     method get_mmax_k1, which is the most expensive method of the class.
@@ -28,18 +87,12 @@ class Star:
 
     Attributes
     ----------
-    m_ecl : float
-        Embedded cluster mass in solar masses.
     feh : float
         Embedded cluster metallicity in [Fe/H].
     m_ecl_min : float
         Absolute minimum embedded cluster mass.
-    m_min : float
-        Absolute minimum stellar mass.
     m_max : float
         Maximum stellar mass. Embedded cluster-specific.
-    m_abs_max : float
-        Absolute maximum stellar mass.
     a1 : float
         m<0.5 IMF exponent.
     a2 : float
@@ -55,36 +108,35 @@ class Star:
     a_factor : float
         Auxiliary variable. Function of a1 and a2.
     x : float
-        Auxiliary variable. Function of feh and m_ecl.
+        Auxiliary variable. Function of feh and m_tot.
     g1 : float
-        Auxiliary variable. Function of a1 and m_min.
+        Auxiliary variable. Function of a1 and m_trunc_min.
     g2 : float
         Auxiliary variable. Function of a2.
 
     Methods
     -------
-    get_mmax_k1() :
+    get_mmax_k() :
         Solves the system of equations made up of methods f1 and f2 to determine mmax and k1.
-    imf(m) :
-        Calculates dN/dm for the given stellar mass m.
     """
 
     def __init__(self, m_ecl, feh):
         """
         Parameters
         ----------
-        feh : float
-            Embedded cluster metallicity in [Fe/H].
         m_ecl : float
             Embedded cluster mass in solar masses.
+        feh : float
+            Embedded cluster metallicity in [Fe/H].
         """
 
+        IMF.__init__(self,
+                     m_tot=m_ecl,
+                     m_trunc_min=0.08,
+                     m_trunc_max=150) # choose 0.08 and 150 Msun as minimum and maximum possible stellar masses
         self.feh = feh
-        self.m_ecl = m_ecl
         self.m_ecl_min = 5
-        self.m_min = 0.08
         self.m_max = None
-        self.m_abs_max = 150
         self._a1 = None
         self._a2 = None
         self._a3 = None
@@ -95,6 +147,28 @@ class Star:
         self._x = None
         self._g1 = None
         self._g2 = None
+
+
+    @property
+    def limits(self):
+        if self._limits is None:
+            self._limits = [self.m_trunc_min, 0.5, 1.0, self.m_max, np.infty]
+        return self._limits
+
+    @property
+    def exponents(self):
+        if self._exponents is None:
+            self._exponents = [0, self.a1, self.a2, self.a3, 0]
+        return self._exponents
+
+    @property
+    def norms(self):
+        if self._norms is None:
+            if self.k1 is None:
+                raise Warning('Normalization coefficients not yet set.')
+                return
+            self._norms = [0, self.k1, self.k2, self.k3, 0]
+        return self._norms
 
     def _h1(self, a, m1, m2):
         """Auxiliary function of any two masses used in calculating auxiliary variables and constraints."""
@@ -112,14 +186,14 @@ class Star:
 
     @property
     def x(self):
-        """Set auxiliary variable x if not yet set, then gets it. Function of [Fe/H] and m_ecl."""
+        """Set auxiliary variable x if not yet set, then gets it. Function of [Fe/H] and m_tot."""
         if self._x is None:
-            self._x = -0.14 * self.feh + 0.6 * np.log10(self.m_ecl / 1e6) + 2.83
+            self._x = -0.14 * self.feh + 0.6 * np.log10(self.m_tot / 1e6) + 2.83
         return self._x
 
     @property
     def a1(self):
-        """Sets low-mass IMF exponent a1 if not yet set, then gets it. Function of [Fe/H]."""
+        """Set low-mass IMF exponent a1 if not yet set, then gets it. Function of [Fe/H]."""
         if self._a1 is None:
             alpha1c = 1.3
             delta = 0.5
@@ -128,7 +202,7 @@ class Star:
 
     @property
     def a2(self):
-        """Sets intermediate-mass IMF exponent a2 if not yet set, then gets it. Function of [Fe/H]."""
+        """Set intermediate-mass IMF exponent a2 if not yet set, then gets it. Function of [Fe/H]."""
         if self._a2 is None:
             alpha2c = 2.3
             delta = 0.5
@@ -137,7 +211,7 @@ class Star:
 
     @property
     def a3(self):
-        """Sets high-mass IMF exponent a3 if not yet set, then gets it. Dependent on [Fe/H] and m_ecl through x."""
+        """Set high-mass IMF exponent a3 if not yet set, then gets it. Dependent on [Fe/H] and m_tot through x."""
         if self._a3 is None:
             if self.x < -0.87:
                 self._a3 = 2.3
@@ -149,33 +223,33 @@ class Star:
 
     @property
     def a_factor(self):
-        """Sets auxiliary variable a_factor if not yet set, then gets it. Function of a1 and a2."""
+        """Set auxiliary variable a_factor if not yet set, then gets it. Function of a1 and a2."""
         if self._a_factor is None:
             self._a_factor = 2 ** (self.a1 - self.a2)
         return self._a_factor
 
     @property
     def g1(self):
-        """Sets auxiliary variable g1 if not yet set, then gets it. Function of a1 and m_min."""
+        """Set auxiliary variable g1 if not yet set, then gets it. Function of a1 and m_trunc_min."""
         if self._g1 is None:
-            self._g1 = self._h2(self.a1, self.m_min, 0.5)
+            self._g1 = self._h2(self.a1, self.m_trunc_min, 0.5)
         return self._g1
 
     @property
     def g2(self):
-        """Sets auxiliary variable g2 if not yet set, then gets it. Function of a2."""
+        """Set auxiliary variable g2 if not yet set, then gets it. Function of a2."""
         if self._g2 is None:
             self._g2 = self._h2(self.a2, 0.5, 1)
         return self._g2
 
     def _f1(self, k1, m_max):
         """Constraint on k1 and m_max for the existence of only one star with mass equal to or higher than m_max."""
-        return 1 - self.a_factor * k1 * self._h1(self.a3, m_max, self.m_abs_max)
+        return 1 - self.a_factor * k1 * self._h1(self.a3, m_max, self.m_trunc_max)
 
     def _f2(self, k1, m_max):
         """Constraint on k1 and m_max for the total stellar mass being equal to the mass of the star-forming region."""
         g3 = self._h2(self.a3, 1, m_max)
-        return self.m_ecl - k1 * (g3 + self.a_factor * (self.g1 + self.g2))
+        return self.m_tot - k1 * (g3 + self.a_factor * (self.g1 + self.g2))
 
     def _constraints(self, vec):
         """For a k1, m_max pair, compute both constraints and return them as a two-dimensional vector.
@@ -206,22 +280,22 @@ class Star:
         """Calculate initial guesses of k1 and m_max for solving the two constraints f1 and f2.
 
         The chosen forms of the initial guesses are based on a mix of very crude estimates of m_max and k1 and testing
-        of different forms for different ranges of m_ecl. The success of Scipy's fsolve in finding m_max and k1 is
-        strongly dependent on adequate initial guesses, while the order of k1 and m_max can vary drastically with m_ecl.
+        of different forms for different ranges of m_tot. The success of Scipy's fsolve in finding m_max and k1 is
+        strongly dependent on adequate initial guesses, while the order of k1 and m_max can vary drastically with m_tot.
 
-        This choice of initial_guesses has been tested for m_ecl between 10**0.7 and 1e9, and [Fe/H] between -4 and 1
-        with no apparent issues. More extensively tested for m_ecl between 10**3.5 and 10**7, and [Fe/H] between -2.5
+        This choice of initial_guesses has been tested for m_tot between 10**0.7 and 1e9, and [Fe/H] between -4 and 1
+        with no apparent issues. More extensively tested for m_tot between 10**3.5 and 10**7, and [Fe/H] between -2.5
         and 0.5 with good behavior.
 
         It is not advisable to modify this method without testing the method get_mmax_k1 before use.
         """
 
-        norm = 10 ** (int(np.log10(self.m_ecl)) // 2)
-        k1 = 2 ** (1 - self.a1) * self.m_ecl / norm
+        norm = 10 ** (int(np.log10(self.m_tot)) // 2)
+        k1 = 2 ** (1 - self.a1) * self.m_tot / norm
         if self.a3 == 0:
-            m_max = self.m_abs_max
+            m_max = self.m_trunc_max
         else:
-            m_max = min(self.m_abs_max, max(0.08, k1 ** (1 / self.a3)))
+            m_max = min(self.m_trunc_max, max(0.08, k1 ** (1 / self.a3)))
         return k1, m_max
 
     def _set_k2_k3(self):
@@ -229,13 +303,13 @@ class Star:
         self.k2 = self.a_factor * self.k1
         self.k3 = self.k2
 
-    def get_mmax_k1(self):
+    def get_mmax_k(self):
         """Use Scipy's fsolve to solve the two constraints with adequate initial guesses for k1 and m_max.
 
         After solving for k1 and m_max, k2 and k3 are immediately determined. Automatically sets the IMF to zero for all
         masses if the star-forming region mass is below a minimum of 5 solar masses.
         """
-        if self.m_ecl < self.m_ecl_min:
+        if self.m_tot < self.m_ecl_min:
             self.m_max = 0
             self.k1 = 0
             self._set_k2_k3()
@@ -243,42 +317,21 @@ class Star:
             self.k1, self.m_max = fsolve(self._constraints, self._initial_guesses())
             self._set_k2_k3
 
-    def imf(self, m):
-        """If m_max and k1 have already been computed, calculate dN/dm for a given stellar mass m.
 
-        If m_max and k1 have already been computed, calculates dN/dm for a given stellar mass m. If not, asks the user
-        to run get_mmax_k1() first.
-        """
-
-        if self.m_max is None:
-            print('Please run get_mmax_k1() first.')
-            return
-        if m < self.m_min:
-            return 0
-        elif m < 0.5:
-            return self.k1 * m ** -self.a1
-        elif m < 1:
-            return self.k2 * m ** -self.a2
-        elif m <= self.m_max:
-            return self.k3 * m ** -self.a3
-        else:
-            return 0
-
-
-class EmbeddedCluster:
+class EmbeddedCluster(IMF):
     """Class dedicated to computing the embedded cluster initial mass function.
 
     Class dedicated to computing the embedded cluster (ECL) initial mass function (IMF) as given by Jerabkova et al.
     (2018). The ECL IMF gives the mass distribution of star-forming regions (which the original paper calls embedded
     clusters) within a galaxy with a specific star formation rate (SFR). The ECL IMF is given as a single power law
-    between a minimum ECL mass m_min (default 5 solar masses) and a maximum mass m_max which is less than 1e9 solar
+    between a minimum ECL mass m_trunc_min (default 5 solar masses) and a maximum mass m_max which is less than 1e9 solar
     masses. The power law exponent, beta, is given as a function of the SFR. The normalization constant, k, and m_max
     must be determined from two adequate constraints, analogously to k3 and m_max in the Star class (stellar IMF).
 
     A constant star formation history (SFH) is assumed. Given the duration of the period of formation of new ECLs
     within a galaxy, time, the total galactic ECL mass is m_tot=time*SFR. The first constraint is obtained by imposing
     that the total mass of all ECLs be equal to m_tot, i.e., by equaling to m_tot the integral of the ECL IMF between
-    m_min and m_max.
+    m_trunc_min and m_max.
 
     The second constraint is obtained by imposing that only one ECL be found with mass equal to or greater than m_max,
     i.e., by equaling to unity the integral of the ECL IMF between m_max and 1e9.
@@ -296,27 +349,23 @@ class EmbeddedCluster:
         Galactic SFR.
     time : float
         Duration of ECL formation.
-    m_tot : float
-        Total ECL mass formed in the galaxy.
-    m_min : float
-        Minimum mass of an ECL.
     m_max : float
-        Maximum mass of an ECL. Galaxy specific.
-    abs_m_max : float
-        Absolute maximum mass of an ECL.
+        Maximum mass of an ECL. IGIMF specific.
     k : float
         Normalization constant of the ECL IMF.
     beta : float
         Exponent of the ECL IMF.
     g0 : float
-        Auxiliary variable. Function of m_min and abs_m_max.
+        Auxiliary variable. Function of m_trunc_min and m_trunc_max.
     g1 : float
-        Auxiliary variable. Function of m_min and abs_m_max.
+        Auxiliary variable. Function of m_trunc_min and m_trunc_max.
     g2 : float
-        Auxiliary variable. Function of m_min and abs_m_max.
+        Auxiliary variable. Function of m_trunc_min and m_trunc_max.
 
     Methods
     -------
+    get_mmax_k() :
+        Solves the system of equations made up of methods f1 and f2 to determine mmax and k.
     """
 
     def __init__(self, sfr, time):
@@ -329,17 +378,36 @@ class EmbeddedCluster:
             Duration of ECL formation.
         """
 
+        IMF.__init__(self,
+                     m_tot=sfr*time,
+                     m_trunc_min=5,
+                     m_trunc_max=1e9) # choose 5 and 1e9 Msun as minimum and maximum possible embedded cluster masses
         self.sfr = sfr
         self.time = time
-        self.m_tot = sfr * time
-        self.m_min = 5
         self.m_max = None
-        self.abs_m_max = 1e9
         self.k = None
         self._beta = None
         self._g0 = None
         self._g1 = None
         self._g2 = None
+
+    @property
+    def limits(self):
+        if self._limits is None:
+            self._limits = [self.m_trunc_min, self.m_max, np.infty]
+        return self._limits
+
+    @property
+    def exponents(self):
+        if self._exponents is None:
+            self._exponents = [0, self.beta, 0]
+        return self._exponents
+
+    @property
+    def norms(self):
+        if self._norms is None:
+            self._norms = [0, self.k, 0]
+        return self._norms
 
     def _h0(self, m1, m2):
         """Auxiliary function of any two masses used in computing auxiliary variables and constraints."""
@@ -362,23 +430,23 @@ class EmbeddedCluster:
 
     @property
     def g0(self):
-        """Sets auxiliary variable g0 if not yet set, then gets it. Function of m_min and abs_m_max."""
+        """Sets auxiliary variable g0 if not yet set, then gets it. Function of m_trunc_min and m_trunc_max."""
         if self._g0 is None:
-            self._g0 = self._h0(self.m_min, self.abs_m_max)
+            self._g0 = self._h0(self.m_trunc_min, self.m_trunc_max)
         return self._g0
 
     @property
     def g1(self):
-        """Sets auxiliary variable g1 if not yet set, then gets it. Function of m_min and abs_m_max."""
+        """Sets auxiliary variable g1 if not yet set, then gets it. Function of m_trunc_min and m_trunc_max."""
         if self._g1 is None:
-            self._g1 = self._h1(self.m_min, self.abs_m_max)
+            self._g1 = self._h1(self.m_trunc_min, self.m_trunc_max)
         return self._g1
 
     @property
     def g2(self):
-        """Sets auxiliary variable g2 if not yet set, then gets it. Function of m_min and abs_m_max."""
+        """Sets auxiliary variable g2 if not yet set, then gets it. Function of m_trunc_min and m_trunc_max."""
         if self._g2 is None:
-            self._g2 = self._h2(self.m_min, self.abs_m_max)
+            self._g2 = self._h2(self.m_trunc_min, self.m_trunc_max)
         return self._g2
 
     def _f0(self, m_max):
@@ -401,7 +469,7 @@ class EmbeddedCluster:
         values between 10**-2.3 and 10**1.3 solar masses per year with good behavior.
         """
 
-        return min(self.abs_m_max, 1e6 * self.sfr)
+        return min(self.m_trunc_max, 1e6 * self.sfr)
 
     def _constraints(self, m_max):
         """For a value of m_max, compute the constraint and return it.
@@ -434,13 +502,11 @@ class EmbeddedCluster:
         depending on the value of beta.
         """
 
-        if self.beta == 2:
-            self.k = 1 / (1 / self.m_max - self.abs_m_max)
-        elif self.beta == 1:
-            self.k = self.m_tot / (self.m_max - self.m_min)
+        if self.beta == 1:
+            self.k = 1/np.log(self.m_trunc_max / self.m_max)
         else:
             a = 1 - self.beta
-            self.k = a / (self.abs_m_max ** a - self.m_max ** a)
+            self.k = a/(self.m_trunc_max ** a - self.m_max ** a)
 
     def get_mmax_k(self):
         """Use Scipy's fsolve to solve the constraint for m_max, then calculate the normalization constant k.
@@ -451,30 +517,13 @@ class EmbeddedCluster:
         self._get_mmax()
         self._get_k()
 
-    def imf(self, m_ecl):
-        """If m_max and k have already been determined, compute dN/dm for a given m_ecl.
 
-        If m_max and k have already been determined, calculates dN/dm for a given m_ecl. If not, asks the user to run
-        get_mmax_k() first.
-        """
-
-        if self.m_max is None:
-            print('Please run get_mmax_k() first.')
-            return
-        if m_ecl <= self.m_min:
-            return 0
-        elif m_ecl < self.m_max:
-            return self.k * m_ecl ** -self.beta
-        else:
-            return 0
-
-
-class Galaxy:
+class IGIMF:
     """Class dedicated to computing the galaxy wide initial mass function.
 
     The galaxy wide IMF (gwIMF) is computed according to the integrated galactic IMF (IGIMF) framework as described in
     Jerabkova et al. (2018) and references therein. Operationally, the gwIMF is obtained by integrating over the product
-    of the ECL IMF of the EmbeddedCluster class and the stellar IMF of the Star class for the respective ECL, with
+    of the ECMF of the EmbeddedCluster class and the stellar IMF of the Star class for the respective ECL, with
     respect to the ECL mass. This constitutes a spatial integration over the whole galaxy for all the stars formed
     within the ECLs formed in a period of time given by the time attribute, without taking into account the spatial
     distribution of star-forming regions or their differing chemical properties. This leaves the entire galaxy to be
@@ -491,15 +540,23 @@ class Galaxy:
         [Fe/H] metallicity of the galaxy.
     time : float
         Duration of the period of ECL formation in the galaxy.
+    m_trunc_min : flaot
+        Minimum possible stellar mass.
+    m_trunc_max : float
+        Maximum possible stellar mass.
     m_ecl_min : float
-        Minimum mass of ECLs in the galaxy.
+        Minimum possible embedded cluster mass.
     m_ecl_max : float
-        Maximum mass of ECLs in the galaxy.
+        Maximum mass of embedded clusters in the galaxy.
     clusters : EmbeddedCluster object
-        Calculates the ECL IMF of the galaxy.
+        Calculates the ECMF of the galaxy.
 
     Methods
     -------
+    get_clusters() :
+        Instantiate an EmbeddedCluster object and compute the maximum embedded cluster mass.
+    imf(m) :
+        Integrate the product of the stellar and ECL IMFs with respect to the ECL mass, for a given stellar mass.
     """
 
     def __init__(self, sfr, feh):
@@ -515,15 +572,17 @@ class Galaxy:
         self.sfr = sfr
         self.feh = feh
         self.time = 1e7  # yr
+        self.m_trunc_min = 0.08
+        self.m_trunc_max = 150
         self.m_ecl_min = 5
         self.m_ecl_max = None
         self.clusters = None
 
     def get_clusters(self):
-        """Instantiate an EmbeddedCluster object and compute the maximum ECL mass.
+        """Instantiate an EmbeddedCluster object and compute the maximum embedded cluster mass.
 
         Instantiates an EmbeddedCluster object and computes the maximum ECL mass, which is also saved as an instance
-        attribute of this Galaxy object. Must be called before the imf method, otherwise the ECL IMF will not be
+        attribute of this IGIMF object. Must be called before the imf method, otherwise the ECL IMF will not be
         available for integration.
         """
 
@@ -534,7 +593,7 @@ class Galaxy:
     def _get_stars(self, m_ecl, m):
         """For a given ECL mass, instantiate a Star object, compute the IMF and return dN/dm for a stellar mass m."""
         stellar = Star(m_ecl, self.feh)
-        stellar.get_mmax_k1()
+        stellar.get_mmax_k()
         stellar._set_k2_k3()
         return stellar.imf(m)
 
@@ -556,6 +615,5 @@ class Galaxy:
         Integrates the product of the stellar and ECL IMFs with respect to the ECL mass, for a given stellar mass, using
         Scipy's quad function. Must called only after calling get_clusters, otherwise the ECL IMF will not be avaialble.
         """
-        print('imf for ', m)
         imf = quad(self._integrand, self.m_ecl_min, self.m_ecl_max, args=m)
         return imf
