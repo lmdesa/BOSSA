@@ -1,5 +1,24 @@
 import numpy as np
-from utils import interpolate
+from pathlib import Path
+try:
+    import cPickle as pickle
+except ModuleNotFoundError:
+    import pickle
+
+from imf import EmbeddedCluster, Star
+from sfr import SFZR
+from utils import interpolate, sample_histogram, ZOH_from_FeH
+
+
+ROOT = Path('..')
+DATAFOLDER = Path(ROOT, 'Data')
+
+def save_osgimf_instance(osgimf, filepath=None):
+    if filepath is None:
+        filename = f'osgimf_100z{100 * osgimf.z:.0f}_FeH{osgimf.feh:.0f}_t1e{np.log10(osgimf.delta_t):.0f}.pkl'
+        filepath = Path(DATAFOLDER, 'OSGIMFs', filename)
+    with filepath.open('wb') as f:
+        pickle.dump(osgimf, f, -1)
 
 class RandomSampling:
     """Sample an arbitrary IMF by pure random sampling.
@@ -401,3 +420,51 @@ class OptimalSampling:
             expected_m_tot += self._f(m1, m2, a, k)
         self.expected_m_tot = expected_m_tot
         self.m_tot = self.sample.sum()
+
+
+class OSGIMF:
+    """Build an optimally sampled galaxy-integrated initial mass function (OSGIMF)"""
+
+    def __init__(self, redshift, metallicity, period=1e7):
+        self.z = redshift
+        self.feh = metallicity
+        self.zoh = ZOH_from_FeH(self.feh)
+        self.delta_t = period
+        self.sfr = None
+        self.cluster_imf = None
+        self.cluster_sample = None
+        self.star_sample = np.empty(0, np.float64)
+
+    def _set_sfr(self):
+        sfzr = SFZR(np.array([self.z]))
+        sfzr.get_MZR_params()
+        self.sfr = sfzr.get_sfr(np.array([self.zoh]))[0,0]
+
+    def _set_cluster_imf(self):
+        self.cluster_imf = EmbeddedCluster(self.sfr, self.delta_t)
+        self.cluster_imf.get_mmax_k()
+
+    def _get_stellar_imf(self, cluster):
+        stellar_imf = Star(cluster, self.feh)
+        stellar_imf.get_mmax_k()
+        return stellar_imf
+
+    def sample_clusters(self):
+        self._set_sfr()
+        self._set_cluster_imf()
+        cluster_sampler = OptimalSampling(self.cluster_imf)
+        cluster_sampler.set_limits()
+        self.cluster_sample = cluster_sampler.get_sample()
+
+    def sample_stars(self):
+        if self.cluster_sample is None:
+            print('Please run sample_clusters first.')
+            return
+        for i, cluster in enumerate(self.cluster_sample):
+            stellar_imf = self._get_stellar_imf(cluster)
+            stellar_sampler = OptimalSampling(stellar_imf)
+            stellar_sampler.set_limits()
+            stellar_sample = stellar_sampler.get_sample()
+            self.star_sample = np.append(self.star_sample, stellar_sample)
+
+        self.star_sample = np.sort(self.star_sample)
