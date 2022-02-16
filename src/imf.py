@@ -315,7 +315,7 @@ class Star(IMF):
             self._set_k2_k3()
         else:
             self.k1, self.m_max = fsolve(self._constraints, self._initial_guesses())
-            self._set_k2_k3
+            self._set_k2_k3()
 
 
 class EmbeddedCluster(IMF):
@@ -540,7 +540,7 @@ class IGIMF:
         [Fe/H] metallicity of the galaxy.
     time : float
         Duration of the period of ECL formation in the galaxy.
-    m_trunc_min : flaot
+    m_trunc_min : float
         Minimum possible stellar mass.
     m_trunc_max : float
         Maximum possible stellar mass.
