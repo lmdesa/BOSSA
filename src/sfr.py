@@ -46,7 +46,10 @@ class SFMR:
         """Sets the b parameter if not yet set, then gets it. Dependent on redshift explicitly and through the c
         parameter."""
         if self._b is None:
-            self._b = self.c * np.log10(1+self.redshift) - 8.2
+            if self.redshift <= 1.8:
+                self._b = self.c * np.log10(1+self.redshift) - 8.2
+            else:
+                self._b = self.c * np.log10(1 + self.redshift) - 8.2 + 1.8*np.log10(2.8)
         return self._b
 
     @property
