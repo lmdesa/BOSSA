@@ -21,7 +21,7 @@ INDEX :
         02 : Fitting the GSMF plots from Chruslinska et al. (2019) to a Schechter function in order to obtain the GSMF per redshift.
         03 : Interpolating the correction data from Chrushlinska et al. (2020) to any value of the Kroupa IMF. Implemented in Notebook 24.
         04 : Computation of a small SFR(Z,z) grid using the steps from Notebooks 23 and 24, as well as saving the SFR grid as a text file to be read by Notebook 26. "Analytical" means an SFZR is obtained by solving the MZR and SFMR for the SFR and eliminating the mass. This yields an equation valid for a small region of the parameter space.
-        05 : Computation of the full SFR(Z,z) distribution by integrating the publicly available SFRD(Z,z) data from Chruslinska et al. (2020). Uses the SFR class from the sfr module in order to analitically compute the galaxy number density n(Z,z) so that SFR(Z,z) = n(Z,z) X SFRD(Z,z).
+        05 : (NOT WORKING) Computation of the full SFR(Z,z) distribution by integrating the publicly available SFRD(Z,z) data from Chruslinska et al. (2020). Uses the SFR class from the sfr module in order to analitically compute the galaxy number density n(Z,z) so that SFR(Z,z) = n(Z,z) X SFRD(Z,z).
         06 : Computation of the full SFR(Z,z) distribution by reproducing the steps from Chruslinska et al. (2020) of sampling. Results in a limited relation due to lack of dispersion.
         07 : Final integration of the IGIMF as a function of Z and z by applying SFR(Z,z) as an analytical expression.
 
