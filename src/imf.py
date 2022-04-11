@@ -628,3 +628,66 @@ class IGIMF:
         """
         imf = quad(self._integrand, self.m_ecl_min, self.m_ecl_max, args=m)
         return imf
+
+
+class GSMF:
+
+    def __init__(self, redshift, fixed_high_mass_slope=True):
+        self.redshift = redshift
+        self.fixed_high_mass_slope = fixed_high_mass_slope
+        self._logmass_threshold = None
+        self._power_law_index = None
+        self._interpolation_densities = np.empty(ct.CHR19_GSMF.shape[0], np.float64)
+
+    @property
+    def logmass_threshold(self):
+        if self._logmass_threshold is None:
+            if self.redshift <= 5:
+                self._logmass_threshold = 7.8 + 0.4*self.redshift
+            else:
+                self._logmass_threshold = 9.8
+        return self._logmass_threshold
+
+    @property
+    def power_law_index(self):
+        if self._power_law_index is None:
+            if self.fixed_high_mass_slope:
+                self._power_law_index = -1.45
+            else:
+                self._power_law_index = -0.1 * self.redshift - 1.34
+        return self._power_law_index
+
+    def power_law_norm(self, sch_params):
+        schechter =  self._schechter(self.logmass_threshold, *sch_params)
+        return schechter - (self.power_law_index + 1) * self.logmass_threshold - np.log10(LN10)
+
+    def _schechter(self, logm, a, logphi, logm_co):
+        return logphi + (a+1)*(logm-logm_co) - 10**(logm-logm_co)/LN10 - np.log10(LN10)
+
+    def _power_law(self, logm, sch_params):
+        norm = self.power_law_norm(sch_params)
+        return (self.power_law_index + 1) * logm + norm + np.log10(LN10)
+
+    def _f(self, logm, schechter_params):
+        if logm > self.logmass_threshold:
+            return self._schechter(logm, *schechter_params)
+        else:
+            return self._power_law(logm, schechter_params)
+
+    def gsmf(self, logm):
+        #logm = np.log10(m)
+        if self.redshift <= 0.05:
+            schechter_params = ct.CHR19_GSMF[0,1]
+            logn = self._f(logm, schechter_params)
+        elif self.redshift <= 10:
+            schechter_params = ct.CHR19_GSMF[:, 1]
+            ipX = np.array([ct.CHR19_GSMF[:, 0]], dtype=np.float64)
+            ipY = np.array([[self._f(logm, params) for params in schechter_params]])
+            logn = interpolate(ipX, ipY, self.redshift)
+        else:
+            dnorm_dz = ct.CHR19_GSMF[-1, 1][1] - ct.CHR19_GSMF[-2, 1][1]
+            dnorm = dnorm_dz * (self.redshift-9)
+            norm = ct.CHR19_GSMF[-1,1][1] + dnorm
+            schechter_params = (ct.CHR19_GSMF[-1,1][0], norm, ct.CHR19_GSMF[-1,1][2])
+            logn = self._f(logm, schechter_params)
+        return logn
