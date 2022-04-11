@@ -1,6 +1,11 @@
 import numpy as np
 from scipy.optimize import fsolve
 from scipy.integrate import quad
+import constants as ct
+from utils import interpolate
+
+LN10 = np.log(10.)
+LOGE = np.log10(np.e)
 
 class IMF:
     """Generic initial mass function class.
