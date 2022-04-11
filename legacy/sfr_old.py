@@ -327,7 +327,7 @@ class Corrections:
         sfr_kroupa : numpy array
             Array of Kroupa SFR values for which to compute corrections.
         """
-        self.data_path = Path('..', 'Data', 'C20_Results', 'IGIMF3_SFR_corrections.dat')
+        self.data_path = Path('..', 'data', 'C20_Results', 'IGIMF3_SFR_corrections.dat')
         self.metallicity = metallicity
         self.sfr_kroupa = sfr
         self.corrections = np.empty((0, self.sfr_kroupa.shape[0]), np.float64)

@@ -8,7 +8,7 @@ except ModuleNotFoundError:
 ### Paths
 
 ROOT = Path('..')
-DATA = Path(ROOT, 'Data')
+DATA = Path(ROOT, 'data')
 
 ### Empirical T04 MZR parameters from Chruslinska 2019
 
