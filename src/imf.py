@@ -41,7 +41,7 @@ class IMF:
         Parameters
         ----------
         m_tot : float
-            Total mass of the population described by the IMF.
+            Total mass of the population described by the IMF, if applicable.
         m_trunc_min : float
             Minimum possible mass of an object from the IMF.
         m_trunc_max : float
@@ -373,7 +373,7 @@ class EmbeddedCluster(IMF):
         Solves the system of equations made up of methods f1 and f2 to determine mmax and k.
     """
 
-    def __init__(self, sfr, time):
+    def __init__(self, sfr, time=None, m_tot=None):
         """
         Parameters
         ----------
@@ -383,12 +383,14 @@ class EmbeddedCluster(IMF):
             Duration of ECL formation.
         """
 
-        IMF.__init__(self,
-                     m_tot=sfr*time,
-                     m_trunc_min=5,
-                     m_trunc_max=1e9) # choose 5 and 1e9 Msun as minimum and maximum possible embedded cluster masses
         self.sfr = sfr
         self.time = time
+        self._m_tot = m_tot
+        self.set_m_tot()
+        IMF.__init__(self,
+                     m_tot=self._m_tot,
+                     m_trunc_min=5,
+                     m_trunc_max=1e9) # choose 5 and 1e9 Msun as minimum and maximum possible embedded cluster masses
         self.m_max = None
         self.k = None
         self._beta = None
@@ -413,6 +415,10 @@ class EmbeddedCluster(IMF):
         if self._norms is None:
             self._norms = [0, self.k, 0]
         return self._norms
+
+    def set_m_tot(self):
+        if self._m_tot is None:
+            self._m_tot = self.sfr*self.time
 
     def _h0(self, m1, m2):
         """Auxiliary function of any two masses used in computing auxiliary variables and constraints."""
