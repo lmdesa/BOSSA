@@ -1,17 +1,21 @@
 import numpy as np
+from scipy.integrate import quad
+from scipy.optimize import fsolve
+from scipy.stats import norm
 from pathlib import Path
 try:
     import cPickle as pickle
 except ModuleNotFoundError:
     import pickle
 
-from imf import EmbeddedCluster, Star
-from sfr import SFZR
-from utils import interpolate, sample_histogram, ZOH_from_FeH
+from imf import EmbeddedCluster, Star, GSMF
+from sfr import MZR, SFMR, Corrections
+from utils import interpolate, ZOH_from_FeH, ZOH_to_FeH
 
 
 ROOT = Path('..')
 DATAFOLDER = Path(ROOT, 'Data')
+
 
 def save_osgimf_instance(osgimf, filepath=None):
     if filepath is None:
@@ -19,6 +23,7 @@ def save_osgimf_instance(osgimf, filepath=None):
         filepath = Path(DATAFOLDER, 'OSGIMFs', filename)
     with filepath.open('wb') as f:
         pickle.dump(osgimf, f, -1)
+
 
 class RandomSampling:
     """Sample an arbitrary IMF by pure random sampling.
@@ -74,8 +79,6 @@ class RandomSampling:
         if self._discretization_masses is None:
             self._discretization_masses = np.logspace(np.log10(self.m_trunc_min), np.log10(self.m_trunc_max), self._discretization_points)
         return self._discretization_masses
-
-
 
     def compute_imf(self):
         """Compute the IMF at each value in discretization_masses and append it to discrete_imf.
@@ -189,7 +192,7 @@ class OptimalSampling:
         Minimum integration limit for optimal sampling. Equal to the minimum possible object mass.
     m_max : float
         Maximum integration limit for optimal sampling. Given by the SFR-M_{ecl,max} or analogous relation.
-    m_trunc : float
+    m_trunc_max : float
         Maximum possible object mass.
     upper_limits : numpy array
         Array of integration limits for optimal sampling.
@@ -218,7 +221,7 @@ class OptimalSampling:
         Calculate and set the expected and actual total mass of the sample.
     """
 
-    def __init__(self, imf):
+    def __init__(self, imf, m_min=None, debug=False):
         """
         Parameters
         ----------
@@ -227,9 +230,10 @@ class OptimalSampling:
         """
 
         self.imf = imf
-        self.m_min = imf.m_trunc_min
+        self._m_min = m_min
         self.m_max = imf.m_max
-        self.m_trunc = imf.m_trunc_max
+        self.m_trunc_max = imf.m_trunc_max
+        self.m_trunc_min = imf.m_trunc_min
         self._upper_limits = np.empty((0,), np.float64)
         self._multi_power_law_imf = None
         self.n_tot = None
@@ -237,6 +241,13 @@ class OptimalSampling:
         self.m_tot = None
         self.expected_m_tot = None
         self.sample = np.empty((0,), np.float64)
+        self.debug = debug
+
+    @property
+    def m_min(self):
+        if self._m_min is None:
+            self._m_min = self.m_trunc_min
+        return self._m_min
 
     @property
     def multi_power_law_imf(self):
@@ -277,7 +288,10 @@ class OptimalSampling:
             m1 = np.exp(np.log(m2) - 1 / k)
         else:
             b = 1 - a
-            m1 = (m2 ** b - b / k) ** (1 / b)
+            try:
+                m1 = (m2 ** b - b / k) ** (1 / b)
+            except ZeroDivisionError:
+                print(m2, a, k)
         return m1
 
     def _g(self, m2, m_th, a1, a2, k1, k2):
@@ -383,20 +397,34 @@ class OptimalSampling:
 
     def set_limits(self):
         """Iterate over the integration limits starting from m_1=m_max until m_iplus1 < m_min."""
-        i = 1
         m_iplus1 = self.m_max
-        while m_iplus1 > self.m_min:
+        while m_iplus1 > self.m_trunc_min:
             self._upper_limits = np.append(self._upper_limits, m_iplus1)
             m_i = m_iplus1
             m_iplus1 = self._get_m_iplus1(m_i)
-            i += 1
 
     def get_sample(self):
         """Set the sample by integrating M*IMF(M) over each mass bin, then return the sample."""
-        for i, m_i in enumerate(self._upper_limits[:-1]):
-            m_iplus1 = self._upper_limits[i+1]
-            mass_i = self._integrate_imf(m_iplus1, m_i)
-            self.sample = np.append(self.sample, mass_i)
+        m_iplus1 = self.m_max
+        mass_i = self.m_min+1
+        #counter = 0
+        if self._upper_limits.shape == (0,):
+            while mass_i >= self.m_min and m_iplus1 > self.m_trunc_min:
+                self.sample = np.append(self.sample, mass_i)
+                self._upper_limits = np.append(self._upper_limits, m_iplus1)
+                m_i = m_iplus1
+                m_iplus1 = self._get_m_iplus1(m_i)
+                mass_i = self._integrate_imf(m_iplus1, m_i)
+                #counter += 1
+                #if self.debug:
+                    #if counter%1e3 == 0:
+                        #print(counter, mass_i)
+            self.sample = self.sample[1:]
+        else:
+            for i, m_i in enumerate(self._upper_limits[:-1]):
+                m_iplus1 = self._upper_limits[i+1]
+                mass_i = self._integrate_imf(m_iplus1, m_i)
+                self.sample = np.append(self.sample, mass_i)
         return self.sample
 
     def set_n_tot(self):
@@ -425,24 +453,27 @@ class OptimalSampling:
 class OSGIMF:
     """Build an optimally sampled galaxy-integrated initial mass function (OSGIMF)"""
 
-    def __init__(self, redshift, metallicity, period=1e7):
+    def __init__(self, redshift, metallicity, sfr, stellar_m_min=None, logm_tot=None, delta_t=None, precalculate_limits = False):
         self.z = redshift
         self.feh = metallicity
         self.zoh = ZOH_from_FeH(self.feh)
-        self.delta_t = period
-        self.sfr = None
+        self.sfr = sfr
+        self.stellar_m_min = stellar_m_min
+        self.logm_tot = logm_tot
+        self.delta_t = delta_t
         self.cluster_imf = None
         self.cluster_sample = None
         self.star_sample = np.empty(0, np.float64)
-
-    def _set_sfr(self):
-        sfzr = SFZR(np.array([self.z]))
-        sfzr.get_MZR_params()
-        self.sfr = sfzr.get_sfr(np.array([self.zoh]))[0,0]
+        self.precalculate_limits = precalculate_limits
 
     def _set_cluster_imf(self):
-        self.cluster_imf = EmbeddedCluster(self.sfr, self.delta_t)
+        if self.logm_tot is None:
+            m_tot = None
+        else:
+            m_tot = 10**self.logm_tot
+        self.cluster_imf = EmbeddedCluster(self.sfr, m_tot=m_tot, time=self.delta_t)
         self.cluster_imf.get_mmax_k()
+
 
     def _get_stellar_imf(self, cluster):
         stellar_imf = Star(cluster, self.feh)
@@ -450,11 +481,16 @@ class OSGIMF:
         return stellar_imf
 
     def sample_clusters(self):
-        self._set_sfr()
+        #self._set_sfr()
         self._set_cluster_imf()
-        cluster_sampler = OptimalSampling(self.cluster_imf)
-        cluster_sampler.set_limits()
+        print('cluster imf set')
+        cluster_sampler = OptimalSampling(self.cluster_imf, debug=True)
+        print('sampler created')
+        if self.precalculate_limits:
+            cluster_sampler.set_limits()
+            print('limits set')
         self.cluster_sample = cluster_sampler.get_sample()
+
 
     def sample_stars(self):
         if self.cluster_sample is None:
@@ -462,9 +498,238 @@ class OSGIMF:
             return
         for i, cluster in enumerate(self.cluster_sample):
             stellar_imf = self._get_stellar_imf(cluster)
-            stellar_sampler = OptimalSampling(stellar_imf)
-            stellar_sampler.set_limits()
+            stellar_sampler = OptimalSampling(stellar_imf, self.stellar_m_min)
+            if self.precalculate_limits:
+                stellar_sampler.set_limits()
             stellar_sample = stellar_sampler.get_sample()
             self.star_sample = np.append(self.star_sample, stellar_sample)
-
         self.star_sample = np.sort(self.star_sample)
+
+
+class GSMFSampling:
+
+    def __init__(self, gsmf, logm_min=7, logm_max=12, n_bins=3, sampling='number'):
+        self.gsmf = gsmf
+        self.redshift = gsmf.redshift
+        self.logm_min = logm_min
+        self.logm_max = logm_max
+        self.n_bins = n_bins
+        self.sampling = sampling
+        self.bin_limits = np.empty(n_bins+1, np.float64)
+        self.grid_ndensity_array = np.empty(n_bins, np.float64)
+        self.grid_density_array = np.empty(n_bins, np.float64)
+        self.grid_logmasses = np.empty(n_bins, np.float64)
+
+    def _ratio(self, logm_im1, logm_i, logm_ip1):
+        if self.sampling == 'number':
+            int1 = quad(lambda x: 10**self.gsmf.gsmf(x), logm_ip1, logm_i)[0]
+            int2 = quad(lambda x: 10**self.gsmf.gsmf(x), logm_i, logm_im1)[0]
+        elif self.sampling == 'mass':
+            int1 = quad(lambda x: 10**x * 10**self.gsmf.gsmf(x), logm_ip1, logm_i)[0]
+            int2 = quad(lambda x: 10**x * 10**self.gsmf.gsmf(x), logm_i, logm_im1)[0]
+        return int1/int2
+
+    def _constraint(self, vec):
+        bin_limits = np.concatenate(([self.logm_max], vec, [self.logm_min]))
+        bin_density_ratios = np.empty(self.n_bins-1, np.float64)
+        for i, logm_i in enumerate(bin_limits[1:-1]):
+            logm_im1 = bin_limits[i]
+            logm_ip1 = bin_limits[i+2]
+            if logm_i > self.logm_max or logm_ip1 > self.logm_max:
+                bin_density_ratios[i] = 1000
+            elif logm_i < self.logm_min or logm_ip1 < self.logm_min:
+                bin_density_ratios[i] = 1000
+            else:
+                r = self._ratio(logm_im1, logm_i, logm_ip1)
+                bin_density_ratios[i] = r-1
+        return bin_density_ratios
+
+    def _set_grid_density(self):
+        for i, (m2, m1) in enumerate(zip(self.bin_limits[:-1], self.bin_limits[1:])):
+            ndens = quad(lambda x: 10**self.gsmf.gsmf(x), m1, m2)[0]
+            dens = quad(lambda x: 10**x*10**self.gsmf.gsmf(x), m1, m2)[0]
+            self.grid_ndensity_array[i] = ndens
+            self.grid_density_array[i] = dens
+
+    def sample(self):
+        if self.sampling == 'uniform':
+            self.bin_limits = np.linspace(self.logm_max, self.logm_min, self.n_bins + 1)
+        else:
+            if self.sampling == 'number':
+                initial_guess = np.linspace(9, self.logm_min, self.n_bins + 1)[1:-1]
+            elif self.sampling == 'mass':
+                initial_guess = np.linspace(11, 9, self.n_bins + 1)[1:-1]
+            else:
+                print(f'Sampling option {self.sampling} not recognized.')
+                return
+            solution = fsolve(self._constraint, initial_guess, maxfev=(initial_guess.shape[0]+1)*1000)
+            self.bin_limits = np.concatenate(([self.logm_max], solution, [self.logm_min]))
+        self._set_grid_density()
+        for i, (m2, m1) in enumerate(zip(self.bin_limits[:-1], self.bin_limits[1:])):
+            number_density_in_bin = quad(lambda x: 10**self.gsmf.gsmf(x), m1, m2)[0]
+            logmass_density_in_bin = quad(lambda x: x*10**self.gsmf.gsmf(x), m1, m2)[0]
+            self.grid_logmasses[i] = logmass_density_in_bin/number_density_in_bin
+
+
+class GalaxySampling:
+
+    def __init__(self, sample_redshift_array, logm_min=7, logm_max=12, samples_per_redshift=3, mzr_model='KK04', sfmr_flattening='none', gsmf_slope_fixed=True, sampling_mode='number', include_scatter=False,random_state=42):
+        self.sample_redshift_array = sample_redshift_array
+        self.samples_per_redshift = samples_per_redshift
+        self.logm_min = logm_min
+        self.logm_max = logm_max
+        self.sample = np.empty((sample_redshift_array.shape[0], samples_per_redshift), object)
+        self.mzr_model = mzr_model
+        self.sfmr_flattening = sfmr_flattening
+        self.gsmf_slope_fixed = gsmf_slope_fixed
+        self.sampling_mode = sampling_mode
+        self.include_scatter = include_scatter
+        self.random_state = random_state
+        self.zoh_bin_array = np.empty((0, self.samples_per_redshift+1), np.float64)
+        self.zoh_array = np.empty((0, self.samples_per_redshift), np.float64)
+        self.ndensity_array = np.empty((0, self.samples_per_redshift), np.float64)
+        self.density_array = np.empty((0, self.samples_per_redshift), np.float64)
+        self.mass_list = list()
+        self.gsmf_list = list()
+        self.zoh_list = list()
+        self.feh_list = list()
+        self.sfr_list = list()
+
+
+    def _sample_masses(self, redshift):
+        gsmf = GSMF(redshift, self.gsmf_slope_fixed)
+        sample = GSMFSampling(gsmf, self.logm_min, self.logm_max, self.samples_per_redshift, self.sampling_mode)
+        sample.sample()
+        return sample
+
+    def _mzr_scatter(self, logm):
+        if logm > 9.5:
+            galaxy_sigma = 0.1
+        else:
+            galaxy_sigma = -0.04 * logm + 0.48
+        return galaxy_sigma
+
+    def _galaxy_zoh_scatter(self):
+        return 0.14
+
+    def _mzr_scattered(self, mean_zoh, logm):
+        if self.include_scatter:
+            sigma0 = self._mzr_scatter(logm)
+            sigma_zoh = self._galaxy_zoh_scatter()
+        else:
+            sigma0 = 0
+            sigma_zoh = 0
+        zoh_w_mzr_scatter = norm.rvs(loc=mean_zoh, scale=sigma0, size=1, random_state=self.random_state)[0]
+        zoh_w_scatter = norm.rvs(loc=zoh_w_mzr_scatter, scale=sigma_zoh, size=1, random_state=self.random_state)[0]
+        return zoh_w_scatter
+
+    def _sfmr_scatter(self, logm):
+        return 0.3
+
+    def _sfmr_scattered(self, mean_sfr, logm):
+        if self.include_scatter:
+            sigma = self._sfmr_scatter(logm)
+        else:
+            sigma = 0
+        sfr_w_scatter = norm.rvs(loc=mean_sfr, scale=sigma, size=1, random_state=self.random_state)[0]
+        return sfr_w_scatter
+
+    def _sample(self, redshift):
+        galaxy_sample = self._sample_masses(redshift)
+        galaxy_bins = galaxy_sample.bin_limits
+
+        galaxy_ndensities = galaxy_sample.grid_ndensity_array.reshape(1, self.samples_per_redshift)
+        galaxy_densities = galaxy_sample.grid_density_array.reshape(1, self.samples_per_redshift)
+
+        mass_sample = galaxy_sample.grid_logmasses
+
+        gsmf = GSMF(redshift)
+        sfmr = SFMR(redshift, flattening=self.sfmr_flattening)
+        mzr = MZR(redshift, self.mzr_model)
+        mzr.set_params()
+
+        gsmfs = np.array([[np.float64(gsmf.gsmf(logm)) for logm in mass_sample]])
+
+        bin_zohs = np.array([[mzr.zoh(logm) for logm in galaxy_bins]])
+
+        mean_zohs = [mzr.zoh(logm) for logm in mass_sample]
+        mean_sfrs = [sfmr.sfr(logm) for logm in mass_sample]
+
+        zohs = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, mass_sample)]])
+        fehs = np.array([[ZOH_to_FeH(zoh) for zoh in zohs.flatten()]])
+
+        zoh_rel_devs = [self._mzr_scatter(logm)/(zoh-mean_zoh) for logm, zoh, mean_zoh in zip(mass_sample, zohs.flatten(), mean_zohs)]
+        sfr_rel_devs = [self._sfmr_scatter(logm)/relative_dev for logm, relative_dev in zip(mass_sample, zoh_rel_devs)]
+
+        sfrs = np.array([[mean_sfr+sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
+
+        feh_mask = np.ones(fehs.shape)
+        for i, feh in enumerate(fehs.flatten()):
+            if feh>1 or feh<-3:
+                feh_mask[0,i] = 0
+        feh_mask = feh_mask.astype(bool)
+
+        sfr_mask = np.ones(sfrs.shape)
+        for i, sfr in enumerate(sfrs.flatten()):
+            if np.abs(sfr)>3.3:
+                sfr_mask[0,i] = 0
+        sfr_mask = sfr_mask.astype(bool)
+
+        return galaxy_ndensities, galaxy_densities, mass_sample, gsmfs, zohs, bin_zohs, fehs, feh_mask, sfrs, sfr_mask
+
+    def _correct_sample(self, mass_array, gsmf_array, zoh_array, feh_array, sfr_array, mask_array):
+        mass_list = list()
+        gsmf_list = list()
+        zoh_list = list()
+        feh_list = list()
+        sfr_list = list()
+
+        for masses, gsmfs, zohs, fehs, sfrs, mask in zip(mass_array, gsmf_array, zoh_array, feh_array, sfr_array, mask_array):
+            f_masses = masses[mask]
+            f_gsmfs = gsmfs[mask]
+            f_zohs = zohs[mask]
+            f_fehs = fehs[mask]
+            f_sfrs = sfrs[mask]
+
+            n_samples = f_fehs.shape[0]
+            f_sfrs = np.tile(f_sfrs, (n_samples, 1))
+            corrections = Corrections(f_fehs, f_sfrs)
+            corrections.load_data()
+            corrs = np.diag(corrections.get_corrections())
+
+            try:
+                corr_sfrs = f_sfrs[0]+corrs
+            except IndexError:
+                corr_sfrs = np.array([])
+
+            mass_list.append(f_masses)
+            gsmf_list.append(f_gsmfs)
+            zoh_list.append(f_zohs)
+            feh_list.append(f_fehs)
+            sfr_list.append(corr_sfrs)
+
+        return mass_list, gsmf_list, zoh_list, feh_list, sfr_list
+
+    def generate_sample(self):
+        mass_array = np.empty((0, self.samples_per_redshift), np.float64)
+        gsmf_array = np.empty((0, self.samples_per_redshift), np.float64)
+        feh_array = np.empty((0, self.samples_per_redshift), np.float64)
+        sfr_array = np.empty((0, self.samples_per_redshift), np.float64)
+        feh_mask_array = np.empty((0, self.samples_per_redshift), np.float64)
+        sfr_mask_array = np.empty((0, self.samples_per_redshift), np.float64)
+
+        for redshift in self.sample_redshift_array:
+            ndensity_array, density_array, masses, gsmfs, zohs, bin_zohs, fehs, feh_mask, sfrs, sfr_mask = self._sample(redshift)
+            mass_array = np.append(mass_array, [masses], axis=0)
+            gsmf_array = np.append(gsmf_array, gsmfs, axis=0)
+            self.zoh_array = np.append(self.zoh_array, zohs, axis=0)
+            feh_array = np.append(feh_array, fehs, axis=0)
+            sfr_array = np.append(sfr_array, sfrs, axis=0)
+            sfr_mask_array = np.append(sfr_mask_array, sfr_mask, axis=0)
+            feh_mask_array = np.append(feh_mask_array, feh_mask, axis=0)
+            self.ndensity_array = np.append(self.ndensity_array, ndensity_array, axis=0)
+            self.density_array = np.append(self.density_array, density_array, axis=0)
+            self.zoh_bin_array = np.append(self.zoh_bin_array, bin_zohs, axis=0)
+        mask_array = np.logical_and(feh_mask_array, sfr_mask_array)
+
+        self.mass_list, self.gsmf_list, self.zoh_list, self.feh_list, self.sfr_list = self._correct_sample(mass_array, gsmf_array, self.zoh_array, feh_array, sfr_array, mask_array)
