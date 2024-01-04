@@ -188,7 +188,7 @@ class Interpolator:
         Returns
         -------
         out : float
-            Estimate for the SNR at (m1, m2).
+            Estimate for the SNR at (m1_table, m2).
         """
         if self.use_scipy:
             return self.interpolator(np.log(m1), np.log(m2), grid=False)
@@ -200,7 +200,7 @@ class Interpolator:
         Custom function to approximate the value of any given point
         within the limits of the grid. The value is calculated as the
         average value of the 4 corners of the grid, weighed by the
-        inverse distance to (m1, m2). Points for which the SNR is
+        inverse distance to (m1_table, m2). Points for which the SNR is
         NaN are ignored.
 
         Parameters
@@ -211,7 +211,7 @@ class Interpolator:
         Returns
         -------
         out : float
-            Estimate for the SNR at (m1, m2).
+            Estimate for the SNR at (m1_table, m2).
         """
         # The point is in the lower triangle by definition
         if isinstance(m1, np.ndarray):
@@ -224,7 +224,7 @@ class Interpolator:
         assert np.min(self.mass_axis) < m1 < np.max(self.mass_axis)
         assert np.min(self.mass_axis) < m2 < np.max(self.mass_axis)
         # Find the indices of the next higher element in the axis
-        # this ensures mass_axis[i-1] < m1 < mass_axis[i]
+        # this ensures mass_axis[i-1] < m1_table < mass_axis[i]
         # Edge cases are covered by the assertions, which ensure no pair are on
         # the outer bondary.
         i, j = np.searchsorted(self.mass_axis, [m1, m2])
@@ -240,7 +240,7 @@ class Interpolator:
         distance = distance[~np.isnan(snr_selection)]
         snr_selection = snr_selection[~np.isnan(snr_selection)]
         if snr_selection.size == 0:
-            raise ValueError('No non-NaN values surrounding (m1, m2).')
+            raise ValueError('No non-NaN values surrounding (m1_table, m2).')
         return np.average(snr_selection, weights=1./distance)
 
 
