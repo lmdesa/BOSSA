@@ -565,7 +565,7 @@ class COMPASOutputTrimmer:
     def trim(self):
         self.logger.info('Initializing trimmer...')
         self._set_paths()
-        pandarallel.initialize()
+        #pandarallel.initialize()
         total_time0 = time()
         for path in self.input_paths:
             start_time = time()
@@ -654,8 +654,9 @@ class MergerRates:
     ]
 
     def __init__(self, sample_dir_path, zams_grid_path, sfrd_model, invariant_imf=False,
-                 extended_load=False, min_redshift=0.0, max_redshift=10.0, min_feh=-5.0,
-                 max_feh=0.5, progenitor_m_min=0.8, progenitor_m_max=150.0, parent_logger=None):
+                 extended_load=False, load_bcos_only=False, min_redshift=0.0, max_redshift=10.0, min_feh=-5.0,
+                 max_feh=0.5, progenitor_m_min=0.8, progenitor_m_max=150.0, convert_time=True, new_method=False,
+                 parent_logger=None):
         self.sample_dir_path = sample_dir_path
         self.zams_grid_path = zams_grid_path
         self.merger_class = None
@@ -663,6 +664,7 @@ class MergerRates:
         self.invariant_imf = invariant_imf
         self.canon_sfrd = invariant_imf
         self.extended_load = extended_load
+        self.load_bcos_only = load_bcos_only
         self.min_redshift = min_redshift
         self.max_redshift = max_redshift
         self.min_feh = min_feh
@@ -672,6 +674,8 @@ class MergerRates:
         self.sample_progenitor_m_max = progenitor_m_max
         self._star_m_min = min(0.08, self.sample_progenitor_m_min)
         self._star_m_max = max(150.0, self.sample_progenitor_m_max)
+        self._convert_time = convert_time
+        self._new_method = new_method
         self.sfrd = self._get_sfrd()
         self._cols_to_load = None
         self._sample_paths = None
@@ -730,19 +734,19 @@ class MergerRates:
             return (m1 * m2) ** (3 / 5) / (m1 + m2) ** (1 / 5)
 
     @staticmethod
-    def _get_merger_age(row):
+    def _get_merger_age(df):
         """Calculate Universe age at merger for a dataframe row."""
-        redshift_zams = row.Redshift_ZAMS
+        redshift_zams = df.Redshift_ZAMS.to_numpy()
         age_zams = cosmo.age(redshift_zams).value
-        t_col = row.Coalescence_Time
+        t_col = df.Coalescence_Time.to_numpy()
         age_merger = age_zams + t_col
         return age_merger
 
     @staticmethod
-    def _get_redshift_from_age(age):
+    def _get_redshift_from_age(age_arr):
         """Calculate redshift from Universe age."""
-        redshift = newton(lambda z: cosmo.age(z).value - age, 0)
-        return redshift
+        redshift_arr = newton(lambda z_arr: cosmo.age(z_arr).value - age_arr, np.zeros(len(age_arr)))
+        return redshift_arr
 
     @staticmethod
     def _get_bin_frequency_heights(x_arr, x_bin_edges):
@@ -812,7 +816,7 @@ class MergerRates:
         return self._sample_paths
 
     def _get_sfrd(self):
-        sfrd = ChruslinskaSFRD(self.sfrd_model, self.canon_sfrd)
+        sfrd = ChruslinskaSFRD(self.sfrd_model, self.canon_sfrd, per_redshift_met_bin=self._new_method)
         sfrd.set_grid()
         return sfrd
 
@@ -874,10 +878,14 @@ class MergerRates:
                 z_zams = sample_dict['redshift']
                 feh = sample_dict['feh']
                 self.logger.info(f'Loading z={z_zams:.2f}, [Fe/H]={feh:.2f} ({sample_counter}/{sample_n}).')
+                if self.load_bcos_only:
+                    filters = [('Binary_Type', 'in', ['BHBH', 'BHNS', 'NSBH', 'NSNS'])]
+                else:
+                    filters = [()]
                 df = pd.read_parquet(
                     path=sample_dict['path'],
                     columns=self.cols_to_load,
-                    #filters=[('Binary_Type', 'in', ['BHBH', 'BHNS', 'NSBH', 'NSNS'])],
+                    filters=filters,
                     # Although loading only BCOs would be much faster and cheaper, we need to load all binary types at
                     # first in order to properly count the sample size when normalizing the imf for computing the
                     # star-forming mass. In the future this will be done, and the information stored, while generating
@@ -902,6 +910,7 @@ class MergerRates:
     def _set_sample_df(self, batches_n=1):
         redshift_batches = np.array_split(np.array([*self.sample_properties_dict.keys()]), batches_n)
         self.sample_df = pd.DataFrame(columns=self.cols_to_load)
+        self.sample_df = self._fix_df_dtypes(self.sample_df)
 
         for redshift_batch in redshift_batches:
             sample_subdf = self._get_sample_df(redshift_batch)
@@ -915,7 +924,7 @@ class MergerRates:
             sleep(10)
 
         self.sample_df.reset_index(inplace=True, drop=True)
-        self.sample_df = self._fix_df_dtypes(self.sample_df)
+        #self.sample_df = self._fix_df_dtypes(self.sample_df)
         self.logger.info(f'Done loading {len(self.sample_df):.2e} rows to sample dataframe.')
 
     def load_sample_to_memory(self, batches_n=1):
@@ -1035,20 +1044,22 @@ class MergerRates:
 
     def set_merger_df(self, merger_class):
         self._set_merger_class(merger_class)
-        pandarallel.initialize(progress_bar=False)
+        #pandarallel.initialize(progress_bar=False)
         self.merger_df = self.sample_df[(self.sample_df.Unbound == 0) &
                                         (self.sample_df.Binary_Type.isin(self.merger_class))]
         # remove systems that would not have merged by now no matter how old the progenitors
         self.merger_df.Coalescence_Time = self.merger_df.Coalescence_Time / 1e9  # yr -> Gyr
         self.merger_df = self.merger_df[self.merger_df.Coalescence_Time <= cosmo.age(0)]
         # set up the rest of the dataframe
-        self.merger_df['Chirp_Mass'] = self.merger_df.parallel_apply(self._get_chirp_mass, axis=1)
-        self.merger_df['Total_Mass'] = self.merger_df.parallel_apply(self._get_total_bco_mass, axis=1)
-        self.merger_df['Age_Merger'] = self.merger_df.parallel_apply(self._get_merger_age, axis=1)
-        self.merger_df['Redshift_Merger'] = self.merger_df.parallel_apply(
-            lambda row: self._get_redshift_from_age(row.Age_Merger),
-            axis=1
-        )
+        #self.merger_df['Chirp_Mass'] = self.merger_df.parallel_apply(self._get_chirp_mass, axis=1)
+        #self.merger_df['Total_Mass'] = self.merger_df.parallel_apply(self._get_total_bco_mass, axis=1)
+        self.merger_df['Age_Merger'] = self._get_merger_age(self.merger_df)
+        #self.merger_df['Age_Merger'] = self.merger_df.parallel_apply(self._get_merger_age, axis=1)
+        self.merger_df['Redshift_Merger'] = self._get_redshift_from_age(self.merger_df.Age_Merger.to_numpy())
+        #self.merger_df['Redshift_Merger'] = self.merger_df.parallel_apply(
+        #    lambda row: self._get_redshift_from_age(row.Age_Merger),
+        #    axis=1
+        #)
 
     def _set_bins(self, time_resolution=0.1):
         self.time_resolution = time_resolution
@@ -1065,7 +1076,8 @@ class MergerRates:
             (age0+age1)/2 for age0, age1 in zip(self._physical_age_bin_edges[:-1], self._physical_age_bin_edges[1:])
         ])
 
-        self._full_redshift_bin_edges = np.array([self._get_redshift_from_age(age) for age in self._full_age_bin_edges])
+        self._full_redshift_bin_edges = self._get_redshift_from_age(self._full_age_bin_edges)
+        #self._full_redshift_bin_edges = np.array([self._get_redshift_from_age(age) for age in self._full_age_bin_edges])
         self._physical_redshift_bin_edges = self._full_redshift_bin_edges[self._full_redshift_bin_edges >= 0.0]
 
         sample_redshifts = list()
@@ -1100,7 +1112,7 @@ class MergerRates:
                 redshift_dict[sample_feh] = feh_bin_edges
 
         min_sfrd_redshift = min(list(self.sample_redshift_feh_bins_dict.keys()))
-        if self._get_redshift_from_age(self._physical_age_bin_centers[-1]) < min_sfrd_redshift:
+        if self._get_redshift_from_age(self._physical_age_bin_centers[[-1]])[0] < min_sfrd_redshift:
             new_limit = cosmo.age(min_sfrd_redshift).value
             self._physical_age_bin_centers[-1] = new_limit
 
@@ -1121,16 +1133,22 @@ class MergerRates:
                 age_bin_heights /= starforming_mass  # dN/dt dMsf (Gyr-1  Mo-1)
                 age_bin_heights *= 1e9  # dN/dt dMsf (yr-1 Mo-1)
 
-                log_sfrd = self.sfrd.get_logsfrd(feh, redshift_zams)  # log10(dMsf/dt dVc) (log(Mo yr-1 Mpc-3))
-                sfrd = 10 ** log_sfrd / 1e6  # dMsf/dt dVc (Mo Gyr-1 Gpc-3)
-                age_bin_sfmass_densities = sfrd * self._full_age_bin_widths  # dMsf/dVc (Mo Gpc-3)
-                age_bin_heights *= age_bin_sfmass_densities  # dN/dt dVc (yr-1 Gpc-3)
+                log_sfrd = self.sfrd.get_logsfrd(feh, redshift_zams)  # log10(dMsf/dt dVc dz_zams dFeH)
+                                                                      # (log(Mo yr-1 Mpc-3))
+                sfrd = 10 ** log_sfrd / 1e6 # dMsf/dt dVc dz_zams dFeH(Mo Gyr-1 Gpc-3)
+                if self._convert_time:
+                    # convert time from the source (in which the SFR is measured) to the observer frame (in which the
+                    # merger rate is measured), dt_s/dt_o = 1 / 1+z, and SFRD = dM_sf/dt_s dVc
+                    sfrd /= 1 + redshift_zams
+                age_bin_sfmass_densities = sfrd * self._full_age_bin_widths  # dMsf/dVc dz_zams dFeH (Mo Gpc-3)
+                age_bin_heights *= age_bin_sfmass_densities  # dN/dt dVc dz_zams dFeH (yr-1 Gpc-3)
 
-                dz_zams = np.abs(self.sample_redshift_feh_bins_dict[redshift_zams]['redshift_bin_edges'][0] -
-                                 self.sample_redshift_feh_bins_dict[redshift_zams]['redshift_bin_edges'][1])
-                dfeh = np.abs(self.sample_redshift_feh_bins_dict[redshift_zams][feh][0] -
-                              self.sample_redshift_feh_bins_dict[redshift_zams][feh][1])
-                age_bin_heights /= dz_zams * dfeh  # dN/dt dVc dz_zams d[Fe/H] (yr-1 Gpc-3)
+                if not self._new_method:
+                    delta_z_zams = np.abs(self.sample_redshift_feh_bins_dict[redshift_zams]['redshift_bin_edges'][0] -
+                                          self.sample_redshift_feh_bins_dict[redshift_zams]['redshift_bin_edges'][1])
+                    delta_feh = np.abs(self.sample_redshift_feh_bins_dict[redshift_zams][feh][0] -
+                                       self.sample_redshift_feh_bins_dict[redshift_zams][feh][1])
+                    age_bin_heights /= delta_z_zams * delta_feh  # dN/dt dVc delta_z_zams delta FeH (yr-1 Gpc-3)
 
                 # self._dz_dfeh_mrates_dict[redshift_zams][feh] = age_bin_heights
                 self._dz_dfeh_dage_mrates_arr[i_redshift_zams, i_feh] = age_bin_heights
@@ -1234,7 +1252,8 @@ class MergerRates:
             self._dz_dpopage_mrates_arr[i_redshift] = dpopage_mrates_arr
 
     def _set_ip_dz_dpopage_mrates_arr(self):
-        self.ip_redshift_arr = np.array([self._get_redshift_from_age(age) for age in self._physical_age_bin_centers])
+        self.ip_redshift_arr = self._get_redshift_from_age(self._physical_age_bin_centers)
+        #self.ip_redshift_arr = np.array([self._get_redshift_from_age(age) for age in self._physical_age_bin_centers])
         self._ip_dz_dpopage_mrates_arr = np.zeros([self.ip_redshift_arr.shape[0], self._dz_dpopage_mrates_arr.shape[1]])
 
         dpopage_dz_mrates_arr = self._dz_dpopage_mrates_arr.T
