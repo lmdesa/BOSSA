@@ -725,9 +725,10 @@ class ChruslinskaSFRD:
                              'highmet': HIGHMET_CANON_SFRD_DATA_PATH
                             }
     SFRD_ZOH_ARRAY = np.linspace(5.3, 9.7, 200)
-    SFRD_Z_ARRAY = np.array([FeH_to_Z(ZOH_to_FeH(zoh)) for zoh in SFRD_ZOH_ARRAY])
+    SFRD_FEH_ARRAY = np.array([ZOH_to_FeH(zoh) for zoh in SFRD_ZOH_ARRAY])
+    SFRD_Z_ARRAY = np.array([FeH_to_Z(feh) for feh in SFRD_FEH_ARRAY])
 
-    def __init__(self, model='midmet', canon=False):
+    def __init__(self, model='midmet', canon=False, per_redshift_met_bin=False):
         """
         Parameters
         ----------
@@ -739,6 +740,7 @@ class ChruslinskaSFRD:
         self.canon = canon
         self.sfrd_redshift_array = None
         self.sfrd_dtime_array = None
+        self.per_redshift_met_bin = per_redshift_met_bin
         self.logsfrd_array = np.empty((2, 0))
 
     def _set_sfrd_redshift_array(self):
@@ -758,6 +760,10 @@ class ChruslinskaSFRD:
             for j, col in enumerate(row):
                 dt = self.sfrd_dtime_array[i]
                 self.logsfrd_array[i, j] /= dt
+                if self.per_redshift_met_bin:
+                    dz = self.sfrd_redshift_array[i+1] - self.sfrd_redshift_array[i]
+                    dfeh = self.SFRD_FEH_ARRAY[j+1] - self.SFRD_FEH_ARRAY[j]
+                    self.logsfrd_array[i, j] /= dz*dfeh
                 try:
                     self.logsfrd_array[i, j] = np.log10(self.logsfrd_array[i, j])
                 except:
