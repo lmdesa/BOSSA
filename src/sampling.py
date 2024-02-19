@@ -2044,8 +2044,7 @@ class CompactBinaryPopulation:
                                engine='pyarrow',
                                compression='snappy',
                                partition_cols=['Mass_ZAMS1_Found',
-                                               'LogOrbitalPeriod_ZAMS'
-                                               ],
+                                               'LogOrbitalPeriod_ZAMS'],
                                use_threads=True)
             del temp_df
             gc.collect()
