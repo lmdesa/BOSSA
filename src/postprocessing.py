@@ -881,7 +881,7 @@ class MergerRates:
                 if self.load_bcos_only:
                     filters = [('Binary_Type', 'in', ['BHBH', 'BHNS', 'NSBH', 'NSNS'])]
                 else:
-                    filters = [()]
+                    filters = None
                 df = pd.read_parquet(
                     path=sample_dict['path'],
                     columns=self.cols_to_load,
@@ -1133,15 +1133,18 @@ class MergerRates:
                 age_bin_heights /= starforming_mass  # dN/dt dMsf (Gyr-1  Mo-1)
                 age_bin_heights *= 1e9  # dN/dt dMsf (yr-1 Mo-1)
 
-                log_sfrd = self.sfrd.get_logsfrd(feh, redshift_zams)  # log10(dMsf/dt dVc dz_zams dFeH)
-                                                                      # (log(Mo yr-1 Mpc-3))
-                sfrd = 10 ** log_sfrd / 1e6 # dMsf/dt dVc dz_zams dFeH(Mo Gyr-1 Gpc-3)
+                log_sfrd = self.sfrd.get_logsfrd(feh, redshift_zams)  # log10(dMsf/dVc dz_zams dFeH)
+                                                                      # ~log10(dMsf/dt dVc dz_zams dFeH)~
+                                                                      # log10(Mo Mpc-3)
+                                                                      # ~(log(Mo Myr-1 Mpc-3))~
+                age_bin_sfmass_density = 10**log_sfrd / 1e9 # dMsf/dVc dz_zams dFeH (Mo Gpc-3)
+                                            # dMsf/dVc dz_zams dFeH(Mo Gpc-3)
                 if self._convert_time:
                     # convert time from the source (in which the SFR is measured) to the observer frame (in which the
                     # merger rate is measured), dt_s/dt_o = 1 / 1+z, and SFRD = dM_sf/dt_s dVc
-                    sfrd /= 1 + redshift_zams
-                age_bin_sfmass_densities = sfrd * self._full_age_bin_widths  # dMsf/dVc dz_zams dFeH (Mo Gpc-3)
-                age_bin_heights *= age_bin_sfmass_densities  # dN/dt dVc dz_zams dFeH (yr-1 Gpc-3)
+                    age_bin_heights /= 1 + redshift_zams
+                #age_bin_sfmass_densities = sfrd * self._full_age_bin_widths  # dMsf/dVc dz_zams dFeH (Mo Gpc-3)
+                age_bin_heights *= age_bin_sfmass_density  # dN/dt dVc dz_zams dFeH (yr-1 Gpc-3)
 
                 if not self._new_method:
                     delta_z_zams = np.abs(self.sample_redshift_feh_bins_dict[redshift_zams]['redshift_bin_edges'][0] -

@@ -724,9 +724,11 @@ class ChruslinskaSFRD:
                              'midmet': MIDMET_CANON_SFRD_DATA_PATH,
                              'highmet': HIGHMET_CANON_SFRD_DATA_PATH
                             }
-    SFRD_ZOH_ARRAY = np.linspace(5.3, 9.7, 200)
+    SFRD_ZOH_ARRAY = np.linspace(5.3, 9.7, 201)
+    SFRD_ZOH_CENTERS_ARRAY = np.linspace(5.3, 9.7, 200)
     SFRD_FEH_ARRAY = np.array([ZOH_to_FeH(zoh) for zoh in SFRD_ZOH_ARRAY])
     SFRD_Z_ARRAY = np.array([FeH_to_Z(feh) for feh in SFRD_FEH_ARRAY])
+    SFRD_Z_CENTERS_ARRAY = np.array([FeH_to_Z(ZOH_to_FeH(zoh)) for zoh in SFRD_ZOH_CENTERS_ARRAY])
 
     def __init__(self, model='midmet', canon=False, per_redshift_met_bin=False):
         """
@@ -746,7 +748,7 @@ class ChruslinskaSFRD:
     def _set_sfrd_redshift_array(self):
         """Set redshift and timestep arrays corresponding to the SFRD grids from the redshift/time data file."""
         redshift_time_data = np.genfromtxt(REDSHIFT_SFRD_DATA_PATH)
-        self.sfrd_redshift_array = redshift_time_data[:, 1]
+        self.sfrd_redshift_array = np.concatenate((redshift_time_data[:, 1], [0.0]))
         self.sfrd_dtime_array = redshift_time_data[:, 2]
 
     def _set_sfrd_array(self):
@@ -761,13 +763,13 @@ class ChruslinskaSFRD:
                 dt = self.sfrd_dtime_array[i]
                 self.logsfrd_array[i, j] /= dt
                 if self.per_redshift_met_bin:
-                    dz = self.sfrd_redshift_array[i+1] - self.sfrd_redshift_array[i]
+                    dz = self.sfrd_redshift_array[i] - self.sfrd_redshift_array[i+1]
                     dfeh = self.SFRD_FEH_ARRAY[j+1] - self.SFRD_FEH_ARRAY[j]
                     self.logsfrd_array[i, j] /= dz*dfeh
-                try:
-                    self.logsfrd_array[i, j] = np.log10(self.logsfrd_array[i, j])
-                except:
+                if self.logsfrd_array[i, j] == 0.0:
                     self.logsfrd_array[i, j] = np.nan
+                else:
+                    self.logsfrd_array[i, j] = np.log10(self.logsfrd_array[i, j])
 
     def set_grid(self):
         """Build redshift and SFRD arrays corresponding to the grid from the data files."""
@@ -804,10 +806,7 @@ class ChruslinskaSFRD:
             warnings.warn('SFRD grid not loaded. Please run load_grid() first.')
             return
         z = Z_SUN * 10 ** feh
-        redshift_i = np.argmin(np.abs(self.sfrd_redshift_array - redshift))
-        z_i = np.argmin(np.abs(self.SFRD_Z_ARRAY - z))
+        redshift_i = np.argmin(np.abs(self.sfrd_redshift_array[:-1] - redshift))
+        z_i = np.argmin(np.abs(self.SFRD_Z_CENTERS_ARRAY - z))
         logsfrd = self.logsfrd_array[redshift_i,z_i]
         return logsfrd
-
-
-
