@@ -115,7 +115,7 @@ if __name__ == '__main__':
     global model_settings
 
     canonical = ''
-    print('Use Kroupa IMF and canonical orbital parameters? (Y/N)')
+    print('Use Kroupa PowerLawIMF and canonical orbital parameters? (Y/N)')
     while type(canonical) is not bool:
         canonical = str(input()).upper()
         if canonical == 'Y':

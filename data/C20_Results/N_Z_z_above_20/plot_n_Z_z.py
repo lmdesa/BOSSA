@@ -236,7 +236,7 @@ input_file='302w14vIMF3aeh_FOH_z_dN_above_20.dat'
 plot_data_single_panel(input_file, zmin=0.,zmax=10,solar_Z_scale='AndersGrevesse89')
 
 #exit()
-''' example CDF plot comparing the high-Z extreme for different IMF assumptions at redshift=zzi '''
+''' example CDF plot comparing the high-Z extreme for different PowerLawIMF assumptions at redshift=zzi '''
 
 def main():
     zzi=[0]
@@ -250,7 +250,7 @@ def main():
 
     input_file='302w14_FOH_z_dN_above_20.dat'
     image,redshift,delt = get_plot_data(input_file,zmin=0,zmax=10)
-    Z_cumsum = plot_CDF(input_file, zzi=zzi, color='b',label='universal IMF' )
+    Z_cumsum = plot_CDF(input_file, zzi=zzi, color='b',label='universal PowerLawIMF' )
 
     plt.legend(loc='best',ncol=1)
     plt.tight_layout()

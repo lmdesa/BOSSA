@@ -1,5 +1,5 @@
-#SFR assuming the universal, Kroupa (2001) IMF (SFR_K01)
-#and the corresponding correction factors (K_K01-IGIMF3) used to correct that SFR for the environment dependent IMF
+#SFR assuming the universal, Kroupa (2001) PowerLawIMF (SFR_K01)
+#and the corresponding correction factors (K_K01-IGIMF3) used to correct that SFR for the environment dependent PowerLawIMF
 #(described by the IGIMF3 model) for several metallicity ([Fe/H]) values;
 #as shown in Fig. 2 in Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z., 2020, A&A 
 #col.1: [Fe/H], col.2: log10(SFR_K01 [Msun/yr]), col.3: log10(K_K01IGIMF3) 

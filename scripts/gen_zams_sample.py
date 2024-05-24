@@ -58,7 +58,7 @@ if __name__ == '__main__':
             pass
 
     invariant_imf = ''
-    print('Use an invariant Kroupa IMF? (Y/N)')
+    print('Use an invariant Kroupa PowerLawIMF? (Y/N)')
     while type(invariant_imf) is not bool:
         invariant_imf = str(input()).upper()
         if invariant_imf == 'Y':

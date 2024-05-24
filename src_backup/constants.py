@@ -1,14 +1,13 @@
 import os
-import pickle
 from pathlib import Path
+from psutil import cpu_count, virtual_memory
+try:
+    import cPickle as pickle
+except ModuleNotFoundError:
+    import pickle
 
 import numpy as np
-import astropy.units as u
-from psutil import cpu_count, virtual_memory
 
-
-### Default units
-U_MASS = u.Msun
 
 ### Numerical constants
 
@@ -27,7 +26,7 @@ TOTAL_PHYSICAL_MEMORY = virtual_memory().total
 
 ROOT = Path(os.path.dirname(__file__)).resolve().parent
 """path_like : Path to root folder."""
-DATA_PATH = Path(ROOT, 'data')
+DATA_PATH = Path(ROOT, 'Data')
 """path_like: Path to the Data folder."""
 COMPAS_WORK_PATH = Path(ROOT, 'COMPAS')
 """path_like: Path to the COMPAS working directory."""

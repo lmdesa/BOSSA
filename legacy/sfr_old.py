@@ -285,10 +285,10 @@ class SFMR:
         return self.sfrm.__getattribute__(name)
 
 class Corrections:
-    """Calculate correction to a Kroupa IMF-based SFR, given a metallicity, for the environment-dependent IMF.
+    """Calculate correction to a Kroupa PowerLawIMF-based SFR, given a metallicity, for the environment-dependent PowerLawIMF.
 
-    Class responsible for calculating the appropriate corrections to the SFR obtained with the Kroupa universal IMF
-    (Kroupa SFR for short) when considering the environment-dependent IGIMF (integrated galactic IMF) from
+    Class responsible for calculating the appropriate corrections to the SFR obtained with the Kroupa universal PowerLawIMF
+    (Kroupa SFR for short) when considering the environment-dependent IGIMF (integrated galactic PowerLawIMF) from
     Chruslinska et al. (2020). Corrections are obtained for arbitrary values of SFR and metallicity by interpolation of
     the publicly available results of Chruslisnka et al. (2020).
 
@@ -373,13 +373,13 @@ class Corrections:
 class SFZR:
     """Star formation rate-(gas) metallicity relation. Given a redshift, compute the SFR as a function of metallicity.
 
-    Class responsible for computing the SFR for the environment-dependent IMF as a function of redshift and [Fe/H]
+    Class responsible for computing the SFR for the environment-dependent PowerLawIMF as a function of redshift and [Fe/H]
     metallicity. Mass-(gas) metallicity relation (MZR) parameters are obtained for arbitrary redshift by interpolating
     between the empirical MZR parameters of Chruslinska et al. (2019). This is done by interpolating between each curve
     for the desired redshifts, then fitting the MZR over the new points corresponding to each redshift.
 
-    Crossing the MZR with the SFMR allows construction of the SFZR. Because the SFMR is built assuming the Kroupa IMF,
-    the SFZR must be corrected for the environment-based IMF. This is done by the Corrections class.
+    Crossing the MZR with the SFMR allows construction of the SFZR. Because the SFMR is built assuming the Kroupa PowerLawIMF,
+    the SFZR must be corrected for the environment-based PowerLawIMF. This is done by the Corrections class.
 
     Attributes
     ----------

@@ -1,46 +1,15 @@
 import logging
 import logging.config
-from dataclasses import dataclass
-from functools import wraps
-from typing import Any, Callable, Annotated
+import astropy.constants as ct
+import astropy.units as u
+from math import ceil
 
 import numpy as np
 from scipy.optimize import fsolve
 from scipy.interpolate import interp1d
-import astropy.constants as ct
-import astropy.units as u
 
 from .constants import ZOH_SUN, Z_SUN, stellar_types
 
-Quantity = float | u.quantity.Quantity
-
-@dataclass
-class Length:
-    length: int
-
-def fix_unit(x, unit):
-    """If x is an astropy Quantity, return x. Otherwise, return x with the astropy unit 'unit'."""
-    if not isinstance(x, u.quantity.Quantity):
-        x *= unit
-    else:
-        x = x.to(unit)
-    return x
-
-def input_unit(units: tuple):
-    """Decorator """
-    def decorator_unit(func: Callable) -> Callable:
-        @wraps(func)
-        def wrapper_unit(*args: *tuple[Annotated[*tuple[float], Length(len(units))], *tuple[Any]], **kwargs: Any):
-            unit_args = []
-            for i, (unit, arg) in enumerate(zip(units, args)):
-                if isinstance(arg, u.quantity.Quantity):
-                    unit_args.append(arg)
-                else:
-                    unit_args.append(arg * unit)
-                new_args = (*unit_args, *args[len(unit_args):])
-            return func(*new_args, **kwargs)
-        return wrapper_unit
-    return decorator_unit
 
 def FeH_to_OFe(FeH):
     if FeH < -1:
@@ -250,11 +219,11 @@ def step(array, index_array, midpoint_i):
     else:
         sub_arr = array[midpoint_i:]
         sub_indarr = index_array[midpoint_i:]
-    midpoint_i = np.ceil(len(sub_arr) / 2)
+    midpoint_i = ceil(len(sub_arr) / 2)
     return sub_arr, sub_indarr, midpoint_i
 
 def valley_minimum(array, index_array):
-    midpoint_i = np.ceil(len(array)/2)
+    midpoint_i = ceil(len(array)/2)
     sub_arr = array
     while len(sub_arr) > 1:
         sub_arr, index_array, midpoint_i = step(sub_arr, index_array, midpoint_i)

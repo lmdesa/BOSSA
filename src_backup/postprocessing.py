@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 import tables as tb
 import pandas as pd
-#from pandarallel import pandarallel  # pandarallel breaks float types
+from pandarallel import pandarallel  # pandarallel breaks float types
 import astropy.constants as ct
 import astropy.units as u
 from astropy.cosmology import WMAP9 as cosmo

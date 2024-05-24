@@ -518,7 +518,7 @@ class OSGIMF:
         self.cluster_imf.get_mmax_k()
 
     def _get_stellar_imf(self, cluster):
-        stellar_imf = Star(cluster, feh=self.feh)
+        stellar_imf = Star(cluster, self.feh)
         stellar_imf.get_mmax_k()
         return stellar_imf
 
@@ -1289,7 +1289,7 @@ class SimpleBinaryPopulation:
 
         if self.invariant_imf:
             total_star_mass = self.sfr * 1e7
-            imf = Star(total_star_mass, feh=self.feh, invariant=True)
+            imf = Star(total_star_mass, self.feh, invariant=True)
             imf.get_mmax_k()
         else:
             imf = IGIMF(self.sfr, self.feh)

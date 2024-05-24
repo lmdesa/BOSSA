@@ -2,9 +2,9 @@
 
 import warnings
 from pathlib import Path
+from astropy.cosmology import WMAP9 as cosmo
 
 import numpy as np
-from astropy.cosmology import WMAP9 as cosmo
 from scipy.optimize import curve_fit, fsolve
 
 from .constants import Z_SUN, T04_MZR_params_list, M09_MZR_params_list, KK04_MZR_params_list, PP04_MZR_params_list, \
