@@ -92,8 +92,8 @@ class PowerLawIMF:
         self.m_max = m_max
         self.breaks = breaks
         self.exponents = exponents
-        self.norms = np.tile(m_tot/self.integrate(m_trunc_min, m_trunc_max, mass=True, normalized=False),
-                             len(self.exponents))
+        self.norms = np.pad(np.tile(m_tot/self.integrate(m_trunc_min, m_trunc_max, mass=True, normalized=False),
+                             len(exponents)), (1,1), mode='constant', constant_values=(1.,1.))
 
     @staticmethod
     def _h1(a, m1, m2):
@@ -136,15 +136,15 @@ class PowerLawIMF:
     @norms.setter
     def norms(self, norms):
         self._norms = norms
-        continuity_factor = 1
-        for i, norm in enumerate(norms[1:]):
-            prev_norm = norms[i]
-            break_ = self.breaks[i+1]
-            prev_exp, exp = self.exponents[i:i+2]
-            continuity_factor *= prev_norm * break_**(prev_exp - exp)
-            self._norms[i+1] *= continuity_factor
+        norm = norms[1]
+        for i, (break_, exp) in enumerate(zip(self.breaks[1:], self.exponents[1:])):
+            prev_exp = self.exponents[i]
+            print('norm1', norm)
+            norm *= break_**(prev_exp - exp)
+            print('norm2', norm)
+            self._norms[i+1] = norm
 
-    def integrate(self, m0 , m1, mass=False, normalized=True):
+    def integrate(self, m0, m1, mass=False, normalized=True):
         integration_limits = np.sort([m0, m1, *self.breaks])
         integration_limits = integration_limits[(integration_limits >= m0) & (integration_limits <= m1)]
         integral = 0.
