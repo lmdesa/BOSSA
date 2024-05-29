@@ -72,8 +72,9 @@ class PowerLawIMF:
     """
 
 
-    def __init__(self, m_tot: float, m_trunc_min: float, m_trunc_max: float,
-                 m_max: float = 150., breaks: list[float] = KROUPA_BREAKS,
+    def __init__(self, m_tot: float = 1.e10, m_trunc_min: float = 0.08,
+                 m_trunc_max: float = 150., m_max: float = 150.,
+                 breaks: list[float] = KROUPA_BREAKS,
                  exponents: list[float] = KROUPA_EXPONENTS,
                  norms: list[float] | None = None) -> None:
         """
@@ -120,16 +121,60 @@ class PowerLawIMF:
             return (m2 ** (2 + a) - m1 ** (2 + a)) / (2 + a)
 
     @property
+    def m_tot(self):
+        return self._m_tot
+
+    @m_tot.setter
+    def m_tot(self, m_tot):
+        if hasattr(self, '_m_tot'):
+            pass
+        else:
+            self._m_tot = m_tot
+
+    @property
+    def m_max(self):
+        return self._m_max
+
+    @m_max.setter
+    def m_max(self, m_max):
+        if hasattr(self, '_m_max'):
+            pass
+        else:
+            self._m_max = m_max
+
+    @property
+    def m_trunc_min(self):
+        return self._m_trunc_min
+
+    @m_trunc_min.setter
+    def m_trunc_min(self, m_trunc_min):
+        if hasattr(self, '_m_trunc_min'):
+            pass
+        else:
+            self._m_trunc_min = m_trunc_min
+
+    @property
+    def m_trunc_max(self):
+        return self._m_trunc_max
+
+    @m_trunc_max.setter
+    def m_trunc_max(self, m_trunc_max):
+        if hasattr(self, '_m_trunc_max'):
+            pass
+        else:
+            self._m_trunc_max = m_trunc_max
+
+    @property
     def breaks(self):
         return self._breaks
 
     @breaks.setter
     def breaks(self, breaks):
         self._breaks = np.array([breaks]).flatten()
-        self._breaks = np.pad(self._breaks,
-                              (1, 0),
-                              mode='constant',
-                              constant_values=0.)
+        #self._breaks = np.pad(self._breaks,
+        #                      (1, 0),
+        #                      mode='constant',
+        #                      constant_values=0.)
 
     @property
     def exponents(self):
@@ -139,7 +184,7 @@ class PowerLawIMF:
     def exponents(self, exponents):
         self._exponents = np.array([exponents]).flatten()
         self._exponents = np.pad(self._exponents,
-                                 (1, 1),
+                                 (1,1),
                                  mode='constant',
                                  constant_values=self._exponents[[0, -1]])
 
@@ -150,27 +195,28 @@ class PowerLawIMF:
     @norms.setter
     def norms(self, norms):
         if norms is None:
-            norms = np.pad(
-                np.tile(
+            #norms = np.pad(
+            norms =     np.tile(
                     self.m_tot/self.integrate(
                         self.m_trunc_min,
                         self.m_trunc_max,
                         mass=True,
                         normalized=False
                     ),
-                    len(self.exponents)-2
-                ),
-                (1, 1),
-                mode='constant',
-                constant_values=(1., 1.)
-            )
-        self._norms = norms
-        norm = norms[1]
-        for i, (break_, exp) in enumerate(zip(self.breaks[1:],
+                    len(self.exponents)-1
+               )#,
+            #    (1, 1),
+            #    mode='constant',
+            #    constant_values=(1., 1.)
+            #)
+        self._norms = np.pad(norms, (1, 1), mode='constant', constant_values=(0, 0))
+        norm = norms[0]
+        for i, (break_, exp) in enumerate(zip(self.breaks,
                                               self.exponents[1:])):
             prev_exp = self.exponents[i]
+            print(i, break_, break_**(prev_exp - exp))
             norm *= break_**(prev_exp - exp)
-            self._norms[i+1] = norm
+            self._norms[i] = norm
 
     def integrate(self, m0, m1, mass=False, normalized=True):
         integration_limits = np.sort([m0, m1, *self.breaks])
@@ -206,10 +252,11 @@ class PowerLawIMF:
         # the class docstring, this should work for both simple and
         # broken power-laws.
         index, m_break = next(
-            ((i, m_th) for i, m_th in enumerate(self.breaks) if m_th > m), -1
+            ((i, m_th) for i, m_th in enumerate(self.breaks) if m_th > m),
+            len(self.breaks)+1
         )
-        k = self.norms[index-1]
-        a = self.exponents[index-1]
+        k = self.norms[index]
+        a = self.exponents[index]
         return k * m ** a
 
 
@@ -218,12 +265,12 @@ class Star(PowerLawIMF):
 
     Compute the stellar initial mass function (sIMF) specific to a given
     star-forming region (embedded cluster, or ECL), with a set
-    metallicity, as [Fe/H], and a total ECL stellar mass, m_ecl.
+    metallicity, as [Fe/H], and a total ECL stellar mass, m_tot.
 
     The sIMF may follow either a Kroupa (2001) [1]_ or Jerabkova et al.
-    (2018) [2]_. In the first case it is a simple power-law, with m_ecl
+    (2018) [2]_. In the first case it is a simple power-law, with m_tot
     as its only free parameter. In the second case, it is a series of
-    three power laws between a minimum stellar mass m_trunc_min, and a
+    three power laws between a minimum stellar mass M_TRUNC_MIN, and a
     maximum stellar mass m_max. While indices a1, a2 and a3 are given by
     analytic formulae, m_max and the normalization constants k1, k2 and
      k3 result from the numerical solution of two adequate constraints.
@@ -234,7 +281,7 @@ class Star(PowerLawIMF):
         Embedded cluster metallicity in [Fe/H].
     m_ecl_min : float
         Absolute minimum embedded cluster mass.
-    m_max : float
+    _m_max : float
         Maximum stellar mass. Embedded cluster-specific.
     k1 : float
         m<0.5 PowerLawIMF normalization constant.
@@ -264,20 +311,20 @@ class Star(PowerLawIMF):
     Notes
     -----
     If variant is set to False, the sIMF is as given by Jerabkova et al.
-     (2018) [1]_. m_trunc_min is set at the hydrogen burning threshold
+     (2018) [1]_. M_TRUNC_MIN is set at the hydrogen burning threshold
      of 0.08 Msun. Exponents k1 and k2 are found from k3 by continuity.
      k3 and m_max are determined from two constraints.
 
-    m_ecl sets the mass of the most massive formable star, m_max, but is
+    m_tot sets the mass of the most massive formable star, m_max, but is
     not equal to it. Thus, the first constraint is obtained by imposing
     that the number of stars found with mass equal to or higher than
     m_max be one, i.e., by equating the integral of the PowerLawIMF
-    between m_max and m_trunc_max to unity. This constraint is expressed
+    between m_max and M_TRUNC_MAX to unity. This constraint is expressed
      in method f1.
 
-    m_ecl does set the total formed stellar mass. Thus, the second
+    m_tot does set the total formed stellar mass. Thus, the second
     constraint is obtained by integrating m * PowerLawIMF(m) between
-    m_trunc_min and m_max. This constraint is expressed in methods f1
+    M_TRUNC_MIN and m_max. This constraint is expressed in methods f1
     and f2.
 
     Solving f1 and f2 simultaneously determines m_max and k3, which also
@@ -289,13 +336,15 @@ class Star(PowerLawIMF):
     References
     ----------
     .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
-    Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of metallicity
-    and star formation rate on the time-dependent, galaxy-wide stellar
-    initial mass function. A&A, 620,
-        A39. doi:10.1051/0004-6361/20183
+        Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
+        metallicity and star formation rate on the time-dependent,
+        galaxy-wide stellar initial mass function. A&A, 620, A39.
+        doi:10.1051/0004-6361/20183
     """
 
     BREAKS = [0.08, 0.5, 1., 150.]
+    M_TRUNC_MIN = 0.08
+    M_TRUNC_MAX = 150.
 
     def __init__(self, m_ecl=1e7, m_ecl_min=5.0, feh=0, invariant=False):
         """
@@ -303,22 +352,20 @@ class Star(PowerLawIMF):
         ----------
         m_ecl : float
             Embedded cluster stellar mass in solar masses.
+        m_ecl_min : float
+            Minimum possible embedded cluster mass.
+
+
         feh : float
             Embedded cluster metallicity in [Fe/H].
-
-        Args:
-            m_ecl_min:
         """
 
-        self.m_ecl = m_ecl
+        self.m_tot = m_ecl
         self.invariant = invariant
         self.m_ecl_min = m_ecl_min
         self.feh = feh
-        self.m_trunc_min = 0.08
-        self.m_trunc_max = 150.
 
-
-        self.m_max = None
+        self._m_max = None
         self._a1 = None  # property
         self._a2 = None  # property
         self._a3 = None  # property
@@ -329,39 +376,11 @@ class Star(PowerLawIMF):
         self._g1 = None  # property
         self._g2 = None  # property
 
-    #@property
-    #def limits(self):
-    #    """List of power-law breaks.
-    #
-    #    In ascending order, should contain m_trunc_min, m_trunc_max and the PowerLawIMF's minimum and maximum mass,
-    #    as well as any other breaks.
-    #    """
-    #
-    #    if self._limits is None:
-    #        self._limits = [self.m_trunc_min, 0.5, 1.0, self.m_max, self.m_trunc_max]
-    #    return self._limits
-
-    #@property
-    #def exponents(self):
-    #    """Exponents for each power law region. The first and last items should be 0."""
-    #    if self._exponents is None:
-    #        self._exponents = [0, self.a1, self.a2, self.a3, 0]
-    #    return self._exponents
-
-    #@property
-    #def norms(self):
-    #    """Normalization constants for each power law region. The first and last items should be 0."""
-    #    if self._norms is None:
-    #        if self.k1 is None:
-    #            raise Warning('Normalization coefficients not yet set.')
-    #        self._norms = [0, self.k1, self.k2, self.k3, 0]
-    #    return self._norms
-
     @property
     def x(self):
-        """Auxiliary variable. Function of [Fe/H] and m_ecl."""
+        """Auxiliary variable. Function of [Fe/H] and m_tot."""
         if self._x is None:
-            self._x = (-0.14 * self.feh + 0.6 * np.log10(self.m_ecl / 1e6)
+            self._x = (-0.14 * self.feh + 0.6 * np.log10(self.m_tot / 1e6)
                        + 2.83)
         return self._x
 
@@ -395,7 +414,7 @@ class Star(PowerLawIMF):
     @property
     def a3(self):
         """PowerLawIMF exponent for m >= 1.0 Msun. Dependent on [Fe/H]
-        and m_ecl through the auxiliary variable x.
+        and m_tot through the auxiliary variable x.
         """
 
         if self._a3 is None:
@@ -421,7 +440,7 @@ class Star(PowerLawIMF):
             c1 = 0.5 ** (self.a2 - self.a1)
             c2 = 1.0 ** (self.a3 - self.a2)
             self._g1 = c1 * c2 * self._h2(self.a1,
-                                          self.m_trunc_min,
+                                          self.M_TRUNC_MIN,
                                           0.5)
         return self._g1
 
@@ -438,7 +457,7 @@ class Star(PowerLawIMF):
 
     @staticmethod
     def _solar_metallicity_mmax(m_ecl):
-        """m_max as a function of m_ecl for solar metallicity, from a
+        """_m_max as a function of m_tot for solar metallicity, from a
         hyperbolic tangent fit to numerical results.
         """
 
@@ -452,7 +471,7 @@ class Star(PowerLawIMF):
 
     @staticmethod
     def _solar_metallicity_k3(m_ecl):
-        """k3 as a function of m_ecl for solar metallicity, from a
+        """k3 as a function of m_tot for solar metallicity, from a
         log-linear fit to numerical results.
         """
 
@@ -463,48 +482,48 @@ class Star(PowerLawIMF):
         return 10. ** log_k3
 
     def _f1(self, k3, m_max):
-        """Constraint on k3 and m_max for the existence of only one star
-        with mass equal to or higher than m_max.
+        """Constraint on k3 and _m_max for the existence of only one star
+        with mass equal to or higher than _m_max.
         """
 
-        return np.abs(1 - k3 * self._h1(self.a3, m_max, self.m_trunc_max))
+        return np.abs(1 - k3 * self._h1(self.a3, m_max, self.M_TRUNC_MAX))
 
     def _f2(self, k3, m_max):
-        """Constraint on k3 and m_max for the total stellar mass being
+        """Constraint on k3 and _m_max for the total stellar mass being
         equal to the mass of the star-forming region.
         """
 
         g3 = self._h2(self.a3, 1, m_max)
-        return np.abs(self.m_ecl - k3 * (self.g1 + self.g2 + g3))
+        return np.abs(self.m_tot - k3 * (self.g1 + self.g2 + g3))
 
     def _initial_guesses(self):
-        """Calculate initial guesses of k3 and m_max for solving the two
+        """Calculate initial guesses of k3 and _m_max for solving the two
         constraints f1 and f2.
 
-        Calculate initial guesses of k3 and m_max for solving the two
+        Calculate initial guesses of k3 and _m_max for solving the two
         constraints f1 and f2. Initial guesses are taken from analytical
-        fits to numerical k3-m_ecl and m_max-m_ecl results for solar
+        fits to numerical k3-m_tot and _m_max-m_tot results for solar
         metallicity.
         """
 
-        k3 = self._solar_metallicity_k3(self.m_ecl)
-        m_max = self._solar_metallicity_mmax(self.m_ecl)
-        return k3, m_max
+        k3 = self._solar_metallicity_k3(self.m_tot)
+        m_max = self._solar_metallicity_mmax(self.m_tot)
+        return np.array([k3, m_max])
 
     def _constraints(self, vec):
-        """For a k3, m_max pair, compute both constraints and return
+        """For a k3, _m_max pair, compute both constraints and return
         them as a two-dimensional vector.
 
         The output of this method is the vector that is minimized in
-        order to solve the system and find m_max, k1, k2 and k3. As a
-        safeguard against negative values of either k1 or m_max, this
+        order to solve the system and find _m_max, k1, k2 and k3. As a
+        safeguard against negative values of either k1 or _m_max, this
         method is set to automatically return a vector with large
         components if the solver tries to use negative values.
 
         Parameters
         ----------
         vec : tuple
-            A tuple with k3 as its first element and m_max as second.
+            A tuple with k3 as its first element and _m_max as second.
 
         Returns
         -------
@@ -528,29 +547,25 @@ class Star(PowerLawIMF):
 
     def get_mmax_k(self):
         """Use Scipy's fsolve to solve the two constraints with adequate
-        initial guesses for k3 and m_max.
+        initial guesses for k3 and _m_max.
 
-        After solving for k3 and m_max, k1 and k2 are immediately
+        After solving for k3 and _m_max, k1 and k2 are immediately
         determined. Automatically sets the PowerLawIMF to zero for all
         masses if the star-forming region mass is below a minimum of 5
         solar masses.
         """
 
-        if self.m_ecl < self.m_ecl_min:
-            self.m_max = 0
+        if self.m_tot < self.m_ecl_min:
+            self._m_max = 0
             self.k3 = 0
         else:
             solution, infodict, *_ = fsolve(self._constraints,
                                             self._initial_guesses(),
                                             full_output=True)
-            self.k3, self.m_max = solution
+            self.k3, self._m_max = solution
         self._set_k1_k2()
         super().__init__(self,
-                         m_tot=self.m_ecl,
-                         m_trunc_min=self.m_trunc_min,
-                         m_trunc_max=self.m_trunc_max,
-                         m_max=self.m_max,
-                         breaks=[self.m_trunc_min, 0.5, 1.0, self.m_max],
+                         breaks=[self.M_TRUNC_MIN, 0.5, 1.0, self._m_max],
                          exponents=[self.a1, self.a2, self.a3],
                          norms=[self.k1, self.k2, self.k3])
 
@@ -561,7 +576,7 @@ class EmbeddedCluster(PowerLawIMF):
     Compute the embedded cluster initial mass function (eIMF) specific
     to a given galaxy with a set star formation rate (SFR) and star
     formation duration (time). The eIMF is a simple power law between
-    m_trunc_min and M_max. The index beta is given as a function of the
+    M_TRUNC_MIN and M_max. The index beta is given as a function of the
     SFR, while the normalization constant, k, and m_max result from the
     numerical solution of two adequate constraints.
 
@@ -570,9 +585,9 @@ class EmbeddedCluster(PowerLawIMF):
     beta
     sfr : float
         Galactic SFR.
-    formation_time : float
+    time : float
         Duration of ECL formation.
-    m_max : float
+    _m_max : float
         Maximum mass of an ECL.
     k : float
         Normalization constant of the eIMF.
@@ -585,7 +600,7 @@ class EmbeddedCluster(PowerLawIMF):
 
     Notes
     -----
-    The eIMF is as given by Jerabkova et al. (2018) [1]_. m_trunc_min is
+    The eIMF is as given by Jerabkova et al. (2018) [1]_. M_TRUNC_MIN is
      set to the default 5 Msun, and the maximum mass m_max is at most
      1e9 Msun. k and m_max are determined from two constraints.
 
@@ -594,7 +609,7 @@ class EmbeddedCluster(PowerLawIMF):
     time, the total galactic stellar ECL mass is m_tot=time*SFR. The
     first constraint is obtained by imposing that the total stellar mass
     of all ECLs be equal to m_tot, i.e., by equaling to m_tot the
-    integral of the eIMF between m_trunc_min and m_max.
+    integral of the eIMF between M_TRUNC_MIN and m_max.
 
     The second constraint is obtained by imposing that only one ECL be
     found with stellar mass equal to or greater than m_max, i.e., by
@@ -613,7 +628,10 @@ class EmbeddedCluster(PowerLawIMF):
         A39. doi:10.1051/0004-6361/20183
     """
 
-    def __init__(self, sfr, formation_time=1e7, m_tot=None):
+    M_TRUNC_MIN = 5.0
+    M_TRUNC_MAX = 1.e9
+
+    def __init__(self, sfr=1., formation_time=1e7, m_tot=None):
         """
         Parameters
         ----------
@@ -627,46 +645,45 @@ class EmbeddedCluster(PowerLawIMF):
 
         self.sfr = sfr
         self.time = formation_time
-        PowerLawIMF.__init__(self,
-                             m_tot=self._get_m_tot(m_tot),
-                             m_trunc_min=5.0,
-                             m_trunc_max=np.inf)
-        self.m_max = None
+        self.m_tot = self._get_m_tot(m_tot)
+        self._m_max = None
         self.k = None
         self._beta = None  # property
+        self._m_trunc_min = self.M_TRUNC_MIN
+        self._m_trunc_max = self.M_TRUNC_MAX
 
-    @property
-    def limits(self):
-        """List of threshold masses between power law regions.
+    #@property
+    #def limits(self):
+    #    """List of threshold masses between power law regions.
 
-        In ascending order, should contain m_trunc_min, m_trunc_max and
-        the PowerLawIMF's minimum and maximum mass, as well as any other
-        limits in the case of multi power law IMFs.
-        """
+    #    In ascending order, should contain M_TRUNC_MIN, M_TRUNC_MAX and
+    #    the PowerLawIMF's minimum and maximum mass, as well as any other
+    #    limits in the case of multi power law IMFs.
+    #    """
 
-        if self._limits is None:
-            self._limits = [self.m_trunc_min, self.m_max, self.m_trunc_max]
-        return self._limits
+    #    if self._limits is None:
+    #        self._limits = [self.m_trunc_min, self._m_max, self.M_TRUNC_MAX]
+    #    return self._limits
 
-    @property
-    def exponents(self):
-        """Power law exponents for each power law region. The first and
-        last items should be 0.
-        """
+    #@property
+    #def exponents(self):
+    #    """Power law exponents for each power law region. The first and
+    #    last items should be 0.
+    #    """
 
-        if self._exponents is None:
-            self._exponents = [0, self.beta, 0]
-        return self._exponents
+    #    if self._exponents is None:
+    #        self._exponents = [0, self.beta, 0]
+    #    return self._exponents
 
-    @property
-    def norms(self):
-        """Normalization constants for each power law region. The first
-        and last items should be 0.
-        """
+    #@property
+    #def norms(self):
+    #    """Normalization constants for each power law region. The first
+    #    and last items should be 0.
+    #    """
 
-        if self._norms is None:
-            self._norms = [0, self.k, 0]
-        return self._norms
+    #    if self._norms is None:
+    #        self._norms = [0, self.k, 0]
+    #    return self._norms
 
     @property
     def beta(self):
@@ -677,7 +694,7 @@ class EmbeddedCluster(PowerLawIMF):
 
     @staticmethod
     def _10myr_mmax(sfr):
-        """m_max as a function of sfr for time=10 Myr, from a log-linear
+        """_m_max as a function of sfr for time=10 Myr, from a log-linear
          fit to numerical results.
          """
 
@@ -703,20 +720,20 @@ class EmbeddedCluster(PowerLawIMF):
         return 10. ** log_k
 
     def _get_m_tot(self, m_tot):
-        """If m_tot is not explicitly given, set it to SFR*time."""
+        """If m_tot is not given, set it to SFR*time."""
         if m_tot is None:
             m_tot = self.sfr * self.time
         return m_tot
 
     def _f1(self, k, m_max):
-        """Constraint on k and m_max for the existence of only one ECL
-        with mass equal to or higher than m_max.
+        """Constraint on k and _m_max for the existence of only one ECL
+        with mass equal to or higher than _m_max.
         """
 
-        return np.abs(1 - k * self._h1(self.beta, m_max, self.m_trunc_max))
+        return np.abs(1 - k * self._h1(self.beta, m_max, self.M_TRUNC_MAX))
 
     def _f2(self, k, m_max):
-        """Constraint on k and m_max for the total stellar mass being
+        """Constraint on k and _m_max for the total stellar mass being
         equal to the galaxy stellar mass.
         """
 
@@ -725,31 +742,31 @@ class EmbeddedCluster(PowerLawIMF):
         )
 
     def _initial_guess(self):
-        """Calculate initial guesses of k and m_max for solving the two
+        """Calculate initial guesses of k and _m_max for solving the two
         constraints f1 and f2.
 
-        Calculate initial guesses of k and m_max for solving the two
+        Calculate initial guesses of k and _m_max for solving the two
         constraints f1 and f2. Initial guesses are taken from analytical
-        fits to numerical k-sfr and m_max-sfr results for time = 10 Myr.
+        fits to numerical k-sfr and _m_max-sfr results for time = 10 Myr.
         """
 
         k = self._10myr_k(self.sfr)
         m_max = self._10myr_mmax(self.sfr)
-        return k, m_max
+        return np.array([k, m_max])
 
     def _constraints(self, vec):
-        """For a k, m_max pair, compute both constraints and return them
+        """For a k, _m_max pair, compute both constraints and return them
          as a two-dimensional vector.
 
-        For a k, m_max pair, compute both constraints and return them as
+        For a k, _m_max pair, compute both constraints and return them as
         a two-dimensional vector. The output of this method is the
         vector that is minimized in order to solve the system and find
-        m_max and k1.
+        _m_max and k1.
 
         Parameters
         ----------
         vec : tuple
-            A tuple with k as its first element and m_max as its second.
+            A tuple with k as its first element and _m_max as its second.
 
         Returns
         -------
@@ -758,7 +775,7 @@ class EmbeddedCluster(PowerLawIMF):
 
         Notes
         -----
-        As a safeguard against negative values of either k or m_max,
+        As a safeguard against negative values of either k or _m_max,
         this method is set to automatically return a vector with large
         components if the solver tries to use negative values.
         """
@@ -775,7 +792,7 @@ class EmbeddedCluster(PowerLawIMF):
         initial guess and determine the maximum mass.
 
         Use Scipy's fsolve to solve the constraints with an adequate
-        initial guess from the initial_guess method and determine m_max.
+        initial guess from the initial_guess method and determine _m_max.
 
         Notes
         -----
@@ -785,11 +802,14 @@ class EmbeddedCluster(PowerLawIMF):
 
         solution, infodict, *_ = fsolve(self._constraints,
                                         self._initial_guess(),
-                                        maxfev=1000,
                                         full_output=True)
-        self.k, self.m_max = solution
-        self._limits = [self.m_trunc_min, self.m_max, self.m_trunc_max]
-        self._norms = [0, self.k, 0]
+        self.k, self._m_max = solution
+        super().__init__(self,
+                         m_trunc_min=self.M_TRUNC_MIN,
+                         m_trunc_max=self.M_TRUNC_MAX,
+                         breaks=[self.m_trunc_min, self._m_max],
+                         exponents=[self.beta],
+                         norms=[self.k])
 
 
 class IGIMF:
