@@ -6,12 +6,12 @@ from time import time
 
 import numpy as np
 from scipy.optimize import fsolve
-from scipy.integrate import quad, IntegrationWarning
+from scipy.integrate import quad
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
 
-from .constants import CHR19_GSMF, LN10, U_MASS
-from .utils import Quantity, input_unit, fix_unit, interpolate
+from .constants import CHR19_GSMF, LN10
+from .utils import interpolate
 
 
 KROUPA_BREAKS = [0.08, 1., 150.]
@@ -71,7 +71,6 @@ class PowerLawIMF:
         doi:10.1017/pasa.2018.29
     """
 
-
     def __init__(self, m_tot: float = 1.e10, m_trunc_min: float = 0.08,
                  m_trunc_max: float = 150., m_max: float = 150.,
                  breaks: list[float] = KROUPA_BREAKS,
@@ -88,11 +87,11 @@ class PowerLawIMF:
             Maximum possible mass of an object from the PowerLawIMF.
         m_max: float
             Maximum mass for which the PowerLawIMF is defined.
-        _breaks: list
+        breaks: list
             List of power-law breaks.
-        _exponents: list
+        exponents: list
             List of power-law exponents.
-        _norms: list
+        norms: list
             List of power-law normalization constants.
         """
 
@@ -171,10 +170,6 @@ class PowerLawIMF:
     @breaks.setter
     def breaks(self, breaks):
         self._breaks = np.array([breaks]).flatten()
-        #self._breaks = np.pad(self._breaks,
-        #                      (1, 0),
-        #                      mode='constant',
-        #                      constant_values=0.)
 
     @property
     def exponents(self):
@@ -195,7 +190,6 @@ class PowerLawIMF:
     @norms.setter
     def norms(self, norms):
         if norms is None:
-            #norms = np.pad(
             norms =     np.tile(
                     self.m_tot/self.integrate(
                         self.m_trunc_min,
@@ -204,19 +198,18 @@ class PowerLawIMF:
                         normalized=False
                     ),
                     len(self.exponents)-1
-               )#,
-            #    (1, 1),
-            #    mode='constant',
-            #    constant_values=(1., 1.)
-            #)
-        self._norms = np.pad(norms, (1, 1), mode='constant', constant_values=(0, 0))
-        norm = norms[0]
-        for i, (break_, exp) in enumerate(zip(self.breaks,
-                                              self.exponents[1:])):
-            prev_exp = self.exponents[i]
-            print(i, break_, break_**(prev_exp - exp))
-            norm *= break_**(prev_exp - exp)
-            self._norms[i] = norm
+               )
+            self._norms = np.pad(norms, (1, 1), mode='constant',
+                                 constant_values=(0, 0))
+            norm = norms[0]
+            for i, (break_, exp) in enumerate(zip(self.breaks,
+                                                  self.exponents[1:])):
+                prev_exp = self.exponents[i]
+                norm *= break_**(prev_exp - exp)
+                self._norms[i] = norm
+        else:
+            self._norms = np.pad(norms, (1, 1), mode='constant',
+                                 constant_values=(0, 0))
 
     def integrate(self, m0, m1, mass=False, normalized=True):
         integration_limits = np.sort([m0, m1, *self.breaks])
@@ -225,11 +218,11 @@ class PowerLawIMF:
         integral = 0.
         for x0, x1 in zip(integration_limits[:-1], integration_limits[1:]):
             a = self.exponents[
-                np.searchsorted(self.breaks, x0, side='right')-1
+                np.searchsorted(self.breaks, x0, side='right')
             ]
             if normalized:
                 norm = self.norms[
-                    np.searchsorted(self.breaks, x0, side='right')-1
+                    np.searchsorted(self.breaks, x0, side='right')
                 ]
             else:
                 norm = 1.
@@ -253,7 +246,7 @@ class PowerLawIMF:
         # broken power-laws.
         index, m_break = next(
             ((i, m_th) for i, m_th in enumerate(self.breaks) if m_th > m),
-            len(self.breaks)+1
+            (len(self.breaks), self.m_trunc_max)
         )
         k = self.norms[index]
         a = self.exponents[index]
@@ -482,8 +475,8 @@ class Star(PowerLawIMF):
         return 10. ** log_k3
 
     def _f1(self, k3, m_max):
-        """Constraint on k3 and _m_max for the existence of only one star
-        with mass equal to or higher than _m_max.
+        """Constraint on k3 and _m_max for the existence of only one
+        star with mass equal to or higher than _m_max.
         """
 
         return np.abs(1 - k3 * self._h1(self.a3, m_max, self.M_TRUNC_MAX))
@@ -497,8 +490,8 @@ class Star(PowerLawIMF):
         return np.abs(self.m_tot - k3 * (self.g1 + self.g2 + g3))
 
     def _initial_guesses(self):
-        """Calculate initial guesses of k3 and _m_max for solving the two
-        constraints f1 and f2.
+        """Calculate initial guesses of k3 and _m_max for solving the
+        two constraints f1 and f2.
 
         Calculate initial guesses of k3 and _m_max for solving the two
         constraints f1 and f2. Initial guesses are taken from analytical
@@ -652,39 +645,6 @@ class EmbeddedCluster(PowerLawIMF):
         self._m_trunc_min = self.M_TRUNC_MIN
         self._m_trunc_max = self.M_TRUNC_MAX
 
-    #@property
-    #def limits(self):
-    #    """List of threshold masses between power law regions.
-
-    #    In ascending order, should contain M_TRUNC_MIN, M_TRUNC_MAX and
-    #    the PowerLawIMF's minimum and maximum mass, as well as any other
-    #    limits in the case of multi power law IMFs.
-    #    """
-
-    #    if self._limits is None:
-    #        self._limits = [self.m_trunc_min, self._m_max, self.M_TRUNC_MAX]
-    #    return self._limits
-
-    #@property
-    #def exponents(self):
-    #    """Power law exponents for each power law region. The first and
-    #    last items should be 0.
-    #    """
-
-    #    if self._exponents is None:
-    #        self._exponents = [0, self.beta, 0]
-    #    return self._exponents
-
-    #@property
-    #def norms(self):
-    #    """Normalization constants for each power law region. The first
-    #    and last items should be 0.
-    #    """
-
-    #    if self._norms is None:
-    #        self._norms = [0, self.k, 0]
-    #    return self._norms
-
     @property
     def beta(self):
         """eIMF exponent beta. Function of the SFR."""
@@ -694,9 +654,9 @@ class EmbeddedCluster(PowerLawIMF):
 
     @staticmethod
     def _10myr_mmax(sfr):
-        """_m_max as a function of sfr for time=10 Myr, from a log-linear
-         fit to numerical results.
-         """
+        """_m_max as a function of sfr for time=10 Myr, from a
+        log-linear fit to numerical results.
+        """
 
         a = 1.0984734
         b = 6.26502395
@@ -747,7 +707,8 @@ class EmbeddedCluster(PowerLawIMF):
 
         Calculate initial guesses of k and _m_max for solving the two
         constraints f1 and f2. Initial guesses are taken from analytical
-        fits to numerical k-sfr and _m_max-sfr results for time = 10 Myr.
+        fits to numerical k-sfr and _m_max-sfr results for
+        time = 10 Myr.
         """
 
         k = self._10myr_k(self.sfr)
@@ -755,18 +716,18 @@ class EmbeddedCluster(PowerLawIMF):
         return np.array([k, m_max])
 
     def _constraints(self, vec):
-        """For a k, _m_max pair, compute both constraints and return them
-         as a two-dimensional vector.
+        """For a k, _m_max pair, compute both constraints and return
+        them as a two-dimensional vector.
 
-        For a k, _m_max pair, compute both constraints and return them as
-        a two-dimensional vector. The output of this method is the
+        For a k, _m_max pair, compute both constraints and return them
+        as a two-dimensional vector. The output of this method is the
         vector that is minimized in order to solve the system and find
         _m_max and k1.
 
         Parameters
         ----------
         vec : tuple
-            A tuple with k as its first element and _m_max as its second.
+            A tuple with k as its first element and _m_max as second.
 
         Returns
         -------
@@ -792,7 +753,8 @@ class EmbeddedCluster(PowerLawIMF):
         initial guess and determine the maximum mass.
 
         Use Scipy's fsolve to solve the constraints with an adequate
-        initial guess from the initial_guess method and determine _m_max.
+        initial guess from the initial_guess method and determine
+        _m_max.
 
         Notes
         -----
@@ -815,10 +777,13 @@ class EmbeddedCluster(PowerLawIMF):
 class IGIMF:
     """Compute the galactic initial mass function.
 
-    The galactic PowerLawIMF (gIMF) is computed according to the integrated galaxy-wide PowerLawIMF (IGIMF) framework by integrating the
-    product between the embedded cluster (ECL) and stellar IMFs (eIMF and sIMF, respectively) over all embedded clusters
-    in the galaxy. This corresponds to integrating over the product of the imf methods of the Star and EmbeddedCluster
-    classes with respect to ECL mass, with all other parameters (including stellar mass) fixed.
+    The galactic PowerLawIMF (gIMF) is computed according to the
+    integrated galaxy-wide PowerLawIMF (IGIMF) framework by integrating
+    the product between the embedded cluster (ECL) and stellar IMFs
+    (eIMF and sIMF, respectively) over all embedded clusters in the
+    galaxy. This corresponds to integrating over the product of the imf
+    methods of the Star and EmbeddedCluster classes with respect to ECL
+    mass, with all other parameters (including stellar mass) fixed.
 
     Attributes
     ----------
@@ -839,16 +804,20 @@ class IGIMF:
     clusters : EmbeddedCluster object
         Calculates the eIMF of the galaxy.
     m_ecl_array : numpy array
-        Array of ECL masses over which to compute the sIMF for interpolation.
+        Array of ECL masses over which to compute the sIMF for
+        interpolation.
     stellar_imf_ip: scipy.interpolate interp1d
-        Interpolation of the sIMF over ECL masses, for a fixed star mass.
+        Interpolation of the sIMF over ECL masses, for a fixed star
+        mass.
 
     Methods
     -------
     get_clusters()
-        Instantiate an EmbeddedCluster object and compute the maximum embedded cluster mass.
+        Instantiate an EmbeddedCluster object and compute the maximum
+        embedded cluster mass.
     imf(m)
-        Integrate the product of the sIMF and eIMF with respect to the ECL mass, for a given stellar mass.
+        Integrate the product of the sIMF and eIMF with respect to the
+        ECL mass, for a given stellar mass.
 
     Warns
     ------
@@ -857,34 +826,45 @@ class IGIMF:
 
     Notes
     -----
-    The IGIMF framework is applied as described in Jerabkova et al. (2018) [1]_, Yan et al. (2017) [2]_ and references
-    therein. Explicitly, the gIMF at a given stellar mass m is
+    The IGIMF framework is applied as described in Jerabkova et al.
+    (2018) [1]_, Yan et al. (2017) [2]_ and references therein.
+    Explicitly, the gIMF at a given stellar mass m is
 
     .. math::
 
-        PowerLawIMF(m|SFR,Z) = \int_0^\infty dM\, sIMF(m|M,Z)\, eIMF(M|SFR,t),
+        PowerLawIMF(m|SFR,Z) = \int_0^\infty dM\, sIMF(m|M,Z)\,
+        eIMF(M|SFR,t),
 
-    where M is the ECL stellar mass; Z the galaxy metallicity, which is assumed uniform; and t is the star formation
-    time, by default 10 Myr. The integration interval is broken into log-uniform intervals. Integration is performed
-    with Scipy's quad function.
+    where M is the ECL stellar mass; Z the galaxy metallicity, which is
+    assumed uniform; and t is the star formation time, by default
+    10 Myr. The integration interval is broken into log-uniform
+    intervals. Integration is performed with Scipy's quad function.
 
-    This constitutes a spatial integration over the whole galaxy for all the stars formed within the ECLs formed during
-    an interval t, without taking into account the spatial distribution of star-forming regions or their differing
-    chemical properties. Thus, the entire galaxy is specified by an SFR and a single metallicity.
+    This constitutes a spatial integration over the whole galaxy for all
+     the stars formed within the ECLs formed during an interval t,
+     without taking into account the spatial distribution of
+     star-forming regions or their differing chemical properties.
+     Thus, the entire galaxy is specified by an SFR and a single
+     metallicity.
 
-    The SFR is given in solar masses per year. The metallicity is expressed as [Fe/H]. The duration of ECL formation is
-    given in years. All masses are given in solar masses.
+    The SFR is given in solar masses per year. The metallicity is
+    expressed as [Fe/H]. The duration of ECL formation is given in
+    years. All masses are given in solar masses.
 
     References
     ----------
-    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G., Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
-        metallicity and star formation rate on the time-dependent, galaxy-wide stellar initial mass function. A&A, 620,
-        A39. doi:10.1051/0004-6361/20183
-    .. [2] Yan, Z., Jerabkova, T., Kroupa, P. (2017). The optimally sampled galaxy-wide stellar initial mass function:
-        Observational tests and the publicly available GalIMF code. A&A, 607, A126. doi:10.1051/0004-6361/201730987
+    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
+        Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
+        metallicity and star formation rate on the time-dependent,
+        galaxy-wide stellar initial mass function. A&A, 620, A39.
+        doi:10.1051/0004-6361/20183
+    .. [2] Yan, Z., Jerabkova, T., Kroupa, P. (2017). The optimally
+        sampled galaxy-wide stellar initial mass function: Observational
+        tests and the publicly available GalIMF code. A&A, 607, A126.
+        doi:10.1051/0004-6361/201730987
     """
 
-    def __init__(self, sfr, feh):
+    def __init__(self, sfr=1., feh=0.):
         """
         Parameters
         ----------
@@ -916,50 +896,68 @@ class IGIMF:
         return logger
 
     def set_clusters(self):
-        """Instantiate an EmbeddedCluster object and compute the maximum ECL mass.
+        """Instantiate an EmbeddedCluster object and compute the maximum
+        ECL mass.
 
-        Instantiate an EmbeddedCluster object and compute the maximum ECL mass, which is also saved as an instance
-        attribute.
+        Instantiate an EmbeddedCluster object and compute the maximum
+        ECL mass, which is also saved as an instance attribute.
 
         Warnings
         --------
-        Must be called before the imf method, otherwise the eIMF will not be available for integration.
+        Must be called before the imf method, otherwise the eIMF will
+        not be available for integration.
         """
 
         self.logger.debug('Getting clusters...')
         time0 = time()
-        self.clusters = EmbeddedCluster(self.sfr, self.time)
-        self.logger.debug('Started EmbeddedCluster PowerLawIMF.')
+        self.clusters = EmbeddedCluster(sfr=self.sfr,
+                                        formation_time=self.time)
+        self.logger.debug('Started EmbeddedCluster IMF.')
         self.clusters.get_mmax_k()
         self.m_ecl_max = self.clusters.m_max
-        self.m_ecl_array = np.logspace(np.log10(self.m_ecl_min), np.log10(self.m_ecl_max), 100)
+        self.m_ecl_array = np.logspace(np.log10(self.m_ecl_min),
+                                       np.log10(self.m_ecl_max),
+                                       100)
         self.m_ecl_array[0] = self.m_ecl_min
         self.m_ecl_array[-1] = self.m_ecl_max
         time1 = time() - time0
         self.logger.debug(f'Finished getting clusters in {time1:.6f} s.')
 
     def _get_stars(self, m_ecl, m):
-        """For a given ECL mass, instantiate a Star object, compute the PowerLawIMF and return dN/dm for a stellar mass m."""
-        stellar = Star(m_ecl, feh=self.feh)
+        """For a given ECL mass, instantiate a Star object, compute the
+        PowerLawIMF and return dN/dm for a stellar mass m.
+        """
+
+        stellar = Star(m_ecl=m_ecl,
+                       feh=self.feh)
         stellar.get_mmax_k()
         return stellar.imf(m)
 
     def _set_stars(self, m):
-        """Interpolate the sIMF over ECL masses for a fixed star mass, and save the interpolation as an attribute."""
+        """Interpolate the sIMF over ECL masses for a fixed star mass,
+        and save the interpolation as an attribute.
+        """
+
         interpolation_simf_array = np.empty(self.m_ecl_array.shape)
         for i, m_ecl in enumerate(self.m_ecl_array):
             interpolation_simf_array[i] = self._get_stars(m_ecl, m)
-        self.stellar_imf_ip = interp1d(self.m_ecl_array, interpolation_simf_array)
+        self.stellar_imf_ip = interp1d(self.m_ecl_array,
+                                       interpolation_simf_array)
 
     def _integrand(self, m_ecl):
-        """Return the product of the stellar and eIMFs for given ECL mass, with a fixed star mass."""
+        """Return the product of the stellar and eIMFs for given ECL
+        mass, with a fixed star mass.
+        """
 
         stellar_imf = self.stellar_imf_ip(m_ecl)
         cluster_imf = self.clusters.imf(m_ecl)
         return stellar_imf * cluster_imf
 
     def _set_integration_intervals(self, m):
-        """Break the full period range into manageable sub-intervals for integration."""
+        """Break the full period range into manageable sub-intervals for
+        integration.
+        """
+
         integrand_array = []
         mecl_array = []
         peak_mecl = self.m_ecl_array[0]
@@ -978,10 +976,13 @@ class IGIMF:
             peak_mecl = 10**log_mecl[i_max_intg]
             if i_max_intg == 0:
                 log_slope_post_peak = linregress(log_mecl, log_intg)[0]
-                log_slope_pre_peak = 0.1  # skip while loop for pre peak masses
+                # skip while loop for pre peak masses
+                log_slope_pre_peak = 0.1
             else:
-                log_slope_post_peak = linregress(log_mecl[i_max_intg:], log_intg[i_max_intg:])[0]
-                log_slope_pre_peak = linregress(log_mecl[:i_max_intg], log_intg[:i_max_intg])[0]
+                log_slope_post_peak = linregress(log_mecl[i_max_intg:],
+                                                 log_intg[i_max_intg:])[0]
+                log_slope_pre_peak = linregress(log_mecl[:i_max_intg],
+                                                log_intg[:i_max_intg])[0]
         else:
             log_slope_post_peak = -0.1  # skip both while loops
             log_slope_pre_peak = 0.1
@@ -1000,10 +1001,11 @@ class IGIMF:
         self._integration_intervals.append(self.m_ecl_max)
 
     def imf(self, m):
-        """Integrate the product of the sIMF and the eIMF with respect to ECL mass, for a given stellar mass.
+        """Integrate the product of the sIMF and the eIMF with respect
+        to ECL mass, for a given stellar mass.
 
-        Integrate the product of the sIMF and the eIMF with respect to ECL mass, for a given stellar mass, using Scipy's
-        quad function.
+        Integrate the product of the sIMF and the eIMF with respect to
+        ECL mass, for a given stellar mass, using Scipy's quad function.
 
         Parameters
         ----------
@@ -1018,7 +1020,8 @@ class IGIMF:
         Warns
         ------
         UserWarning
-            If 'clusters' is not defined (get_clusters() has not been run).
+            If 'clusters' is not defined (get_clusters() has not been
+            run).
         """
 
         if self.clusters is None:
@@ -1027,37 +1030,35 @@ class IGIMF:
 
         self._set_stars(m)
         self._set_integration_intervals(m)
-        #integration_intervals = [10 ** x for x in np.arange(np.ceil(np.log10(self.m_ecl_min)),
-        #                                                    np.floor(np.log10(self.m_ecl_max)) + 1,
-        #                                                    1)]
-        #integration_intervals = np.concatenate(([self.m_ecl_min], integration_intervals, [self.m_ecl_max]))
 
         imf = 0
-        for m0, m1 in zip(self._integration_intervals[:-1], self._integration_intervals[1:]):
+        for m0, m1 in zip(self._integration_intervals[:-1],
+                          self._integration_intervals[1:]):
             m_norm = m1 - m0
             intg_norm = np.abs(self._integrand(m1) - self._integrand(m0))
             intg_min = min(self._integrand(m1), self._integrand(m0))
             if intg_norm == 0.0:
                 intg_norm = 1.0
 
-            def f(m): return (self._integrand(m*m_norm + m0) - intg_min) / intg_norm
+            def f(m): return ((self._integrand(m*m_norm + m0) - intg_min)
+                              / intg_norm)
             imff = quad(f, 0.0, (m1-m0)/m_norm, limit=100, epsabs=5e-5)
 
             imf0 = (intg_norm * imff[0] + intg_min ) * m_norm
             imf += imf0
-            #print('')
-            #print(self.sfr, self.feh, m, m0, m1, imff)
-        #imf = quad(self._integrand, self.m_ecl_min, self.m_ecl_max)[0]
         return imf
 
 
 class GSMF:
     """Compute the redshift-dependent galaxy stellar mass function.
 
-    Compute the redshift-dependent galaxy stellar mass function (GSMF), a number density distribution of galaxies over
-    galactic stellar masses. The GSMF is an empirical distribution well and commonly described with a Schechter
-    function, which approximates a power law at low masses and a falling exponential at high masses. The GSMF
-    implemented here consists of a Schechter function at high masses and a simple power law at low masses.
+    Compute the redshift-dependent galaxy stellar mass function (GSMF),
+    a number density distribution of galaxies over galactic stellar
+    masses. The GSMF is an empirical distribution well and commonly
+    described with a Schechter function, which approximates a power law
+    at low masses and a falling exponential at high masses. The GSMF
+    implemented here consists of a Schechter function at high masses and
+    a simple power law at low masses.
 
     Attributes
     ----------
@@ -1066,30 +1067,39 @@ class GSMF:
     redshift : float
         Redshift at which to compute the GSMF.
     fixed_slope : bool
-        Whether to use the fixed (True) or the varying (False) low-mass slope model.
+        Whether to use the fixed (True) or the varying (False) low-mass
+        slope model.
 
     Methods
     -------
     log_gsmf(logm)
-        Computes log10(GSMF) for a given galaxy stellar mass as log10(m) at the set redshift.
+        Computes log10(GSMF) for a given galaxy stellar mass as log10(m)
+        at the set redshift.
 
     Notes
     -----
-    The Schechter parameters are a normalization constant, phi; a cut-off mass where the function transitions from a
-    power law to an exponential, m_co; and the power law slope, a.
+    The Schechter parameters are a normalization constant, phi; a
+    cut-off mass where the function transitions from a power law to an
+    exponential, m_co; and the power law slope, 'a'.
 
-    The parameters are taken from Chruslinska & Nelemans (2019) [1]_, who interpolate between several fits from the
-    existing literature, considering galaxies observed at redshift up to ~10, to constrain the Schechter parameters as
-    functions of redshift. At low masses, due to poor constraining of the GSMF, the Schechter function is replaced by a
-    simple power law. The GSMF implemented here is thus redshift-dependent.
+    The parameters are taken from Chruslinska & Nelemans (2019) [1]_,
+    who interpolate between several fits from the existing literature,
+    considering galaxies observed at redshift up to ~10, to constrain
+    the Schechter parameters as functions of redshift. At low masses,
+    due to poor constraining of the GSMF, the Schechter function is
+    replaced by a simple power law. The GSMF implemented here is thus
+    redshift-dependent.
 
-    Two models are implemented, as describe in Chruslinska & Nelemans (2019) [1]_: one with a fixed low-mass slope at
-    all redshifts; and one with a slope that steepens with redshift.
+    Two models are implemented, as describe in Chruslinska & Nelemans
+    (2019) [1]_: one with a fixed low-mass slope at all redshifts; and
+    one with a slope that steepens with redshift.
 
     References
     ----------
-    .. [1] Chruslinska, M., Nelemans, G. (2019). Metallicity of stars formed throughout the cosmic history based on the
-        observational properties of star-forming galaxies. MNRAS, 488(4), 5300. doi:10.1093/mnras/stz2057
+    .. [1] Chruslinska, M., Nelemans, G. (2019). Metallicity of stars
+        formed throughout the cosmic history based on the observational
+        properties of star-forming galaxies. MNRAS, 488(4), 5300.
+        doi:10.1093/mnras/stz2057
     """
 
     def __init__(self, redshift, fixed_slope=True):
@@ -1099,7 +1109,8 @@ class GSMF:
         redshift : float
             Redshift at which to compute the GSMF.
         fixed_slope : bool, default: True
-            Whether to use the fixed (True) or the varying (False) low-mass slope model.
+            Whether to use the fixed (True) or the varying (False)
+            low-mass slope model.
         """
 
         self.redshift = redshift
@@ -1109,7 +1120,10 @@ class GSMF:
 
     @property
     def logmass_threshold(self):
-        """Log10 of the mass separating the Schechter function from the simple power-law."""
+        """Log10 of the mass separating the Schechter function from the
+        simple power-law.
+        """
+
         if self._logmass_threshold is None:
             if self.redshift <= 5:
                 self._logmass_threshold = 7.8 + 0.4 * self.redshift
@@ -1132,61 +1146,94 @@ class GSMF:
 
     @staticmethod
     def _schechter(logm, a, logphi, logm_co):
-        """Compute the log10 of the Schechter function for given parameters at a given mass log10(m).
+        """Compute the log10 of the Schechter function for given
+        parameters at a given mass log10(m).
 
         Parameters
         ----------
         logm : float
-            Log10 of the galaxy stellar mass at which to compute the Schechter function.
+            Log10 of the galaxy stellar mass at which to compute the
+            Schechter function.
         a : float
             Index of the power law component of the Schechter function.
         logphi : float
-            Log10 of the normalization constants of the Schechter function.
+            Log10 of the normalization constants of the Schechter
+            function.
         logm_co : float
             Log10 of the cut-off mass of the Schechter function.
 
         Returns
         -------
         log_sch : float
-            Log10 of the Schechter function evaluated with the given parameters.
+            Log10 of the Schechter function evaluated with the given
+            parameters.
         """
+
         log_sch = logphi + (a + 1) * (logm - logm_co) - 10 ** (logm - logm_co) / LN10 - np.log10(LN10)
         return log_sch
 
     def _power_law_norm(self, sch_params):
-        """Compute the low-mass power law normalization such that it is continuous with the Schechter function part."""
+        """Compute the low-mass power law normalization such that it is
+        continuous with the Schechter function part.
+        """
+
         schechter = self._schechter(self.logmass_threshold, *sch_params)
         return schechter - (self.low_mass_slope + 1) * self.logmass_threshold - np.log10(LN10)
 
     def _power_law(self, logm, sch_params):
-        """Compute the low mass power law at a mass log10(m), given a set of Schechter parameters for continuity."""
+        """Compute the low mass power law at a mass log10(m), given a
+        set of Schechter parameters for continuity.
+        """
+
         norm = self._power_law_norm(sch_params)
         return (self.low_mass_slope + 1) * logm + norm + np.log10(LN10)
 
     def _f(self, logm, schechter_params):
-        """General GSMF function. Schechter above logmass_threshold, simple power law below."""
+        """General GSMF function. Schechter above logmass_threshold,
+        simple power law below.
+        """
+
         if logm > self.logmass_threshold:
             return self._schechter(logm, *schechter_params)
         else:
             return self._power_law(logm, schechter_params)
 
     def log_gsmf(self, logm):
-        """Take a galaxy stellar mass log10(m) and return log10(gsmf) at the set redshift."""
-        if self.redshift <= 0.05:  # use parameters at z=0.05 for all z<=0.05
-            schechter_params = CHR19_GSMF[0, 1]  # collect params for z=0.05
+        """Take a galaxy stellar mass log10(m) and return log10(gsmf) at
+        the set redshift.
+        """
+
+        # use parameters at z=0.05 for all z<=0.05
+        if self.redshift <= 0.05:
+            # collect params for z=0.05
+            schechter_params = CHR19_GSMF[0, 1]
             logn = self._f(logm, schechter_params)
 
-        elif self.redshift <= 9:  # for 0.05<z<=9, interpolate parameters to the set redshift
-            schechter_params = CHR19_GSMF[:, 1]  # collect params at all redshifts
-            ipX = np.array([CHR19_GSMF[:, 0]], dtype=np.float64)  # collect corresponding redshifts
-            ipY = np.array([[self._f(logm, params) for params in schechter_params]])  # compute log10(gsmf) for logm
-            logn = interpolate(ipX, ipY, self.redshift)  # interpolate to set redshift
+        # for 0.05<z<=9, interpolate parameters to the set redshift
+        elif self.redshift <= 9:
+            # collect params at all redshifts
+            schechter_params = CHR19_GSMF[:, 1]
+            # collect corresponding redshifts
+            ipX = np.array([CHR19_GSMF[:, 0]], dtype=np.float64)
+            # compute log10(gsmf) for logm
+            ipY = np.array(
+                [[self._f(logm, params) for params in schechter_params]]
+            )
+            # interpolate to set redshift
+            logn = interpolate(ipX, ipY, self.redshift)
 
-        else:  # for z>10, keep logm_co and a, and assume that logphi increases linearly with the same rate as in (8,9)
-            dnorm_dz = CHR19_GSMF[-1, 1][1] - CHR19_GSMF[-2, 1][1]  # logphi variation rate between z=8 and z=9
-            dnorm = dnorm_dz * (self.redshift - 9)  # corresponding logphi change between z=9 and set redshift
-            norm = CHR19_GSMF[-1, 1][1] + dnorm  # new logphi at set redshift
-            schechter_params = (CHR19_GSMF[-1, 1][0], norm, CHR19_GSMF[-1, 1][2])
+        # for z>10, keep logm_co and a, and assume that logphi increases
+        # linearly with the same rate as in (8,9)
+        else:
+            # logphi variation rate between z=8 and z=9
+            dnorm_dz = CHR19_GSMF[-1, 1][1] - CHR19_GSMF[-2, 1][1]
+            # corresponding logphi change between z=9 and set redshift
+            dnorm = dnorm_dz * (self.redshift - 9)
+            # new logphi at set redshift
+            norm = CHR19_GSMF[-1, 1][1] + dnorm
+            schechter_params = (CHR19_GSMF[-1, 1][0],
+                                norm,
+                                CHR19_GSMF[-1, 1][2])
             logn = self._f(logm, schechter_params)
 
         return logn
