@@ -13,8 +13,10 @@ from scipy.interpolate import interp1d
 from scipy.stats import poisson, uniform
 from scipy.optimize import fmin
 
-from .utils import create_logger, valley_minimum
-from .constants import LOG_PATH
+import sys
+sys.path.append('..')
+from src.utils import create_logger, valley_minimum
+from src.constants import LOG_PATH
 
 
 def gen_seed(logp, q, e):

@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>sfr module &mdash; environIMF alpha documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="utils module" href="utils.html" />
+    <link rel="prev" title="sampling module" href="sampling.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            environIMF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="imf.html">imf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="postprocessing.html">postprocessing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sampling.html">sampling module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">sfr module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zams.html">zams module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">environIMF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+      <li class="breadcrumb-item active">sfr module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/sfr.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-sfr">
+<span id="sfr-module"></span><h1>sfr module<a class="headerlink" href="#module-sfr" title="Permalink to this heading"></a></h1>
+<p>Galaxy parameter distributions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="sfr.BoogaardSFMR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sfr.</span></span><span class="sig-name descname"><span class="pre">BoogaardSFMR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redshift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.BoogaardSFMR" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Redshift-dependent SFMR with no flattening at high masses.</p>
+<p>Computes the redshift-dependent star formation-mass relation (SFMR)
+with no flattening at high masses, for a given redshift. Allows
+calculating either the star-formation rate (SFR) from the galaxy
+stellar mass, or the galaxy stellar mass from the SFR. Meant to be
+implemented trough <a class="reference internal" href="#sfr.SFMR" title="sfr.SFMR"><code class="xref py py-func docutils literal notranslate"><span class="pre">sfr.SFMR()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>redshift</strong> (<em>float</em>) – Redshift at which to compute the relation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.BoogaardSFMR.redshift">
+<span class="sig-name descname"><span class="pre">redshift</span></span><a class="headerlink" href="#sfr.BoogaardSFMR.redshift" title="Permalink to this definition"></a></dt>
+<dd><p>Redshift at which to compute the relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.BoogaardSFMR.sfr">
+<span class="sig-name descname"><span class="pre">sfr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.BoogaardSFMR.sfr" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the SFR for a given galactic stellar mass log10(m).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.BoogaardSFMR.logm">
+<span class="sig-name descname"><span class="pre">logm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sfr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.BoogaardSFMR.logm" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the galactic stellar mass log10(m) for a given SFR.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>The model is by Boogaard et al. (2018) <a class="footnote-reference brackets" href="#id2" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a> , with the SFR as a
+log-linear function of the mass, <cite>a</cite> the slope and <cite>b</cite> the
+intercept.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#sfr.SFMR" title="sfr.SFMR"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SFMR</span></code></a></dt><dd><p>Implements this class.</p>
+</dd>
+</dl>
+</div>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id2" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id1">1</a>,<a role="doc-backlink" href="#id3">2</a>)</span>
+<p>Boogaard,L. A., Brinchmann, J., Bouche, N. et al. (2018). The
+MUSE Hubble Ultra Deep Field Survey - XI. Constraining the
+low-mass end of the stellar mass-star formation rate relation at
+z&lt;1. A&amp;A, 619, A27. doi:10.1051/0004-6361/201833136</p>
+</aside>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.BoogaardSFMR.A">
+<span class="sig-name descname"><span class="pre">A</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.83</span></em><a class="headerlink" href="#sfr.BoogaardSFMR.A" title="Permalink to this definition"></a></dt>
+<dd><p>Slope of the log-linear SFR(m).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.BoogaardSFMR.b">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">b</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.BoogaardSFMR.b" title="Permalink to this definition"></a></dt>
+<dd><p>Log-linear SFR(m) intercept. Redshift-dependent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.BoogaardSFMR.c">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">c</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.BoogaardSFMR.c" title="Permalink to this definition"></a></dt>
+<dd><p>SFMR auxiliary variable. Redshift-dependent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sfr.</span></span><span class="sig-name descname"><span class="pre">SpeagleSFMR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redshift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.SpeagleSFMR" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Redshift-dependent SFMR with moderate flattening at high masses.</p>
+<p>Computes the redshift-dependent star formation-mass relation (SFMR)
+with moderate flattening at high masses, while keeping a
+<a class="reference internal" href="#sfr.BoogaardSFMR" title="sfr.BoogaardSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoogaardSFMR</span></code></a> at low masses, for a given redshift.
+Allows calculating the star-formation rate (SFR) from the galaxy
+stellar mass. Meant to be implemented trough <a class="reference internal" href="#sfr.SFMR" title="sfr.SFMR"><code class="xref py py-func docutils literal notranslate"><span class="pre">sfr.SFMR()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>redshift</strong> (<em>float</em>) – Redshift at which to compute the relation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR.redshift">
+<span class="sig-name descname"><span class="pre">redshift</span></span><a class="headerlink" href="#sfr.SpeagleSFMR.redshift" title="Permalink to this definition"></a></dt>
+<dd><p>Redshift at which to compute the relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR.lowmass_sfmr">
+<span class="sig-name descname"><span class="pre">lowmass_sfmr</span></span><a class="headerlink" href="#sfr.SpeagleSFMR.lowmass_sfmr" title="Permalink to this definition"></a></dt>
+<dd><p>SFMR below <a class="reference internal" href="#sfr.SpeagleSFMR.LOGM_BREAK" title="sfr.SpeagleSFMR.LOGM_BREAK"><code class="xref py py-const docutils literal notranslate"><span class="pre">LOGM_BREAK</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#sfr.BoogaardSFMR" title="sfr.BoogaardSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">sfr.BoogaardSFMR</span></code></a>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR.sfr">
+<span class="sig-name descname"><span class="pre">sfr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.SpeagleSFMR.sfr" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the SFR for a given galactic stellar mass log.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR.logm">
+<span class="sig-name descname"><span class="pre">logm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sfr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.SpeagleSFMR.logm" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the galactic stellar mass log for a given SFR.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>The SFR is modeled as a log-linear function of the mass, with
+<a class="reference internal" href="#sfr.SpeagleSFMR.a" title="sfr.SpeagleSFMR.a"><code class="xref py py-attr docutils literal notranslate"><span class="pre">a</span></code></a> as the slope and <a class="reference internal" href="#sfr.SpeagleSFMR.b" title="sfr.SpeagleSFMR.b"><code class="xref py py-attr docutils literal notranslate"><span class="pre">b</span></code></a> the intercept. Below a break
+mass :const:LOGM_BREAK, the SFMR is given by a
+<a class="reference internal" href="#sfr.BoogaardSFMR" title="sfr.BoogaardSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoogaardSFMR</span></code></a> (Boogaard et al., 2018) <a class="footnote-reference brackets" href="#id2" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>. Above the
+break, the log-linear form is kept, but the slope becomes
+redshift-dependent, following the model by Speagle et al. (2014)
+<a class="footnote-reference brackets" href="#id5" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. The intercept is defined by continuity with the Boogaard SFMR.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id5" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">2</a><span class="fn-bracket">]</span></span>
+<p>Speagle, J. S., Steinhardt, C. L., Capak, P. L., Silverman,
+J. D. (2014). A highly consistent framework for the evolution of
+the star-forming “main sequence” from z~0-6. ApJS, 214, 15.
+doi:10.1088/0067-0049/214/2/15.</p>
+</aside>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR.LOGM_BREAK">
+<span class="sig-name descname"><span class="pre">LOGM_BREAK</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">9.7</span></em><a class="headerlink" href="#sfr.SpeagleSFMR.LOGM_BREAK" title="Permalink to this definition"></a></dt>
+<dd><p>Break mass between Boogaard and Speagle SFMRs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR.time">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.SpeagleSFMR.time" title="Permalink to this definition"></a></dt>
+<dd><p>Age of the universe, in Gyr, at <a class="reference internal" href="#sfr.SpeagleSFMR.redshift" title="sfr.SpeagleSFMR.redshift"><code class="xref py py-attr docutils literal notranslate"><span class="pre">redshift</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR.a">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">a</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.SpeagleSFMR.a" title="Permalink to this definition"></a></dt>
+<dd><p>Log-linear SFR(m) slope. Redshift-dependent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.SpeagleSFMR.b">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">b</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.SpeagleSFMR.b" title="Permalink to this definition"></a></dt>
+<dd><p>Log-linear SFR(m) intercept. Redshift-dependent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sfr.</span></span><span class="sig-name descname"><span class="pre">TomczakSFMR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redshift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.TomczakSFMR" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Redshift-dependent SFMR with sharp flattening at high masses.</p>
+<p>Computes the redshift-dependent star formation-mass relation (SFMR)
+with sharp flattening at high masses, while keeping a
+<a class="reference internal" href="#sfr.BoogaardSFMR" title="sfr.BoogaardSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoogaardSFMR</span></code></a> at low masses, for a given redshift.
+Allows calculating the star-formation rate (SFR) from the galaxy
+stellar mass. Meant to be  implemented trough <a class="reference internal" href="#sfr.SFMR" title="sfr.SFMR"><code class="xref py py-func docutils literal notranslate"><span class="pre">sfr.SFMR()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>redshift</strong> (<em>float</em>) – Redshift at which to compute the relation.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR.redshift">
+<span class="sig-name descname"><span class="pre">redshift</span></span><a class="headerlink" href="#sfr.TomczakSFMR.redshift" title="Permalink to this definition"></a></dt>
+<dd><p>Redshift at which to compute the relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR.lowmass_sfmr">
+<span class="sig-name descname"><span class="pre">lowmass_sfmr</span></span><a class="headerlink" href="#sfr.TomczakSFMR.lowmass_sfmr" title="Permalink to this definition"></a></dt>
+<dd><p>SFMR below <a class="reference internal" href="#sfr.TomczakSFMR.logm_break" title="sfr.TomczakSFMR.logm_break"><code class="xref py py-attr docutils literal notranslate"><span class="pre">logm_break</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#sfr.BoogaardSFMR" title="sfr.BoogaardSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">sfr.BoogaardSFMR</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR.sfr">
+<span class="sig-name descname"><span class="pre">sfr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.TomczakSFMR.sfr" title="Permalink to this definition"></a></dt>
+<dd><p>Computes the SFR for a given galactic stellar mass log10(m).</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>Tomczak et al. (2016) <a class="footnote-reference brackets" href="#id8" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a> model the SFMR as a power-law with slope
+<a class="reference internal" href="#sfr.TomczakSFMR.GAMMA" title="sfr.TomczakSFMR.GAMMA"><code class="xref py py-const docutils literal notranslate"><span class="pre">GAMMA</span></code></a> at low masses, which saturates to <a class="reference internal" href="#sfr.TomczakSFMR.s0" title="sfr.TomczakSFMR.s0"><code class="xref py py-attr docutils literal notranslate"><span class="pre">s0</span></code></a> above a
+turn-off mass <code class="xref py py-attr docutils literal notranslate"><span class="pre">m_to</span></code>. Following Chruslinska &amp; Nelemans (2019)
+<a class="footnote-reference brackets" href="#id14" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>, here the SFMR is given as a <a class="reference internal" href="#sfr.BoogaardSFMR" title="sfr.BoogaardSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">sfr.BoogaardSFMR</span></code></a> below
+the turn-off, and by the Tomczak SFMR above it.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id8" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">3</a><span class="fn-bracket">]</span></span>
+<p>Tomczak, A. R., Quadri, R. F., Tran, K.-V. H. et al. (2014).
+Galaxy stellar mass functions from ZFOURGE/CANDELS: an excess of
+low-mass galaxies since z=2 and the rapid buildup of quiescent
+galaxies. ApJ, 783, 95. doi:10.1088/0004-637X/783/2/85</p>
+</aside>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR.GAMMA">
+<span class="sig-name descname"><span class="pre">GAMMA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.091</span></em><a class="headerlink" href="#sfr.TomczakSFMR.GAMMA" title="Permalink to this definition"></a></dt>
+<dd><p>Power-law slope.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR.s0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">s0</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.TomczakSFMR.s0" title="Permalink to this definition"></a></dt>
+<dd><p>High mass saturation SFR log. Redshift-dependent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR.logm_to">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logm_to</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.TomczakSFMR.logm_to" title="Permalink to this definition"></a></dt>
+<dd><p>Turn-off mass log. Redshift-dependent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR.logm_break">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logm_break</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.TomczakSFMR.logm_break" title="Permalink to this definition"></a></dt>
+<dd><p>Break mass between Boogaard and Tomczak SFMRs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.TomczakSFMR.break_corr">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">break_corr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#sfr.TomczakSFMR.break_corr" title="Permalink to this definition"></a></dt>
+<dd><p>Correction to match the SFMR models at the break.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sfr.SFMR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sfr.</span></span><span class="sig-name descname"><span class="pre">SFMR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redshift</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flattening</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'none'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.SFMR" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>General SFMR, with either no, moderate or sharp flattening at
+high masses.</p>
+<p>General SFMR class, with options for no, moderate or sharp
+flattening at high masses. Provides a unified way to access the
+three SFMR classes: <a class="reference internal" href="#sfr.BoogaardSFMR" title="sfr.BoogaardSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">BoogaardSFMR</span></code></a> (no flattening),
+<a class="reference internal" href="#sfr.SpeagleSFMR" title="sfr.SpeagleSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpeagleSFMR</span></code></a> (moderate flattening) and
+<a class="reference internal" href="#sfr.TomczakSFMR" title="sfr.TomczakSFMR"><code class="xref py py-class docutils literal notranslate"><span class="pre">TomczakSFMR</span></code></a> (sharp flattening).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>redshift</strong> (<em>float</em>) – Redshift at which to compute the relation.</p></li>
+<li><p><strong>flattening</strong> (<em>{'none'</em><em>, </em><em>'moderate'</em><em>, </em><em>'sharp'}</em><em>, </em><em>default: 'none'</em>) – SFMR model flattening option.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.SFMR.redshift">
+<span class="sig-name descname"><span class="pre">redshift</span></span><a class="headerlink" href="#sfr.SFMR.redshift" title="Permalink to this definition"></a></dt>
+<dd><p>Redshift at which to compute the relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.SFMR.flattening">
+<span class="sig-name descname"><span class="pre">flattening</span></span><a class="headerlink" href="#sfr.SFMR.flattening" title="Permalink to this definition"></a></dt>
+<dd><p>SFMR model flattening option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.SFMR.sfmr">
+<span class="sig-name descname"><span class="pre">sfmr</span></span><a class="headerlink" href="#sfr.SFMR.sfmr" title="Permalink to this definition"></a></dt>
+<dd><p>An instance of the BoogaardSFMR, SpeagleSFMR or Tomczak SFMR
+class, depending on the flattening option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>class instance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sfmr</span></span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>Instance of one of the SFMR model classes.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.SFMR.scatter">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scatter</span></span><a class="headerlink" href="#sfr.SFMR.scatter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.SFMR.sfr">
+<span class="sig-name descname"><span class="pre">sfr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.SFMR.sfr" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sfr.MZR">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sfr.</span></span><span class="sig-name descname"><span class="pre">MZR</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redshift</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mzr_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'KK04'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logm_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">7.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logm_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scatter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.MZR" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Redshift-dependent mass-(gas) metallicity relation for one of
+four parameter sets.</p>
+<p>Compute the redshift-dependent mass-(gas) metallicity relation (MZR)
+for one of four parameter sets: : ‘KK04’, ‘T04’, ‘M09’ or ‘PP04’.
+The MZR takes the form of a power law at low masses with slope
+gamma, which flattens around a turnover mass m_to to an asymptotic
+metallicity z_a. Metallicity given as Z_OH=12+log10(O/H).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>redshift</strong> (<em>float</em>) – Redshift at which to compute the relation.</p></li>
+<li><p><strong>mzr_model</strong> (<em>{'KK04'</em><em>, </em><em>'T04'</em><em>, </em><em>'M09'</em><em>, </em><em>'PP04'}</em><em>, </em><em>default: 'KK04'</em>) – Option of MZR parameter set.</p></li>
+<li><p><strong>logm_min</strong> (<em>float</em><em>, </em><em>default: 7.0</em>) – Log10 of the minimum stellar galaxy mass in the relation.</p></li>
+<li><p><strong>logm_max</strong> (<em>float</em><em>, </em><em>default: 12.0</em>) – Log10 of the maximum stellar galaxy mass in the relation.</p></li>
+<li><p><strong>scatter</strong> (<em>{'none'</em><em>, </em><em>'normal'</em><em>, </em><em>'max'</em><em>, </em><em>'min'}</em><em>, </em><em>default : 'none'</em>) – Scatter model option.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.ip_param_array">
+<span class="sig-name descname"><span class="pre">ip_param_array</span></span><a class="headerlink" href="#sfr.MZR.ip_param_array" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.redshift">
+<span class="sig-name descname"><span class="pre">redshift</span></span><a class="headerlink" href="#sfr.MZR.redshift" title="Permalink to this definition"></a></dt>
+<dd><p>Redshift at which to compute the relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.mzr_model">
+<span class="sig-name descname"><span class="pre">mzr_model</span></span><a class="headerlink" href="#sfr.MZR.mzr_model" title="Permalink to this definition"></a></dt>
+<dd><p>Option of MZR parameter set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.logm_min">
+<span class="sig-name descname"><span class="pre">logm_min</span></span><a class="headerlink" href="#sfr.MZR.logm_min" title="Permalink to this definition"></a></dt>
+<dd><p>Log10 of the minimum stellar galaxy mass in the relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.logm_max">
+<span class="sig-name descname"><span class="pre">logm_max</span></span><a class="headerlink" href="#sfr.MZR.logm_max" title="Permalink to this definition"></a></dt>
+<dd><p>Log10 of the maximum stellar galaxy mass in the relation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.z_a">
+<span class="sig-name descname"><span class="pre">z_a</span></span><a class="headerlink" href="#sfr.MZR.z_a" title="Permalink to this definition"></a></dt>
+<dd><p>Asymptotic Z_OH metallicity of the high-mass end of the
+relation. Redshift-dependent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.logm_to">
+<span class="sig-name descname"><span class="pre">logm_to</span></span><a class="headerlink" href="#sfr.MZR.logm_to" title="Permalink to this definition"></a></dt>
+<dd><p>Turnover mass, i.e., mass at which the relation begins to
+flatten to the asymptotic z_a.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.gamma">
+<span class="sig-name descname"><span class="pre">gamma</span></span><a class="headerlink" href="#sfr.MZR.gamma" title="Permalink to this definition"></a></dt>
+<dd><p>Low-mass end slope. Redshift-dependent.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR.dz">
+<span class="sig-name descname"><span class="pre">dz</span></span><a class="headerlink" href="#sfr.MZR.dz" title="Permalink to this definition"></a></dt>
+<dd><p>Normalization variation rate with redshift between z=2.2 and
+z=3.5.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR._ip_redshift_array">
+<span class="sig-name descname"><span class="pre">_ip_redshift_array</span></span><a class="headerlink" href="#sfr.MZR._ip_redshift_array" title="Permalink to this definition"></a></dt>
+<dd><p>Array of redshifts from which to interpolate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.MZR._ip_arrays_len">
+<span class="sig-name descname"><span class="pre">_ip_arrays_len</span></span><a class="headerlink" href="#sfr.MZR._ip_arrays_len" title="Permalink to this definition"></a></dt>
+<dd><p>Length of mass array to use for interpolation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.MZR.set_params">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sfr.MZR.set_params" title="Permalink to this definition"></a></dt>
+<dd><p>Interpolate from the original parameter set to the given
+redshift.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.MZR.zoh">
+<span class="sig-name descname"><span class="pre">zoh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.MZR.zoh" title="Permalink to this definition"></a></dt>
+<dd><p>Compute metallicity for a given galactic stellar mass log10(m).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.MZR.logm">
+<span class="sig-name descname"><span class="pre">logm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zoh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.MZR.logm" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the galactic stellar mass log10(m) for a given
+metallicity.</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UserWarning</strong> – If methods zoh(m) or m(zoh) are run before set_params().</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Four sets of parameters for this same relation form are made
+available, in following the models collected by Chruslinska &amp;
+Nelemans (2019) <a class="footnote-reference brackets" href="#id14" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a>: Tremontini et al. (2004) <a class="footnote-reference brackets" href="#id15" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a> (T04),
+Kobulnicky &amp; Kewley <a class="footnote-reference brackets" href="#id16" id="id11" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a> (2004) (KK04), Pettini &amp; Pagel <a class="footnote-reference brackets" href="#id17" id="id12" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a> (2004)
+(PP04) and Mannucci et al. <a class="footnote-reference brackets" href="#id18" id="id13" role="doc-noteref"><span class="fn-bracket">[</span>8<span class="fn-bracket">]</span></a> (2009) (M09).</p>
+<p>The relation is fitted for four redshift bins z ~ 0.07, 0.7, 2.2,
+3.5, such that each model provides four sets of corresponding MZR
+parameters. In order to get the MZR at any other redshift, a
+(mass, metallicity) array is generated at each of the four original
+z and, for each mass, the metallicity is interpolated to the desired
+z. Fitting of the MZR to the interpolated points sets the
+parameters at that z.</p>
+<p>For z &gt; 3.5, parameters are kept as for z=3.5, but it is assumed
+that the normalization varies linearly with redshift with the same
+rate as the average rate (dz) between z=2.2 and z=3.5.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id14" role="note">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id7">1</a>,<a role="doc-backlink" href="#id9">2</a>)</span>
+<p>Chruslinska, M. &amp; Nelemans, G. (2019). Metallicity of stars
+formed throughout the cosmic history based on the observational
+properties of star-forming galaxies. MNRAS, 488(4), 5300.
+doi:10.1093/mnras/stz2057</p>
+</aside>
+<aside class="footnote brackets" id="id15" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">5</a><span class="fn-bracket">]</span></span>
+<p>Tremontini, C. A., Heckamn, T. M., Kauffmann, G. et al.
+(2004). The Origin of the Mass-Metallicity Relation: Insights
+from 53,000 Star-forming Galaxies in the Sloan Digital Sky
+Survey. ApJ, 613, 898. doi:10.1086/423264</p>
+</aside>
+<aside class="footnote brackets" id="id16" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id11">6</a><span class="fn-bracket">]</span></span>
+<p>Kobulnicky, H. A., Kewley, L. J. (2004). Metallicities of 0.3
+&lt; z &lt; 1.0 Galaxies in the GOODS-North Field. ApJ, 617, 240.
+doi:10.1086/425299</p>
+</aside>
+<aside class="footnote brackets" id="id17" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id12">7</a><span class="fn-bracket">]</span></span>
+<p>Pettini, M., Pagel, B. E. J. (2004). [Oiii]/[Nii] as an
+abundance indicator at high redshift. MNRAS, 348(3), L59.
+doi:10.1111/j.1365-2966.2004.07591.x</p>
+</aside>
+<aside class="footnote brackets" id="id18" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id13">8</a><span class="fn-bracket">]</span></span>
+<p>Mannucci, F., Cresci, G., Maiolino, R. et al. (2009). LSD:
+Lyman-break galaxies Stellar populations and Dynamics - I. Mass,
+metallicity and gas at z~3.1. MNRAS, 398(4), 1915.
+doi:10.1111/j.1365-2966.2009.15185.x</p>
+</aside>
+<dl class="py property">
+<dt class="sig sig-object py" id="sfr.MZR.scatter">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scatter</span></span><a class="headerlink" href="#sfr.MZR.scatter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id19">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ip_param_array</span></span><a class="headerlink" href="#id19" title="Permalink to this definition"></a></dt>
+<dd><p>Array of MZR parameters from the chosen model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">set_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id20" title="Permalink to this definition"></a></dt>
+<dd><p>Interpolate from the original parameter set to the given
+redshift.</p>
+<p class="rubric">Notes</p>
+<p>The relation is fitted for four redshift bins z ~ 0.07, 0.7,
+2.2, 3.5, such that each model provides four sets of
+corresponding MZR parameters. In order to get the MZR at any
+other redshift, a (mass, metallicity) array is generated at each
+of the four original z and, for each mass, the metallicity is
+interpolated to the desired z. Fitting of the MZR to the
+interpolated points sets the parameters at that z.</p>
+<p>For z &gt; 3.5, parameters are kept as for z=3.5, but it is assumed
+that the normalization varies linearly with redshift with the
+same rate as the average rate (dz) between z=2.2 and z=3.5.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">logm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zoh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#id21" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the metallicity, Z_OH=12+log10(O/H), from the log10
+galactic stellar mass.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">zoh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#id22" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the log10 galactic stellar mass from the metallicity,
+Z_OH=12+log10(O/H).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sfr.Corrections">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sfr.</span></span><span class="sig-name descname"><span class="pre">Corrections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">metallicity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sfr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.Corrections" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Corrections to a Kroupa initial mass function-based star
+formation rate distribution.</p>
+<p>Calculates the appropriate corrections to the star formation rate
+(SFR) obtained when the Kroupa universal initial mass function
+(PowerLawIMF), or simply Kroupa SFR, is assumed, for the
+environment-dependent galactic PowerLawIMF (gIMF) obtained in the
+integrated galaxy-wide PowerLawIMF (IGIMF) framework. The
+corrections are a multiplicative factor dependent on the Kroupa SFR
+value and the metallicity, [Fe/H].</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.Corrections.data_path">
+<span class="sig-name descname"><span class="pre">data_path</span></span><a class="headerlink" href="#sfr.Corrections.data_path" title="Permalink to this definition"></a></dt>
+<dd><p>Path to the precalculated correction grid file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pathlib Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.Corrections.metallicity">
+<span class="sig-name descname"><span class="pre">metallicity</span></span><a class="headerlink" href="#sfr.Corrections.metallicity" title="Permalink to this definition"></a></dt>
+<dd><p>Array of metallicities at which to compute the corrections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.Corrections.sfr_kroupa">
+<span class="sig-name descname"><span class="pre">sfr_kroupa</span></span><a class="headerlink" href="#sfr.Corrections.sfr_kroupa" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Array of Kroupa SFR values correspondent to each metallicity for</dt><dd><p>which to compute corrections.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.Corrections.corrections">
+<span class="sig-name descname"><span class="pre">corrections</span></span><a class="headerlink" href="#sfr.Corrections.corrections" title="Permalink to this definition"></a></dt>
+<dd><p>Array of calculated corrections for the given SFR-metallicity
+pairs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.Corrections.metallicity_data">
+<span class="sig-name descname"><span class="pre">metallicity_data</span></span><a class="headerlink" href="#sfr.Corrections.metallicity_data" title="Permalink to this definition"></a></dt>
+<dd><p>Metallicity column from the precalculated grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.Corrections.sfr_kroupa_data">
+<span class="sig-name descname"><span class="pre">sfr_kroupa_data</span></span><a class="headerlink" href="#sfr.Corrections.sfr_kroupa_data" title="Permalink to this definition"></a></dt>
+<dd><p>Kroupa SFR column from the precalculated grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.Corrections.sfr_correction_data">
+<span class="sig-name descname"><span class="pre">sfr_correction_data</span></span><a class="headerlink" href="#sfr.Corrections.sfr_correction_data" title="Permalink to this definition"></a></dt>
+<dd><p>Correction columns from the precalculated grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.Corrections.get_corrections">
+<span class="sig-name descname"><span class="pre">get_corrections</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sfr.Corrections.get_corrections" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Interpolates from the precalculated correction grid to the given</dt><dd><p>metallicity-Kroupa SFR pairs.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>The corrections are obtained for arbitrary values of SFR and
+metallicity by interpolation of the SFR density grid from
+Chruslinska et al. (2020) <a class="footnote-reference brackets" href="#id24" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a>, kindly made available in full by
+Martyna Chruslinska.</p>
+<p>All metallicities are given as [Fe/H].</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id24" role="note">
+<span class="label"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id23">1</a>,<a role="doc-backlink" href="#id26">2</a>)</span>
+<p>Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z. (2020).
+The effect of the environment-dependent PowerLawIMF on the
+formation and metallicities of stars over cosmic history. A&amp;A,
+636, A10. doi:10.1051/0004-6361/202037688</p>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.Corrections.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sfr.Corrections.load_data" title="Permalink to this definition"></a></dt>
+<dd><p>Load original correction data into the appropriate arrays.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id25">
+<span class="sig-name descname"><span class="pre">get_corrections</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id25" title="Permalink to this definition"></a></dt>
+<dd><p>Compute corrections for the grid of metallicities and Kroupa
+SFR values provided.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">sfr.</span></span><span class="sig-name descname"><span class="pre">ChruslinskaSFRD</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'midmet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canon</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">per_redshift_met_bin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.ChruslinskaSFRD" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Star formation rate density grid.</p>
+<p>Loads the precomputed star formation rate density (SFRD) grid over
+redshift (z) and metallicity (Z_OH) and finds the SFRD corresponding
+to the (z,Z) pair closest to the (z,Z) provided by the user. Allows
+for choosing between the extreme low- and high-metallicity models,
+or a moderate-metallicity model.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.MODEL_PATH_DICT">
+<span class="sig-name descname"><span class="pre">MODEL_PATH_DICT</span></span><a class="headerlink" href="#sfr.ChruslinskaSFRD.MODEL_PATH_DICT" title="Permalink to this definition"></a></dt>
+<dd><p>Dictionary containing the paths to the precomputed SFRD grids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.SFRD_ZOH_ARRAY">
+<span class="sig-name descname"><span class="pre">SFRD_ZOH_ARRAY</span></span><a class="headerlink" href="#sfr.ChruslinskaSFRD.SFRD_ZOH_ARRAY" title="Permalink to this definition"></a></dt>
+<dd><p>Array of Z_OH metallicity values making up one axis of the SFRD
+grids.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.SFRD_Z_ARRAY">
+<span class="sig-name descname"><span class="pre">SFRD_Z_ARRAY</span></span><a class="headerlink" href="#sfr.ChruslinskaSFRD.SFRD_Z_ARRAY" title="Permalink to this definition"></a></dt>
+<dd><p>Array of Z metallicity values making up one axis of the SFRD
+grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.model">
+<span class="sig-name descname"><span class="pre">model</span></span><a class="headerlink" href="#sfr.ChruslinskaSFRD.model" title="Permalink to this definition"></a></dt>
+<dd><p>Choice of SFRD grid model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.sfrd_redshift_array">
+<span class="sig-name descname"><span class="pre">sfrd_redshift_array</span></span><a class="headerlink" href="#sfr.ChruslinskaSFRD.sfrd_redshift_array" title="Permalink to this definition"></a></dt>
+<dd><p>Array of redshifts making up the other axis of the SFRD grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.sfrd_dtime_array">
+<span class="sig-name descname"><span class="pre">sfrd_dtime_array</span></span><a class="headerlink" href="#sfr.ChruslinskaSFRD.sfrd_dtime_array" title="Permalink to this definition"></a></dt>
+<dd><p>Array of time steps defining the SFRD grid redshifts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.logsfrd_array">
+<span class="sig-name descname"><span class="pre">logsfrd_array</span></span><a class="headerlink" href="#sfr.ChruslinskaSFRD.logsfrd_array" title="Permalink to this definition"></a></dt>
+<dd><p>Log10(SFRD) array over the redshift-metallicity grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.load_grid">
+<span class="sig-name descname"><span class="pre">load_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sfr.ChruslinskaSFRD.load_grid" title="Permalink to this definition"></a></dt>
+<dd><p>Loads the SFRD grid from disk.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.get_logsfrd">
+<span class="sig-name descname"><span class="pre">get_logsfrd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">redshift</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#sfr.ChruslinskaSFRD.get_logsfrd" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the log10(SFRD) corresponding to the pair in the grid
+closest to the given (feh, redshift).</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UserWarning</strong> – If get_logsfrd(feh, redshift) is run before set_grid().</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The precomputed SFRD grids are by Chruslinska et al. (2020) <a class="footnote-reference brackets" href="#id24" id="id26" role="doc-noteref"><span class="fn-bracket">[</span>9<span class="fn-bracket">]</span></a> and
+were calculated with the same GSMF, SFMR and MZR relations employed
+in this module. Different combinations of the different relation
+options lead to the three grid options, differentiated by the degree
+to which the SFR distribution is shifted towards higher or lower
+metallicities. These grids already take into account the corrections
+for environment-dependent PowerLawIMF treated in the Corrections
+class.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id27">
+<span class="sig-name descname"><span class="pre">MODEL_PATH_DICT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'highmet':</span> <span class="pre">PosixPath('/home/lucasmdesa/Documents/GitHub/environIMF/data/C20_Results/SFRD_Z_z_data/302w14vIMF3aeh_FOH_z_dM.dat'),</span> <span class="pre">'lowmet':</span> <span class="pre">PosixPath('/home/lucasmdesa/Documents/GitHub/environIMF/data/C20_Results/SFRD_Z_z_data/204w14vIMF3aeh_FOH_z_dM.dat'),</span> <span class="pre">'midmet':</span> <span class="pre">PosixPath('/home/lucasmdesa/Documents/GitHub/environIMF/data/C20_Results/SFRD_Z_z_data/103w14vIMF3aeh_FOH_z_dM.dat')}</span></em><a class="headerlink" href="#id27" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.CANON_MODEL_PATH_DICT">
+<span class="sig-name descname"><span class="pre">CANON_MODEL_PATH_DICT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'highmet':</span> <span class="pre">PosixPath('/home/lucasmdesa/Documents/GitHub/environIMF/data/C20_Results/SFRD_Z_z_data/302w14_FOH_z_dM.dat'),</span> <span class="pre">'lowmet':</span> <span class="pre">PosixPath('/home/lucasmdesa/Documents/GitHub/environIMF/data/C20_Results/SFRD_Z_z_data/204w14_FOH_z_dM.dat'),</span> <span class="pre">'midmet':</span> <span class="pre">PosixPath('/home/lucasmdesa/Documents/GitHub/environIMF/data/C20_Results/SFRD_Z_z_data/103w14_FOH_z_dM.dat')}</span></em><a class="headerlink" href="#sfr.ChruslinskaSFRD.CANON_MODEL_PATH_DICT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id28">
+<span class="sig-name descname"><span class="pre">SFRD_ZOH_ARRAY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([5.3</span>&#160; <span class="pre">,</span> <span class="pre">5.322,</span> <span class="pre">5.344,</span> <span class="pre">5.366,</span> <span class="pre">5.388,</span> <span class="pre">5.41</span> <span class="pre">,</span> <span class="pre">5.432,</span> <span class="pre">5.454,</span> <span class="pre">5.476,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.498,</span> <span class="pre">5.52</span> <span class="pre">,</span> <span class="pre">5.542,</span> <span class="pre">5.564,</span> <span class="pre">5.586,</span> <span class="pre">5.608,</span> <span class="pre">5.63</span> <span class="pre">,</span> <span class="pre">5.652,</span> <span class="pre">5.674,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.696,</span> <span class="pre">5.718,</span> <span class="pre">5.74</span> <span class="pre">,</span> <span class="pre">5.762,</span> <span class="pre">5.784,</span> <span class="pre">5.806,</span> <span class="pre">5.828,</span> <span class="pre">5.85</span> <span class="pre">,</span> <span class="pre">5.872,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.894,</span> <span class="pre">5.916,</span> <span class="pre">5.938,</span> <span class="pre">5.96</span> <span class="pre">,</span> <span class="pre">5.982,</span> <span class="pre">6.004,</span> <span class="pre">6.026,</span> <span class="pre">6.048,</span> <span class="pre">6.07</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.092,</span> <span class="pre">6.114,</span> <span class="pre">6.136,</span> <span class="pre">6.158,</span> <span class="pre">6.18</span> <span class="pre">,</span> <span class="pre">6.202,</span> <span class="pre">6.224,</span> <span class="pre">6.246,</span> <span class="pre">6.268,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.29</span> <span class="pre">,</span> <span class="pre">6.312,</span> <span class="pre">6.334,</span> <span class="pre">6.356,</span> <span class="pre">6.378,</span> <span class="pre">6.4</span>&#160; <span class="pre">,</span> <span class="pre">6.422,</span> <span class="pre">6.444,</span> <span class="pre">6.466,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.488,</span> <span class="pre">6.51</span> <span class="pre">,</span> <span class="pre">6.532,</span> <span class="pre">6.554,</span> <span class="pre">6.576,</span> <span class="pre">6.598,</span> <span class="pre">6.62</span> <span class="pre">,</span> <span class="pre">6.642,</span> <span class="pre">6.664,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.686,</span> <span class="pre">6.708,</span> <span class="pre">6.73</span> <span class="pre">,</span> <span class="pre">6.752,</span> <span class="pre">6.774,</span> <span class="pre">6.796,</span> <span class="pre">6.818,</span> <span class="pre">6.84</span> <span class="pre">,</span> <span class="pre">6.862,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.884,</span> <span class="pre">6.906,</span> <span class="pre">6.928,</span> <span class="pre">6.95</span> <span class="pre">,</span> <span class="pre">6.972,</span> <span class="pre">6.994,</span> <span class="pre">7.016,</span> <span class="pre">7.038,</span> <span class="pre">7.06</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.082,</span> <span class="pre">7.104,</span> <span class="pre">7.126,</span> <span class="pre">7.148,</span> <span class="pre">7.17</span> <span class="pre">,</span> <span class="pre">7.192,</span> <span class="pre">7.214,</span> <span class="pre">7.236,</span> <span class="pre">7.258,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.28</span> <span class="pre">,</span> <span class="pre">7.302,</span> <span class="pre">7.324,</span> <span class="pre">7.346,</span> <span class="pre">7.368,</span> <span class="pre">7.39</span> <span class="pre">,</span> <span class="pre">7.412,</span> <span class="pre">7.434,</span> <span class="pre">7.456,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.478,</span> <span class="pre">7.5</span>&#160; <span class="pre">,</span> <span class="pre">7.522,</span> <span class="pre">7.544,</span> <span class="pre">7.566,</span> <span class="pre">7.588,</span> <span class="pre">7.61</span> <span class="pre">,</span> <span class="pre">7.632,</span> <span class="pre">7.654,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.676,</span> <span class="pre">7.698,</span> <span class="pre">7.72</span> <span class="pre">,</span> <span class="pre">7.742,</span> <span class="pre">7.764,</span> <span class="pre">7.786,</span> <span class="pre">7.808,</span> <span class="pre">7.83</span> <span class="pre">,</span> <span class="pre">7.852,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.874,</span> <span class="pre">7.896,</span> <span class="pre">7.918,</span> <span class="pre">7.94</span> <span class="pre">,</span> <span class="pre">7.962,</span> <span class="pre">7.984,</span> <span class="pre">8.006,</span> <span class="pre">8.028,</span> <span class="pre">8.05</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.072,</span> <span class="pre">8.094,</span> <span class="pre">8.116,</span> <span class="pre">8.138,</span> <span class="pre">8.16</span> <span class="pre">,</span> <span class="pre">8.182,</span> <span class="pre">8.204,</span> <span class="pre">8.226,</span> <span class="pre">8.248,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.27</span> <span class="pre">,</span> <span class="pre">8.292,</span> <span class="pre">8.314,</span> <span class="pre">8.336,</span> <span class="pre">8.358,</span> <span class="pre">8.38</span> <span class="pre">,</span> <span class="pre">8.402,</span> <span class="pre">8.424,</span> <span class="pre">8.446,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.468,</span> <span class="pre">8.49</span> <span class="pre">,</span> <span class="pre">8.512,</span> <span class="pre">8.534,</span> <span class="pre">8.556,</span> <span class="pre">8.578,</span> <span class="pre">8.6</span>&#160; <span class="pre">,</span> <span class="pre">8.622,</span> <span class="pre">8.644,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.666,</span> <span class="pre">8.688,</span> <span class="pre">8.71</span> <span class="pre">,</span> <span class="pre">8.732,</span> <span class="pre">8.754,</span> <span class="pre">8.776,</span> <span class="pre">8.798,</span> <span class="pre">8.82</span> <span class="pre">,</span> <span class="pre">8.842,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.864,</span> <span class="pre">8.886,</span> <span class="pre">8.908,</span> <span class="pre">8.93</span> <span class="pre">,</span> <span class="pre">8.952,</span> <span class="pre">8.974,</span> <span class="pre">8.996,</span> <span class="pre">9.018,</span> <span class="pre">9.04</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.062,</span> <span class="pre">9.084,</span> <span class="pre">9.106,</span> <span class="pre">9.128,</span> <span class="pre">9.15</span> <span class="pre">,</span> <span class="pre">9.172,</span> <span class="pre">9.194,</span> <span class="pre">9.216,</span> <span class="pre">9.238,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.26</span> <span class="pre">,</span> <span class="pre">9.282,</span> <span class="pre">9.304,</span> <span class="pre">9.326,</span> <span class="pre">9.348,</span> <span class="pre">9.37</span> <span class="pre">,</span> <span class="pre">9.392,</span> <span class="pre">9.414,</span> <span class="pre">9.436,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.458,</span> <span class="pre">9.48</span> <span class="pre">,</span> <span class="pre">9.502,</span> <span class="pre">9.524,</span> <span class="pre">9.546,</span> <span class="pre">9.568,</span> <span class="pre">9.59</span> <span class="pre">,</span> <span class="pre">9.612,</span> <span class="pre">9.634,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.656,</span> <span class="pre">9.678,</span> <span class="pre">9.7</span>&#160; <span class="pre">])</span></em><a class="headerlink" href="#id28" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.SFRD_ZOH_CENTERS_ARRAY">
+<span class="sig-name descname"><span class="pre">SFRD_ZOH_CENTERS_ARRAY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([5.3</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">,</span> <span class="pre">5.32211055,</span> <span class="pre">5.34422111,</span> <span class="pre">5.36633166,</span> <span class="pre">5.38844221,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.41055276,</span> <span class="pre">5.43266332,</span> <span class="pre">5.45477387,</span> <span class="pre">5.47688442,</span> <span class="pre">5.49899497,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.52110553,</span> <span class="pre">5.54321608,</span> <span class="pre">5.56532663,</span> <span class="pre">5.58743719,</span> <span class="pre">5.60954774,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.63165829,</span> <span class="pre">5.65376884,</span> <span class="pre">5.6758794</span> <span class="pre">,</span> <span class="pre">5.69798995,</span> <span class="pre">5.7201005</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.74221106,</span> <span class="pre">5.76432161,</span> <span class="pre">5.78643216,</span> <span class="pre">5.80854271,</span> <span class="pre">5.83065327,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.85276382,</span> <span class="pre">5.87487437,</span> <span class="pre">5.89698492,</span> <span class="pre">5.91909548,</span> <span class="pre">5.94120603,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.96331658,</span> <span class="pre">5.98542714,</span> <span class="pre">6.00753769,</span> <span class="pre">6.02964824,</span> <span class="pre">6.05175879,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.07386935,</span> <span class="pre">6.0959799</span> <span class="pre">,</span> <span class="pre">6.11809045,</span> <span class="pre">6.14020101,</span> <span class="pre">6.16231156,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.18442211,</span> <span class="pre">6.20653266,</span> <span class="pre">6.22864322,</span> <span class="pre">6.25075377,</span> <span class="pre">6.27286432,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.29497487,</span> <span class="pre">6.31708543,</span> <span class="pre">6.33919598,</span> <span class="pre">6.36130653,</span> <span class="pre">6.38341709,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.40552764,</span> <span class="pre">6.42763819,</span> <span class="pre">6.44974874,</span> <span class="pre">6.4718593</span> <span class="pre">,</span> <span class="pre">6.49396985,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.5160804</span> <span class="pre">,</span> <span class="pre">6.53819095,</span> <span class="pre">6.56030151,</span> <span class="pre">6.58241206,</span> <span class="pre">6.60452261,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.62663317,</span> <span class="pre">6.64874372,</span> <span class="pre">6.67085427,</span> <span class="pre">6.69296482,</span> <span class="pre">6.71507538,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.73718593,</span> <span class="pre">6.75929648,</span> <span class="pre">6.78140704,</span> <span class="pre">6.80351759,</span> <span class="pre">6.82562814,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.84773869,</span> <span class="pre">6.86984925,</span> <span class="pre">6.8919598</span> <span class="pre">,</span> <span class="pre">6.91407035,</span> <span class="pre">6.9361809</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.95829146,</span> <span class="pre">6.98040201,</span> <span class="pre">7.00251256,</span> <span class="pre">7.02462312,</span> <span class="pre">7.04673367,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.06884422,</span> <span class="pre">7.09095477,</span> <span class="pre">7.11306533,</span> <span class="pre">7.13517588,</span> <span class="pre">7.15728643,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.17939698,</span> <span class="pre">7.20150754,</span> <span class="pre">7.22361809,</span> <span class="pre">7.24572864,</span> <span class="pre">7.2678392</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.28994975,</span> <span class="pre">7.3120603</span> <span class="pre">,</span> <span class="pre">7.33417085,</span> <span class="pre">7.35628141,</span> <span class="pre">7.37839196,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.40050251,</span> <span class="pre">7.42261307,</span> <span class="pre">7.44472362,</span> <span class="pre">7.46683417,</span> <span class="pre">7.48894472,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.51105528,</span> <span class="pre">7.53316583,</span> <span class="pre">7.55527638,</span> <span class="pre">7.57738693,</span> <span class="pre">7.59949749,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.62160804,</span> <span class="pre">7.64371859,</span> <span class="pre">7.66582915,</span> <span class="pre">7.6879397</span> <span class="pre">,</span> <span class="pre">7.71005025,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.7321608</span> <span class="pre">,</span> <span class="pre">7.75427136,</span> <span class="pre">7.77638191,</span> <span class="pre">7.79849246,</span> <span class="pre">7.82060302,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.84271357,</span> <span class="pre">7.86482412,</span> <span class="pre">7.88693467,</span> <span class="pre">7.90904523,</span> <span class="pre">7.93115578,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.95326633,</span> <span class="pre">7.97537688,</span> <span class="pre">7.99748744,</span> <span class="pre">8.01959799,</span> <span class="pre">8.04170854,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.0638191</span> <span class="pre">,</span> <span class="pre">8.08592965,</span> <span class="pre">8.1080402</span> <span class="pre">,</span> <span class="pre">8.13015075,</span> <span class="pre">8.15226131,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.17437186,</span> <span class="pre">8.19648241,</span> <span class="pre">8.21859296,</span> <span class="pre">8.24070352,</span> <span class="pre">8.26281407,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.28492462,</span> <span class="pre">8.30703518,</span> <span class="pre">8.32914573,</span> <span class="pre">8.35125628,</span> <span class="pre">8.37336683,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.39547739,</span> <span class="pre">8.41758794,</span> <span class="pre">8.43969849,</span> <span class="pre">8.46180905,</span> <span class="pre">8.4839196</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.50603015,</span> <span class="pre">8.5281407</span> <span class="pre">,</span> <span class="pre">8.55025126,</span> <span class="pre">8.57236181,</span> <span class="pre">8.59447236,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.61658291,</span> <span class="pre">8.63869347,</span> <span class="pre">8.66080402,</span> <span class="pre">8.68291457,</span> <span class="pre">8.70502513,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.72713568,</span> <span class="pre">8.74924623,</span> <span class="pre">8.77135678,</span> <span class="pre">8.79346734,</span> <span class="pre">8.81557789,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.83768844,</span> <span class="pre">8.85979899,</span> <span class="pre">8.88190955,</span> <span class="pre">8.9040201</span> <span class="pre">,</span> <span class="pre">8.92613065,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.94824121,</span> <span class="pre">8.97035176,</span> <span class="pre">8.99246231,</span> <span class="pre">9.01457286,</span> <span class="pre">9.03668342,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.05879397,</span> <span class="pre">9.08090452,</span> <span class="pre">9.10301508,</span> <span class="pre">9.12512563,</span> <span class="pre">9.14723618,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.16934673,</span> <span class="pre">9.19145729,</span> <span class="pre">9.21356784,</span> <span class="pre">9.23567839,</span> <span class="pre">9.25778894,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.2798995</span> <span class="pre">,</span> <span class="pre">9.30201005,</span> <span class="pre">9.3241206</span> <span class="pre">,</span> <span class="pre">9.34623116,</span> <span class="pre">9.36834171,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.39045226,</span> <span class="pre">9.41256281,</span> <span class="pre">9.43467337,</span> <span class="pre">9.45678392,</span> <span class="pre">9.47889447,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.50100503,</span> <span class="pre">9.52311558,</span> <span class="pre">9.54522613,</span> <span class="pre">9.56733668,</span> <span class="pre">9.58944724,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.61155779,</span> <span class="pre">9.63366834,</span> <span class="pre">9.65577889,</span> <span class="pre">9.67788945,</span> <span class="pre">9.7</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">])</span></em><a class="headerlink" href="#sfr.ChruslinskaSFRD.SFRD_ZOH_CENTERS_ARRAY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.SFRD_FEH_ARRAY">
+<span class="sig-name descname"><span class="pre">SFRD_FEH_ARRAY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([-4.03</span> <span class="pre">,</span> <span class="pre">-4.008,</span> <span class="pre">-3.986,</span> <span class="pre">-3.964,</span> <span class="pre">-3.942,</span> <span class="pre">-3.92</span> <span class="pre">,</span> <span class="pre">-3.898,</span> <span class="pre">-3.876,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-3.854,</span> <span class="pre">-3.832,</span> <span class="pre">-3.81</span> <span class="pre">,</span> <span class="pre">-3.788,</span> <span class="pre">-3.766,</span> <span class="pre">-3.744,</span> <span class="pre">-3.722,</span> <span class="pre">-3.7</span>&#160; <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-3.678,</span> <span class="pre">-3.656,</span> <span class="pre">-3.634,</span> <span class="pre">-3.612,</span> <span class="pre">-3.59</span> <span class="pre">,</span> <span class="pre">-3.568,</span> <span class="pre">-3.546,</span> <span class="pre">-3.524,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-3.502,</span> <span class="pre">-3.48</span> <span class="pre">,</span> <span class="pre">-3.458,</span> <span class="pre">-3.436,</span> <span class="pre">-3.414,</span> <span class="pre">-3.392,</span> <span class="pre">-3.37</span> <span class="pre">,</span> <span class="pre">-3.348,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-3.326,</span> <span class="pre">-3.304,</span> <span class="pre">-3.282,</span> <span class="pre">-3.26</span> <span class="pre">,</span> <span class="pre">-3.238,</span> <span class="pre">-3.216,</span> <span class="pre">-3.194,</span> <span class="pre">-3.172,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-3.15</span> <span class="pre">,</span> <span class="pre">-3.128,</span> <span class="pre">-3.106,</span> <span class="pre">-3.084,</span> <span class="pre">-3.062,</span> <span class="pre">-3.04</span> <span class="pre">,</span> <span class="pre">-3.018,</span> <span class="pre">-2.996,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-2.974,</span> <span class="pre">-2.952,</span> <span class="pre">-2.93</span> <span class="pre">,</span> <span class="pre">-2.908,</span> <span class="pre">-2.886,</span> <span class="pre">-2.864,</span> <span class="pre">-2.842,</span> <span class="pre">-2.82</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-2.798,</span> <span class="pre">-2.776,</span> <span class="pre">-2.754,</span> <span class="pre">-2.732,</span> <span class="pre">-2.71</span> <span class="pre">,</span> <span class="pre">-2.688,</span> <span class="pre">-2.666,</span> <span class="pre">-2.644,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-2.622,</span> <span class="pre">-2.6</span>&#160; <span class="pre">,</span> <span class="pre">-2.578,</span> <span class="pre">-2.556,</span> <span class="pre">-2.534,</span> <span class="pre">-2.512,</span> <span class="pre">-2.49</span> <span class="pre">,</span> <span class="pre">-2.468,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-2.446,</span> <span class="pre">-2.424,</span> <span class="pre">-2.402,</span> <span class="pre">-2.38</span> <span class="pre">,</span> <span class="pre">-2.358,</span> <span class="pre">-2.336,</span> <span class="pre">-2.314,</span> <span class="pre">-2.292,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-2.27</span> <span class="pre">,</span> <span class="pre">-2.248,</span> <span class="pre">-2.226,</span> <span class="pre">-2.204,</span> <span class="pre">-2.182,</span> <span class="pre">-2.16</span> <span class="pre">,</span> <span class="pre">-2.138,</span> <span class="pre">-2.116,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-2.094,</span> <span class="pre">-2.072,</span> <span class="pre">-2.05</span> <span class="pre">,</span> <span class="pre">-2.028,</span> <span class="pre">-2.006,</span> <span class="pre">-1.984,</span> <span class="pre">-1.962,</span> <span class="pre">-1.94</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-1.918,</span> <span class="pre">-1.896,</span> <span class="pre">-1.874,</span> <span class="pre">-1.852,</span> <span class="pre">-1.83</span> <span class="pre">,</span> <span class="pre">-1.808,</span> <span class="pre">-1.786,</span> <span class="pre">-1.764,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-1.742,</span> <span class="pre">-1.72</span> <span class="pre">,</span> <span class="pre">-1.698,</span> <span class="pre">-1.676,</span> <span class="pre">-1.654,</span> <span class="pre">-1.632,</span> <span class="pre">-1.61</span> <span class="pre">,</span> <span class="pre">-1.588,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-1.566,</span> <span class="pre">-1.544,</span> <span class="pre">-1.522,</span> <span class="pre">-1.5</span>&#160; <span class="pre">,</span> <span class="pre">-1.478,</span> <span class="pre">-1.456,</span> <span class="pre">-1.434,</span> <span class="pre">-1.412,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-1.39</span> <span class="pre">,</span> <span class="pre">-1.368,</span> <span class="pre">-1.346,</span> <span class="pre">-1.324,</span> <span class="pre">-1.302,</span> <span class="pre">-1.28</span> <span class="pre">,</span> <span class="pre">-1.258,</span> <span class="pre">-1.236,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-1.214,</span> <span class="pre">-1.192,</span> <span class="pre">-1.17</span> <span class="pre">,</span> <span class="pre">-1.148,</span> <span class="pre">-1.126,</span> <span class="pre">-1.104,</span> <span class="pre">-1.082,</span> <span class="pre">-1.06</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-1.038,</span> <span class="pre">-1.016,</span> <span class="pre">-0.988,</span> <span class="pre">-0.944,</span> <span class="pre">-0.9</span>&#160; <span class="pre">,</span> <span class="pre">-0.856,</span> <span class="pre">-0.812,</span> <span class="pre">-0.768,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-0.724,</span> <span class="pre">-0.68</span> <span class="pre">,</span> <span class="pre">-0.636,</span> <span class="pre">-0.592,</span> <span class="pre">-0.548,</span> <span class="pre">-0.504,</span> <span class="pre">-0.46</span> <span class="pre">,</span> <span class="pre">-0.416,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-0.372,</span> <span class="pre">-0.328,</span> <span class="pre">-0.284,</span> <span class="pre">-0.24</span> <span class="pre">,</span> <span class="pre">-0.196,</span> <span class="pre">-0.152,</span> <span class="pre">-0.108,</span> <span class="pre">-0.064,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-0.02</span> <span class="pre">,</span>&#160; <span class="pre">0.024,</span>&#160; <span class="pre">0.068,</span>&#160; <span class="pre">0.112,</span>&#160; <span class="pre">0.156,</span>&#160; <span class="pre">0.2</span>&#160; <span class="pre">,</span>&#160; <span class="pre">0.244,</span>&#160; <span class="pre">0.288,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">0.332,</span>&#160; <span class="pre">0.376,</span>&#160; <span class="pre">0.42</span> <span class="pre">,</span>&#160; <span class="pre">0.464,</span>&#160; <span class="pre">0.508,</span>&#160; <span class="pre">0.552,</span>&#160; <span class="pre">0.596,</span>&#160; <span class="pre">0.64</span> <span class="pre">,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">0.684,</span>&#160; <span class="pre">0.728,</span>&#160; <span class="pre">0.772,</span>&#160; <span class="pre">0.816,</span>&#160; <span class="pre">0.86</span> <span class="pre">,</span>&#160; <span class="pre">0.904,</span>&#160; <span class="pre">0.948,</span>&#160; <span class="pre">0.992,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.036,</span>&#160; <span class="pre">1.08</span> <span class="pre">,</span>&#160; <span class="pre">1.124,</span>&#160; <span class="pre">1.168,</span>&#160; <span class="pre">1.212,</span>&#160; <span class="pre">1.256,</span>&#160; <span class="pre">1.3</span>&#160; <span class="pre">,</span>&#160; <span class="pre">1.344,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.388,</span>&#160; <span class="pre">1.432,</span>&#160; <span class="pre">1.476,</span>&#160; <span class="pre">1.52</span> <span class="pre">,</span>&#160; <span class="pre">1.564,</span>&#160; <span class="pre">1.608,</span>&#160; <span class="pre">1.652,</span>&#160; <span class="pre">1.696,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.74</span> <span class="pre">])</span></em><a class="headerlink" href="#sfr.ChruslinskaSFRD.SFRD_FEH_ARRAY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id29">
+<span class="sig-name descname"><span class="pre">SFRD_Z_ARRAY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([1.32522111e-06,</span> <span class="pre">1.39408208e-06,</span> <span class="pre">1.46652120e-06,</span> <span class="pre">1.54272439e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.62288724e-06,</span> <span class="pre">1.70721550e-06,</span> <span class="pre">1.79592561e-06,</span> <span class="pre">1.88924527e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.98741400e-06,</span> <span class="pre">2.09068375e-06,</span> <span class="pre">2.19931960e-06,</span> <span class="pre">2.31360037e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.43381938e-06,</span> <span class="pre">2.56028519e-06,</span> <span class="pre">2.69332241e-06,</span> <span class="pre">2.83327249e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.98049463e-06,</span> <span class="pre">3.13536672e-06,</span> <span class="pre">3.29828625e-06,</span> <span class="pre">3.46967138e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.64996201e-06,</span> <span class="pre">3.83962088e-06,</span> <span class="pre">4.03913477e-06,</span> <span class="pre">4.24901578e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.46980261e-06,</span> <span class="pre">4.70206193e-06,</span> <span class="pre">4.94638987e-06,</span> <span class="pre">5.20341356e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.47379268e-06,</span> <span class="pre">5.75822120e-06,</span> <span class="pre">6.05742917e-06,</span> <span class="pre">6.37218454e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.70329519e-06,</span> <span class="pre">7.05161096e-06,</span> <span class="pre">7.41802588e-06,</span> <span class="pre">7.80348041e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.20896387e-06,</span> <span class="pre">8.63551702e-06,</span> <span class="pre">9.08423466e-06,</span> <span class="pre">9.55626852e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.00528301e-05,</span> <span class="pre">1.05751940e-05,</span> <span class="pre">1.11247009e-05,</span> <span class="pre">1.17027612e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.23108586e-05,</span> <span class="pre">1.29505539e-05,</span> <span class="pre">1.36234890e-05,</span> <span class="pre">1.43313910e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.50760769e-05,</span> <span class="pre">1.58594581e-05,</span> <span class="pre">1.66835453e-05,</span> <span class="pre">1.75504536e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.84624080e-05,</span> <span class="pre">1.94217493e-05,</span> <span class="pre">2.04309398e-05,</span> <span class="pre">2.14925697e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.26093639e-05,</span> <span class="pre">2.37841888e-05,</span> <span class="pre">2.50200599e-05,</span> <span class="pre">2.63201491e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.76877933e-05,</span> <span class="pre">2.91265029e-05,</span> <span class="pre">3.06399706e-05,</span> <span class="pre">3.22320809e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.39069202e-05,</span> <span class="pre">3.56687873e-05,</span> <span class="pre">3.75222044e-05,</span> <span class="pre">3.94719284e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.15229638e-05,</span> <span class="pre">4.36805748e-05,</span> <span class="pre">4.59502993e-05,</span> <span class="pre">4.83379629e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.08496941e-05,</span> <span class="pre">5.34919395e-05,</span> <span class="pre">5.62714809e-05,</span> <span class="pre">5.91954525e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.22713591e-05,</span> <span class="pre">6.55070956e-05,</span> <span class="pre">6.89109670e-05,</span> <span class="pre">7.24917100e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.62585151e-05,</span> <span class="pre">8.02210504e-05,</span> <span class="pre">8.43894865e-05,</span> <span class="pre">8.87745224e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.33874129e-05,</span> <span class="pre">9.82399979e-05,</span> <span class="pre">1.03344732e-04,</span> <span class="pre">1.08714718e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.14363739e-04,</span> <span class="pre">1.20306293e-04,</span> <span class="pre">1.26557633e-04,</span> <span class="pre">1.33133805e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.40051687e-04,</span> <span class="pre">1.47329035e-04,</span> <span class="pre">1.54984528e-04,</span> <span class="pre">1.63037814e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.71509565e-04,</span> <span class="pre">1.80421523e-04,</span> <span class="pre">1.89796563e-04,</span> <span class="pre">1.99658748e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.10033391e-04,</span> <span class="pre">2.20947120e-04,</span> <span class="pre">2.32427946e-04,</span> <span class="pre">2.44505338e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.57210293e-04,</span> <span class="pre">2.70575422e-04,</span> <span class="pre">2.84635028e-04,</span> <span class="pre">2.99425197e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.14983892e-04,</span> <span class="pre">3.31351045e-04,</span> <span class="pre">3.48568666e-04,</span> <span class="pre">3.66680947e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.85734376e-04,</span> <span class="pre">4.05777857e-04,</span> <span class="pre">4.26862835e-04,</span> <span class="pre">4.49043428e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.72376566e-04,</span> <span class="pre">4.96922137e-04,</span> <span class="pre">5.22743143e-04,</span> <span class="pre">5.49905856e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.78479994e-04,</span> <span class="pre">6.08538899e-04,</span> <span class="pre">6.40159720e-04,</span> <span class="pre">6.73423619e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.08415972e-04,</span> <span class="pre">7.45226594e-04,</span> <span class="pre">7.83949964e-04,</span> <span class="pre">8.24685473e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.67537675e-04,</span> <span class="pre">9.12616559e-04,</span> <span class="pre">9.60037825e-04,</span> <span class="pre">1.00992319e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.06240069e-03,</span> <span class="pre">1.11760502e-03,</span> <span class="pre">1.17567787e-03,</span> <span class="pre">1.23676830e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.30103310e-03,</span> <span class="pre">1.36863721e-03,</span> <span class="pre">1.45978314e-03,</span> <span class="pre">1.61543075e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.78767408e-03,</span> <span class="pre">1.97828266e-03,</span> <span class="pre">2.18921464e-03,</span> <span class="pre">2.42263699e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.68094772e-03,</span> <span class="pre">2.96680051e-03,</span> <span class="pre">3.28313200e-03,</span> <span class="pre">3.63319196e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.02057663e-03,</span> <span class="pre">4.44926573e-03,</span> <span class="pre">4.92366328e-03,</span> <span class="pre">5.44864289e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.02959781e-03,</span> <span class="pre">6.67249634e-03,</span> <span class="pre">7.38394315e-03,</span> <span class="pre">8.17124711e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.04249640e-03,</span> <span class="pre">1.00066416e-02,</span> <span class="pre">1.10735876e-02,</span> <span class="pre">1.22542954e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.35608947e-02,</span> <span class="pre">1.50068086e-02,</span> <span class="pre">1.66068914e-02,</span> <span class="pre">1.83775809e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.03370682e-02,</span> <span class="pre">2.25054833e-02,</span> <span class="pre">2.49051031e-02,</span> <span class="pre">2.75605795e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.04991927e-02,</span> <span class="pre">3.37511321e-02,</span> <span class="pre">3.73498055e-02,</span> <span class="pre">4.13321831e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.57391768e-02,</span> <span class="pre">5.06160609e-02,</span> <span class="pre">5.60129369e-02,</span> <span class="pre">6.19852482e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.85943499e-02,</span> <span class="pre">7.59081390e-02,</span> <span class="pre">8.40017521e-02,</span> <span class="pre">9.29583367e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.02869906e-01,</span> <span class="pre">1.13838285e-01,</span> <span class="pre">1.25976154e-01,</span> <span class="pre">1.39408208e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.54272439e-01,</span> <span class="pre">1.70721550e-01,</span> <span class="pre">1.88924527e-01,</span> <span class="pre">2.09068375e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.31360037e-01,</span> <span class="pre">2.56028519e-01,</span> <span class="pre">2.83327249e-01,</span> <span class="pre">3.13536672e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.46967138e-01,</span> <span class="pre">3.83962088e-01,</span> <span class="pre">4.24901578e-01,</span> <span class="pre">4.70206193e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.20341356e-01,</span> <span class="pre">5.75822120e-01,</span> <span class="pre">6.37218454e-01,</span> <span class="pre">7.05161096e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.80348041e-01])</span></em><a class="headerlink" href="#id29" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.SFRD_Z_CENTERS_ARRAY">
+<span class="sig-name descname"><span class="pre">SFRD_Z_CENTERS_ARRAY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([1.32522111e-06,</span> <span class="pre">1.39443700e-06,</span> <span class="pre">1.46726801e-06,</span> <span class="pre">1.54390297e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.62454055e-06,</span> <span class="pre">1.70938980e-06,</span> <span class="pre">1.79867070e-06,</span> <span class="pre">1.89261472e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.99146541e-06,</span> <span class="pre">2.09547903e-06,</span> <span class="pre">2.20492526e-06,</span> <span class="pre">2.32008782e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.44126530e-06,</span> <span class="pre">2.56877183e-06,</span> <span class="pre">2.70293799e-06,</span> <span class="pre">2.84411161e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.99265869e-06,</span> <span class="pre">3.14896433e-06,</span> <span class="pre">3.31343377e-06,</span> <span class="pre">3.48649340e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.66859187e-06,</span> <span class="pre">3.86020130e-06,</span> <span class="pre">4.06181842e-06,</span> <span class="pre">4.27396595e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.49719388e-06,</span> <span class="pre">4.73208093e-06,</span> <span class="pre">4.97923606e-06,</span> <span class="pre">5.23930003e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.51294706e-06,</span> <span class="pre">5.80088659e-06,</span> <span class="pre">6.10386511e-06,</span> <span class="pre">6.42266810e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.75812208e-06,</span> <span class="pre">7.11109672e-06,</span> <span class="pre">7.48250711e-06,</span> <span class="pre">7.87331616e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.28453704e-06,</span> <span class="pre">8.71723586e-06,</span> <span class="pre">9.17253440e-06,</span> <span class="pre">9.65161305e-06,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.01557138e-05,</span> <span class="pre">1.06861436e-05,</span> <span class="pre">1.12442776e-05,</span> <span class="pre">1.18315628e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.24495217e-05,</span> <span class="pre">1.30997564e-05,</span> <span class="pre">1.37839526e-05,</span> <span class="pre">1.45038842e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.52614176e-05,</span> <span class="pre">1.60585168e-05,</span> <span class="pre">1.68972482e-05,</span> <span class="pre">1.77797862e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.87084190e-05,</span> <span class="pre">1.96855540e-05,</span> <span class="pre">2.07137244e-05,</span> <span class="pre">2.17955959e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.29339731e-05,</span> <span class="pre">2.41318075e-05,</span> <span class="pre">2.53922044e-05,</span> <span class="pre">2.67184314e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.81139268e-05,</span> <span class="pre">2.95823086e-05,</span> <span class="pre">3.11273835e-05,</span> <span class="pre">3.27531571e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.44638444e-05,</span> <span class="pre">3.62638804e-05,</span> <span class="pre">3.81579317e-05,</span> <span class="pre">4.01509088e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.22479784e-05,</span> <span class="pre">4.44545773e-05,</span> <span class="pre">4.67764262e-05,</span> <span class="pre">4.92195445e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.17902662e-05,</span> <span class="pre">5.44952559e-05,</span> <span class="pre">5.73415263e-05,</span> <span class="pre">6.03364566e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.34878112e-05,</span> <span class="pre">6.68037600e-05,</span> <span class="pre">7.02928998e-05,</span> <span class="pre">7.39642764e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.78274078e-05,</span> <span class="pre">8.18923093e-05,</span> <span class="pre">8.61695195e-05,</span> <span class="pre">9.06701269e-05,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.54057998e-05,</span> <span class="pre">1.00388815e-04,</span> <span class="pre">1.05632092e-04,</span> <span class="pre">1.11149224e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.16954514e-04,</span> <span class="pre">1.23063012e-04,</span> <span class="pre">1.29490555e-04,</span> <span class="pre">1.36253807e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.43370302e-04,</span> <span class="pre">1.50858488e-04,</span> <span class="pre">1.58737781e-04,</span> <span class="pre">1.67028606e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.75752459e-04,</span> <span class="pre">1.84931956e-04,</span> <span class="pre">1.94590895e-04,</span> <span class="pre">2.04754317e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.15448572e-04,</span> <span class="pre">2.26701385e-04,</span> <span class="pre">2.38541929e-04,</span> <span class="pre">2.51000900e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.64110600e-04,</span> <span class="pre">2.77905015e-04,</span> <span class="pre">2.92419909e-04,</span> <span class="pre">3.07692911e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.23763617e-04,</span> <span class="pre">3.40673691e-04,</span> <span class="pre">3.58466973e-04,</span> <span class="pre">3.77189593e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.96890089e-04,</span> <span class="pre">4.17619536e-04,</span> <span class="pre">4.39431676e-04,</span> <span class="pre">4.62383057e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.86533182e-04,</span> <span class="pre">5.11944661e-04,</span> <span class="pre">5.38683373e-04,</span> <span class="pre">5.66818639e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.96423403e-04,</span> <span class="pre">6.27574413e-04,</span> <span class="pre">6.60352432e-04,</span> <span class="pre">6.94842436e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.31133843e-04,</span> <span class="pre">7.69320739e-04,</span> <span class="pre">8.09502124e-04,</span> <span class="pre">8.51782171e-04,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">8.96270492e-04,</span> <span class="pre">9.43082424e-04,</span> <span class="pre">9.92339328e-04,</span> <span class="pre">1.04416891e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.09870553e-03,</span> <span class="pre">1.15609058e-03,</span> <span class="pre">1.21647283e-03,</span> <span class="pre">1.28000884e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.34686330e-03,</span> <span class="pre">1.41720956e-03,</span> <span class="pre">1.56603299e-03,</span> <span class="pre">1.73389188e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.91974311e-03,</span> <span class="pre">2.12551524e-03,</span> <span class="pre">2.35334354e-03,</span> <span class="pre">2.60559214e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.88487859e-03,</span> <span class="pre">3.19410101e-03,</span> <span class="pre">3.53646815e-03,</span> <span class="pre">3.91553272e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.33522819e-03,</span> <span class="pre">4.79990971e-03,</span> <span class="pre">5.31439919e-03,</span> <span class="pre">5.88403543e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">6.51472945e-03,</span> <span class="pre">7.21302587e-03,</span> <span class="pre">7.98617083e-03,</span> <span class="pre">8.84218712e-03,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">9.78995751e-03,</span> <span class="pre">1.08393169e-02,</span> <span class="pre">1.20011543e-02,</span> <span class="pre">1.32875259e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.47117802e-02,</span> <span class="pre">1.62886966e-02,</span> <span class="pre">1.80346384e-02,</span> <span class="pre">1.99677231e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.21080099e-02,</span> <span class="pre">2.44777084e-02,</span> <span class="pre">2.71014085e-02,</span> <span class="pre">3.00063360e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.32226349e-02,</span> <span class="pre">3.67836802e-02,</span> <span class="pre">4.07264245e-02,</span> <span class="pre">4.50917811e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">4.99250485e-02,</span> <span class="pre">5.52763809e-02,</span> <span class="pre">6.12013083e-02,</span> <span class="pre">6.77613129e-02,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">7.50244667e-02,</span> <span class="pre">8.30661387e-02,</span> <span class="pre">9.19697759e-02,</span> <span class="pre">1.01827770e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.12742417e-01,</span> <span class="pre">1.24826975e-01,</span> <span class="pre">1.38206844e-01,</span> <span class="pre">1.53020866e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">1.69422764e-01,</span> <span class="pre">1.87582736e-01,</span> <span class="pre">2.07689228e-01,</span> <span class="pre">2.29950881e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">2.54598701e-01,</span> <span class="pre">2.81888455e-01,</span> <span class="pre">3.12103324e-01,</span> <span class="pre">3.45556845e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">3.82596159e-01,</span> <span class="pre">4.23605618e-01,</span> <span class="pre">4.69010771e-01,</span> <span class="pre">5.19282781e-01,</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">5.74943314e-01,</span> <span class="pre">6.36569950e-01,</span> <span class="pre">7.04802180e-01,</span> <span class="pre">7.80348041e-01])</span></em><a class="headerlink" href="#sfr.ChruslinskaSFRD.SFRD_Z_CENTERS_ARRAY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="sfr.ChruslinskaSFRD.set_grid">
+<span class="sig-name descname"><span class="pre">set_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#sfr.ChruslinskaSFRD.set_grid" title="Permalink to this definition"></a></dt>
+<dd><p>Build redshift and SFRD arrays corresponding to the grid from
+the data files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id30">
+<span class="sig-name descname"><span class="pre">get_logsfrd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">redshift</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id30" title="Permalink to this definition"></a></dt>
+<dd><p>For a given [Fe/H],redshift pair, find the log10(SFRD)
+corresponding to the closest pair in the grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feh</strong> (<em>float</em>) – The desired [Fe/H].</p></li>
+<li><p><strong>redshift</strong> (<em>float</em>) – The desired redshift.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>logsfrd</strong> – Log10(SFRD) corresponding to the pair in the grid closest to
+the given feh,redshift.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>UserWarning</strong> – If the SFRD grid has not been loaded yet (load_grid() not
+run).</p>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The user should bear in mind the grids range from -4 to 1.7 in
+metallicity and 0 to 10 in redshift. Passing values outside
+these ranges will always return the edges of the grid.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="sampling.html" class="btn btn-neutral float-left" title="sampling module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="utils.html" class="btn btn-neutral float-right" title="utils module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lucas de Sá.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

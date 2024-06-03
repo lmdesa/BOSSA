@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zams module &mdash; environIMF alpha documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="utils module" href="utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            environIMF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="imf.html">imf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="postprocessing.html">postprocessing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sampling.html">sampling module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sfr.html">sfr module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">zams module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">environIMF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+      <li class="breadcrumb-item active">zams module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/zams.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-zams">
+<span id="zams-module"></span><h1>zams module<a class="headerlink" href="#module-zams" title="Permalink to this heading"></a></h1>
+<p>Orbital parameter distributions for zero-age main sequence multiple systems.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="zams.gen_seed">
+<span class="sig-prename descclassname"><span class="pre">zams.</span></span><span class="sig-name descname"><span class="pre">gen_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.gen_seed" title="Permalink to this definition"></a></dt>
+<dd><p>Generate an unique system identifier from its logp, q and e parameters.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zams.</span></span><span class="sig-name descname"><span class="pre">EccentricityDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">canonical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.EccentricityDistribution" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Eccentricity probability distribution for a ZAMS star pair.</p>
+<p>For a given primary of mass m1 and a companion orbit of log10(period) logp, compute the eccentricity probability
+density function (PDF) for that orbit. All orbits with logp &lt;= 0.5 (default) are assumed to be circularized. Orbits
+with logp &gt; 8.0 are not allowed (p=0). Primaries with m1 &lt; 0.8 Msun or m1 &gt; 150.0 Msun are not allowed (p=0).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.eta">
+<span class="sig-name descname"><span class="pre">eta</span></span><a class="headerlink" href="#zams.EccentricityDistribution.eta" title="Permalink to this definition"></a></dt>
+<dd><p>Index of the eccentricity PDF power law.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.k">
+<span class="sig-name descname"><span class="pre">k</span></span><a class="headerlink" href="#zams.EccentricityDistribution.k" title="Permalink to this definition"></a></dt>
+<dd><p>Normalization constant of the eccentricity PDF power law.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.e_max">
+<span class="sig-name descname"><span class="pre">e_max</span></span><a class="headerlink" href="#zams.EccentricityDistribution.e_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum eccentricity set by the &lt;70% Roche lobe filling factor at periastron.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.m1">
+<span class="sig-name descname"><span class="pre">m1</span></span><a class="headerlink" href="#zams.EccentricityDistribution.m1" title="Permalink to this definition"></a></dt>
+<dd><p>Mass of the system primary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.logp">
+<span class="sig-name descname"><span class="pre">logp</span></span><a class="headerlink" href="#zams.EccentricityDistribution.logp" title="Permalink to this definition"></a></dt>
+<dd><p>Log10(period) of the given orbit.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.logp_circ">
+<span class="sig-name descname"><span class="pre">logp_circ</span></span><a class="headerlink" href="#zams.EccentricityDistribution.logp_circ" title="Permalink to this definition"></a></dt>
+<dd><p>Log10(period) below which all orbits are assumed to be circularized. Should always be greater than logp_min.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.logp_min">
+<span class="sig-name descname"><span class="pre">logp_min</span></span><a class="headerlink" href="#zams.EccentricityDistribution.logp_min" title="Permalink to this definition"></a></dt>
+<dd><p>Minimum allowed log10(period).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.logp_max">
+<span class="sig-name descname"><span class="pre">logp_max</span></span><a class="headerlink" href="#zams.EccentricityDistribution.logp_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum allowed log10(period).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.m1_min">
+<span class="sig-name descname"><span class="pre">m1_min</span></span><a class="headerlink" href="#zams.EccentricityDistribution.m1_min" title="Permalink to this definition"></a></dt>
+<dd><p>Minimum allowed m1_table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.m1_max">
+<span class="sig-name descname"><span class="pre">m1_max</span></span><a class="headerlink" href="#zams.EccentricityDistribution.m1_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum allowed m1_table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.EccentricityDistribution.set_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Set the PDF power law parameters eta, k and e_max.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.EccentricityDistribution.prob">
+<span class="sig-name descname"><span class="pre">prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.EccentricityDistribution.prob" title="Permalink to this definition"></a></dt>
+<dd><p>Return the PDF value at eccentricity e.</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UserWarning</strong> – If method prob(e) is run before set_parameters(m1, logp).</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The distribution is by Moe &amp; Di Stefano (2017) <a href="#id27"><span class="problematic" id="id1">[1]_</span></a> with small adjustments as described by OUR WORK. It takes the
+shape of a simple power law, with the index eta being dependent on logp; the functional form of this dependency
+itself depends on m1. A maximum eccentricity is set as a function of logp from the condition that the Roche lobe
+filling fraction be &lt;70% at periastron.</p>
+<p>The minimum, maximum and circularization periods are set as in the original work, with log10 values 0.2, 8.0 and
+0.5, respectively. The minimum m1 is set to 0.8 Msun also in accordance with the original work, but the mass range
+is extended up to 150.0 Msun.</p>
+<p>All orbital periods are given in days and masses in solar masses.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id2" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio (Q)
+Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6</p>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>Set power law parameters according to the given m1 and log10(period).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the eccentricity PDF value at the given e.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>e</strong> (<em>float</em>) – Eccentricity at which to compute the PDF.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>prob</strong> – PDF value at e.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>UserWarning</strong> – If power law parameters are not set up (set_parameters has not been run yet).</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If the set logp is &lt;= the circularization logp (by default, 0.5), forces e=0 by approximating a delta at e=0
+with a finite step; this is done to avoid dividing by zero while still allowing the PDF to integrate to 1. An
+artificial plateau is also inserted at e &lt;= 0.0001 to avoid the probability exploding for circular systems, at
+the cost of slightly shifting the PDF’s norm from 1.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zams.</span></span><span class="sig-name descname"><span class="pre">MassRatioDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">canonical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.MassRatioDistribution" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Mass ratio probability distribution for a ZAMS star pair.</p>
+<p>For a given primary of mass m1 and a companion orbit of log10(period), compute the mass ratio probability density
+function (PDF) for that orbit. The companion mass being m_cp, the mass ratio is defined as q=m_cp/m1, and is limited
+to the interval 0.1 &lt;= q &lt;= 1.0. The PDF takes the form of a two-part power law, with an excess of twin pairs at
+q &gt; 0.95.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.solar_llim">
+<span class="sig-name descname"><span class="pre">solar_llim</span></span><a class="headerlink" href="#zams.MassRatioDistribution.solar_llim" title="Permalink to this definition"></a></dt>
+<dd><p>Lower mass limit of “solar-type” primaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.solar_ulim">
+<span class="sig-name descname"><span class="pre">solar_ulim</span></span><a class="headerlink" href="#zams.MassRatioDistribution.solar_ulim" title="Permalink to this definition"></a></dt>
+<dd><p>Upper mass limit of “solar-type” primaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.a_point">
+<span class="sig-name descname"><span class="pre">a_point</span></span><a class="headerlink" href="#zams.MassRatioDistribution.a_point" title="Permalink to this definition"></a></dt>
+<dd><p>Mass midpoint for A-/late B-type primaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.ob_llim">
+<span class="sig-name descname"><span class="pre">ob_llim</span></span><a class="headerlink" href="#zams.MassRatioDistribution.ob_llim" title="Permalink to this definition"></a></dt>
+<dd><p>Lower mass limit of mid B-, early B- and O-type primaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.gamma_largeq">
+<span class="sig-name descname"><span class="pre">gamma_largeq</span></span><a class="headerlink" href="#zams.MassRatioDistribution.gamma_largeq" title="Permalink to this definition"></a></dt>
+<dd><p>Power law PDF index for 0.3 &lt;= q &lt;= 1.0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.gamma_smallq">
+<span class="sig-name descname"><span class="pre">gamma_smallq</span></span><a class="headerlink" href="#zams.MassRatioDistribution.gamma_smallq" title="Permalink to this definition"></a></dt>
+<dd><p>Power law PDF index for 0.1 &lt;= q &lt; 0.3.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.f_twin">
+<span class="sig-name descname"><span class="pre">f_twin</span></span><a class="headerlink" href="#zams.MassRatioDistribution.f_twin" title="Permalink to this definition"></a></dt>
+<dd><p>Excess fraction of twin pairs (q&gt;0.95) in relation to a pure power law.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.k">
+<span class="sig-name descname"><span class="pre">k</span></span><a class="headerlink" href="#zams.MassRatioDistribution.k" title="Permalink to this definition"></a></dt>
+<dd><p>Power law PDF normalization constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.logp_min">
+<span class="sig-name descname"><span class="pre">logp_min</span></span><a class="headerlink" href="#zams.MassRatioDistribution.logp_min" title="Permalink to this definition"></a></dt>
+<dd><p>Minimum allowed log10(period).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.logp_max">
+<span class="sig-name descname"><span class="pre">logp_max</span></span><a class="headerlink" href="#zams.MassRatioDistribution.logp_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum allowed log10(period).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.m1_min">
+<span class="sig-name descname"><span class="pre">m1_min</span></span><a class="headerlink" href="#zams.MassRatioDistribution.m1_min" title="Permalink to this definition"></a></dt>
+<dd><p>Minimum allowed m1_table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.m1_max">
+<span class="sig-name descname"><span class="pre">m1_max</span></span><a class="headerlink" href="#zams.MassRatioDistribution.m1_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum allowed m1_table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.set_parameters">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.MassRatioDistribution.set_parameters" title="Permalink to this definition"></a></dt>
+<dd><p>Set the PDF parameters gamma_smallq, gamma_largeq, f_twin and k.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.MassRatioDistribution.prob">
+<span class="sig-name descname"><span class="pre">prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.MassRatioDistribution.prob" title="Permalink to this definition"></a></dt>
+<dd><p>Return the PDF value at mass ratio q.</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UserWarning</strong> – If method prob(q) is run before set_parameters(m1, logp).</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The distribution is by Moe &amp; Di Stefano (2017) <a href="#id28"><span class="problematic" id="id4">[1]_</span></a> with small adjustments as described by OUR WORK. It takes the
+shape of a two-part power law, with index gamma_smallq for 0.1 &lt;= q &lt; 0.3 and gamma_largeq for 0.3 &lt;= q &lt;= 1.0. It
+also includes an excess of systems with q &gt; 0.95 (twin pairs) expressed as the twin fraction f_twin, so that at
+q &gt; 0.95 the PDF is (1+f_twin) * power law. As this excess is only observed for shorter-period systems, there is a
+maximum logp for which the excess twin population is present.</p>
+<p>Solar-type primaries are defined as having masses 0.8 Msun &lt; m1 &lt; 1.2 Msun. The midpoint of A-/late B-type primaries
+is defined to be at m1 = 3.5 Msun. Mid B-, early B- and O-type primaries are defined as having mass m1 &gt; 6.0 Msun.
+The PDF is defined piecewise for each the two ranges and the midpoint. Interpolation gives the PDF in the two
+intermediary ranges: solar-A (1.2 Msun &lt;= m1 &lt; 3.5 Msun) and A-OB (3.5 Msun &lt; m1 &lt;= 6 Msun).</p>
+<p>The minimum and maximum periods are set as in the original work, with log10 values 0.2 and 8.0, respectively. The
+minimum m1 is set to 0.8 Msun also in accordance with the original work, but the mass range is extended up to 150.0
+Msun. The minimum q is set to 0.1 as in the original work.</p>
+<p>All orbital periods are given in days and masses in solar masses.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id5" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio
+(Q) Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6</p>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">set_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd><p>Set power law and twin fraction parameters according to the given m1 and log10(period).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id7" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the mass ratio PDF value at the given e.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>q</strong> (<em>float</em>) – Mass ratio at which to compute the PDF.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>prob</strong> – PDF value at q.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>UserWarning</strong> – If power law parameters are not set up (set_parameters has not been run yet).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zams.</span></span><span class="sig-name descname"><span class="pre">CompanionFrequencyDistributionHighQ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Orbital period probability distribution for a ZAMS star pair with 0.3 &lt;= q &lt;= 1.0.</p>
+<p>For a given primary of mass m1, compute the orbital period probability density function (PDF) for a single companion
+with some mass m_cp such that 0.3 &lt;= q &lt;= 1.0 (q=m_cp/m1). The PDF is a strongly m1_table- and log10(period)-
+dependent piecewise function.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.f_logp1_q03">
+<span class="sig-name descname"><span class="pre">f_logp1_q03</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.f_logp1_q03" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.f_logp27_q03">
+<span class="sig-name descname"><span class="pre">f_logp27_q03</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.f_logp27_q03" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.f_logp55_q03">
+<span class="sig-name descname"><span class="pre">f_logp55_q03</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.f_logp55_q03" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.m1">
+<span class="sig-name descname"><span class="pre">m1</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.m1" title="Permalink to this definition"></a></dt>
+<dd><p>Primary mass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ._a">
+<span class="sig-name descname"><span class="pre">_a</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ._a" title="Permalink to this definition"></a></dt>
+<dd><p>Slope of f_logp with logp in an interval around logp = 2.7 with half-width _delta_logp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ._delta_logp">
+<span class="sig-name descname"><span class="pre">_delta_logp</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ._delta_logp" title="Permalink to this definition"></a></dt>
+<dd><p>Half-width of the logp interval over which the slope _a is defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.logp_min">
+<span class="sig-name descname"><span class="pre">logp_min</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.logp_min" title="Permalink to this definition"></a></dt>
+<dd><p>Minimum allowed log10(period).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.logp_max">
+<span class="sig-name descname"><span class="pre">logp_max</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.logp_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum allowed log10(period).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.m1_min">
+<span class="sig-name descname"><span class="pre">m1_min</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.m1_min" title="Permalink to this definition"></a></dt>
+<dd><p>Minimum allowed m1_table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.m1_max">
+<span class="sig-name descname"><span class="pre">m1_max</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.m1_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum allowed m1_table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistributionHighQ.companion_frequency_q03">
+<span class="sig-name descname"><span class="pre">companion_frequency_q03</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.CompanionFrequencyDistributionHighQ.companion_frequency_q03" title="Permalink to this definition"></a></dt>
+<dd><p>For a given log10(period), compute the companion frequency for a primary with the set m1_table.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>The distribution is by Moe &amp; Di Stefano (2017) <a href="#id29"><span class="problematic" id="id8">[1]_</span></a>, with small adjustments as described by OUR WORK. Although we
+refer to it as a PDF, the distribution is rigorously defined as a frequency of companions with period logp for
+primaries of mass m1,</p>
+<div class="math notranslate nohighlight">
+\[f_{\log P; q&gt;0.3} (M_1,P) := \frac{d N_{cp, q&gt;0.3} }{d N_1\, d\log P},\]</div>
+<p>i.e., the number of companions, per primary with mass M1, per orbital period decade, around a period P.</p>
+<p>The companion frequency is empirically fitted for 0.2 &lt;= logp &lt; 1 , logp = 2.7, logp = 5.5 and 5.5 &lt; logp &lt;= 8.0.
+For the intermediate intervals [1,2.7) and (2.7,5.5), it is set to increase linearly with logp.</p>
+<p>All orbital periods are given in days and masses in solar masses.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id9" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio
+(Q) Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6</p>
+</aside>
+<dl class="py property">
+<dt class="sig sig-object py" id="id10">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_logp1_q03</span></span><a class="headerlink" href="#id10" title="Permalink to this definition"></a></dt>
+<dd><p>Frequency of companions with 0.2 &lt;= logp &lt; 1 and 0.3 &lt;= q &lt;= 1.0 for primaries of mass m1.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id11">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_logp27_q03</span></span><a class="headerlink" href="#id11" title="Permalink to this definition"></a></dt>
+<dd><p>Frequency of companions with logp = 2.7 and 0.3 &lt;= q &lt;= 1.0 for primaries of mass m1</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id12">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">f_logp55_q03</span></span><a class="headerlink" href="#id12" title="Permalink to this definition"></a></dt>
+<dd><p>Frequency of companions with logp = 5.5 and 0.3 &lt;= q &lt;= 1.0 for primaries of mass m1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">companion_frequency_q03</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id13" title="Permalink to this definition"></a></dt>
+<dd><p>Companion frequency for 0.3 &lt;= q &lt;= 1.0 pairs with a given log10(period).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistribution">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zams.</span></span><span class="sig-name descname"><span class="pre">CompanionFrequencyDistribution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q_distr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">canonical</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extrapolate_canonical_distribution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.CompanionFrequencyDistribution" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#zams.CompanionFrequencyDistributionHighQ" title="zams.CompanionFrequencyDistributionHighQ"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ</span></code></a></p>
+<p>“Orbital period probability distribution for a ZAMS star pair with 0.1 &lt;= q &lt;= 1.0.</p>
+<p>For a given primary of mass m1, compute the orbital period probability density function (PDF) for a single companion
+with some mass m_cp such that 0.1 &lt;= q &lt;= 1.0 (q=m_cp/m1_table). The PDF is a strongly m1_table- and log10(period)-
+dependent piecewise function.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistribution.q_distr">
+<span class="sig-name descname"><span class="pre">q_distr</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistribution.q_distr" title="Permalink to this definition"></a></dt>
+<dd><p>Mass ratio distribution for a ZAMS star pair with the same primary mass m1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>MassRatioDistribution object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistribution.n_q03">
+<span class="sig-name descname"><span class="pre">n_q03</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistribution.n_q03" title="Permalink to this definition"></a></dt>
+<dd><p>Fraction of 0.3 &lt;= q &lt;= 1.0 star pairs with primary mass m1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistribution.n_q01">
+<span class="sig-name descname"><span class="pre">n_q01</span></span><a class="headerlink" href="#zams.CompanionFrequencyDistribution.n_q01" title="Permalink to this definition"></a></dt>
+<dd><p>Fraction of 0.1 &lt;= q &lt; 0.3 star pairs with primary mass m1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>The distribution is by Moe &amp; Di Stefano (2017) <a href="#id30"><span class="problematic" id="id14">[1]_</span></a>. Most of the observational techniques considered in that work
+are not able to probe pairs below q=0.3, and thus the period distribution is only empirically fitted to the q&gt;0.3
+region, yielding the distribution from class CompanionFrequencyDistributionHighQ.</p>
+<p>However, from the particular observations that do probe 0.1 &lt;= q &lt; 0.3 region, they are able to empirically fit the
+mass ratio distribution in that region, in the form of the gamma_smallq parameter in the MassRatioDistribution
+class. Thus, from the integration of the mass ratio distribution it is possible to compute the ratio n_q01/n_q03
+between pairs above and below q=0.3.</p>
+<p>This class calculates that ratio, and uses it as a correcting factor, as done by the original authors, to turn the
+period distribution for 0.3 &lt;= q &lt;= 1.0 (f_{log P; q&gt;0.3})into a period distribution for 0.1 &lt;= q &lt;= 1.0
+(f_{log P; q&gt;0.1}).</p>
+<p>All orbital periods are given in days and masses in solar masses.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id15" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio
+(Q) Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6</p>
+</aside>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#zams.CompanionFrequencyDistributionHighQ" title="zams.CompanionFrequencyDistributionHighQ"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ</span></code></a></dt><dd><p>distribution from which this one is computed</p>
+</dd>
+</dl>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.CompanionFrequencyDistribution.companion_frequency_q01">
+<span class="sig-name descname"><span class="pre">companion_frequency_q01</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.CompanionFrequencyDistribution.companion_frequency_q01" title="Permalink to this definition"></a></dt>
+<dd><p>Companion frequency for 0.1 &lt;= q &lt;= 1.0 pairs with a given log10(period).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zams.</span></span><span class="sig-name descname"><span class="pre">ZAMSSystemGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pairs_table_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">imf_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qe_max_tries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dmcomp_tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.ZAMSSystemGenerator" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Sample ZAMS multiple systems of arbitrary order, given a primary mass m1, while keeping track of available m1.</p>
+<p>For a primary companion of mass 150 Msun &gt;= m1 &gt;= 0.8 Msun, draws an arbitrary number n_comp of zero-age main
+sequence (ZAMS) companions 0.08 Msun &lt;= mcomp &lt;= 150 Msun, identified by the period, mass ratio and eccentricity of
+their orbit. Receives an array of allowed masses imf_array from which all component masses must be drawn within a
+set tolerance, without repetition. This allows for the user to pass an array of masses that follow an arbitrary
+initial mass function (PowerLawIMF) that the sample should reproduce.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.pairs_table_path">
+<span class="sig-name descname"><span class="pre">pairs_table_path</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.pairs_table_path" title="Permalink to this definition"></a></dt>
+<dd><p>Path to the h5 file containing equiprobable (m1,logp,q,e) sets according to the distributions in this class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>path_like object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.imf_array">
+<span class="sig-name descname"><span class="pre">imf_array</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.imf_array" title="Permalink to this definition"></a></dt>
+<dd><p>Array of masses from which all component masses will be initially drawn.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.qe_max_tries">
+<span class="sig-name descname"><span class="pre">qe_max_tries</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.qe_max_tries" title="Permalink to this definition"></a></dt>
+<dd><p>Number of attempts to draw a valid q,e pair for a chosen m1,logp before m1 is redrawn.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.dmcomp_tol">
+<span class="sig-name descname"><span class="pre">dmcomp_tol</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.dmcomp_tol" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum fractional difference between a drawn mass and the closest mass in imf_array for it to be accepted.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.pairs_table">
+<span class="sig-name descname"><span class="pre">pairs_table</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.pairs_table" title="Permalink to this definition"></a></dt>
+<dd><p>Table loaded from the file in pairs_table_path, from which all star pairs are taken.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PyTables File</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.lowmass_imf_array">
+<span class="sig-name descname"><span class="pre">lowmass_imf_array</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.lowmass_imf_array" title="Permalink to this definition"></a></dt>
+<dd><p>Subarray of imf_array with &lt; 0.8 Msun masses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.highmass_imf_array">
+<span class="sig-name descname"><span class="pre">highmass_imf_array</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.highmass_imf_array" title="Permalink to this definition"></a></dt>
+<dd><p>Subarray of imf_array with &gt;= 0.8 Msun masses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.m1array_n">
+<span class="sig-name descname"><span class="pre">m1array_n</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.m1array_n" title="Permalink to this definition"></a></dt>
+<dd><p>Number of remaining masses in highmass_imf_array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.m1array_i">
+<span class="sig-name descname"><span class="pre">m1array_i</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.m1array_i" title="Permalink to this definition"></a></dt>
+<dd><p>Index of the primary mass currently drawn from highmass_imf_array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.m1_array">
+<span class="sig-name descname"><span class="pre">m1_array</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.m1_array" title="Permalink to this definition"></a></dt>
+<dd><p>Current primary mass drawn from highmass_imf_array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float32</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.m1_table">
+<span class="sig-name descname"><span class="pre">m1_table</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.m1_table" title="Permalink to this definition"></a></dt>
+<dd><p>Closest mass to m1choice found in pairs_table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float32</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.dm1">
+<span class="sig-name descname"><span class="pre">dm1</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.dm1" title="Permalink to this definition"></a></dt>
+<dd><p>Difference bewtween m1 and m1choice relative to m1choice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.m1group">
+<span class="sig-name descname"><span class="pre">m1group</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.m1group" title="Permalink to this definition"></a></dt>
+<dd><p>Table of equiprobable companion orbits for m1choice, identified by a set (logp,q,e).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>PyTables Group</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.logger">
+<span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#zams.ZAMSSystemGenerator.logger" title="Permalink to this definition"></a></dt>
+<dd><p>Class logger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>logging Logger</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UserWarning</strong> – If a star system fails to be generated within the set mass constraints.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This class was built with current population synthesis codes in mind, which do not evolve triples or higher-order
+multiples. While these higher-order systems cannot be directly evolved, they must be accounted for at any rate when
+computing the star-forming mass represented by an evolved population, which is important for generalizing results,
+such as when computing a volumetric merger rate from the single population merger rate.</p>
+<p>A choice can be made to still evolve the inner pair as an isolated binary anyway, while only accounting for the
+outer components with their masses, and ignoring any effects they may have on the inner pair’s evolution. This
+avoids an underestimation of merger rates, for example, especially for more massive systems, but introduces obvious
+uncertainties with regard to evolution.</p>
+<p>Currently the sample_system method always returns the inner pair. The user can then choose to evolve it as an
+isolated binary or not, based on the actual number of companions it represents, but not base on the orbital period
+of the outer companions. This option may be implemented in the future.</p>
+<p>Operationally, all n_comp periods are drawn at the start, then their respective q_choice,e_choice pairs are drawn
+from the corresponding PyTable Table logp_table within m1group, starting from the lowest period. The chosen
+companion mass is then mcomp_choice=q_choice*m1, and the closest value mcomp is found in the relevant imf_array.
+If their relative difference dmcomp passes a tolerance test, the pair is accepted. Otherwise, q and e are redrawn
+until a succesful pair is found, or the number of tries reaches qe_max_tries.</p>
+<p>If at any point a primary-companion pair fails to be found, the whole system is discarded and an empty list and zero
+mass are returned. Otherwise, the parameters for the inner pair and the total system mass are returned, and the
+component masses are removed from the imf_array arrays.</p>
+<p>Ultimately, all (m1,logp,q,e) parameter sets are taken from the pairs_table h5 file, meant to be opened with the
+PyTables package. The File is structured in 200 Groups, corresponding to 200 equiprobable m1 values drawn from a
+Salpeter PowerLawIMF <a href="#id31"><span class="problematic" id="id16">[1]_</span></a>. Each Group is structure in 100 Tables, each corresponding to one of 100 equiprobable logp values
+drawn for that m1 from the CompanionFrequencyDistribution class. Each Table holds 1000 lines, each of which contains
+one of 1000 equiprobable q,e pairs, from 10 possible q and 10 possible e, drawn from the MassRatioDistribution and
+EccentricityDistribution classes. The orbital parameter distributions are due to Moe &amp; Di Stefano (2017) <a class="footnote-reference brackets" href="#id19" id="id17" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>.</p>
+<p>This class can be employed on its own to generate individual systems. Its implementation for the generation of an
+entire sample of binaries is handled by the SimpleBinaryPopulation class in the sampling module.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id18" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Salpeter, E. E. (1955). The Luminosity Function and Stellar Evolution. ApJ, 121, 161. doi:10.1086/145971</p>
+</aside>
+<aside class="footnote brackets" id="id19" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id17">2</a><span class="fn-bracket">]</span></span>
+<p>Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio (Q)
+Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6</p>
+</aside>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="sampling.html#sampling.SimpleBinaryPopulation" title="sampling.SimpleBinaryPopulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sampling.SimpleBinaryPopulation</span></code></a></dt><dd><p>implement this class to generate a full binary population sample.</p>
+</dd>
+</dl>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.setup_sampler">
+<span class="sig-name descname"><span class="pre">setup_sampler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zams.ZAMSSystemGenerator.setup_sampler" title="Permalink to this definition"></a></dt>
+<dd><p>Set up the lowmass and highmass _imf_array attributes, initial m1array_n and load pairs_table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.close_binaries_table">
+<span class="sig-name descname"><span class="pre">close_binaries_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zams.ZAMSSystemGenerator.close_binaries_table" title="Permalink to this definition"></a></dt>
+<dd><p>Close the pairs_table file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.open_m1group">
+<span class="sig-name descname"><span class="pre">open_m1group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1choice_i</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.ZAMSSystemGenerator.open_m1group" title="Permalink to this definition"></a></dt>
+<dd><p>Load the PyTables Group object closest to m1_table corresponding to a m1array_i into the m1group attribute.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.ZAMSSystemGenerator.sample_system">
+<span class="sig-name descname"><span class="pre">sample_system</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ncomp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ncomp_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.ZAMSSystemGenerator.sample_system" title="Permalink to this definition"></a></dt>
+<dd><p>Sample pairs m1_table, mcomp_array pairs building a multiple system with ncomp &gt;= 0 companions.</p>
+<p>This class is meant to return only the innermost pair or inner binary to the user, while keeping track of the
+total system mass, whatever its order, in a manner that is consistent with the user-given masses (imf_array) and
+the orbital parameter distributions in this module. Thus all ncomp primary-companion pairs are generated and
+have their masses accounted for, but only the orbital parameters of the innermost pair are stored.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ncomp</strong> (<em>int</em><em>, </em><em>default : 1</em>) – Number of companions to the primary. Can be 0, signaling an isolated star.</p></li>
+<li><p><strong>ncomp_max</strong> (<em>int</em><em>, </em><em>default : 1</em>) – Maximum number of companions in the overall sample, possibly greater than that for the system being sampled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>inner_pair</strong> (<em>numpy array</em>) – Array of parameters of the innermost pair in the system.</p></li>
+<li><p><strong>system_mass</strong> (<em>float</em>) – Total mass of the system, including the innermost pair as well as outer companions.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UserWarning</strong> – If a star system fails to be generated within the set mass constraints.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>All ncomp periods are drawn at the start, then their respective q_table,e_table pairs are drawn from the
+corresponding PyTable Table logp_table within m1group, starting from the lowest period. The chosen companion
+mass is then mcomp_table=q_table*m1_table, and the closest value mcomp_array is found in the relevant imf_array.
+If their relative difference dmcomp passes a tolerance test, the pair is accepted. Otherwise, q and e are
+redrawn until a succesful pair is found, or the number of tries reaches qe_max_tries.</p>
+<p>If at any point a primary-companion pair fails to be found, the whole system is discarded and an empty list and
+zero mass are returned. Otherwise, the parameters for the inner pair and the total system mass are returned, and
+the component masses are removed from the imf_array arrays.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="zams.MultipleFraction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">zams.</span></span><span class="sig-name descname"><span class="pre">MultipleFraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">150</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nmean_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">only_binaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.MultipleFraction" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Compute the multiplicity fraction for a given primary mass in 0.1 &lt;= q &lt;= 1.0 pairs.</p>
+<p>For a given primary of mass m1, compute the probability for having a number n of companions in 0.1 &lt;= q &lt;= 1.0
+pairs. The probability distribution over n is discrete, and takes the form of a truncated Poisson distribution.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MultipleFraction.q_distr">
+<span class="sig-name descname"><span class="pre">q_distr</span></span><a class="headerlink" href="#zams.MultipleFraction.q_distr" title="Permalink to this definition"></a></dt>
+<dd><p>MassRatioDistribution object used to set up the companion frequency distributions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>MassRatioDistribution object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MultipleFraction.m1_array">
+<span class="sig-name descname"><span class="pre">m1_array</span></span><a class="headerlink" href="#zams.MultipleFraction.m1_array" title="Permalink to this definition"></a></dt>
+<dd><p>Primary masses used to set up the companion frequency distributions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MultipleFraction.nmean_array">
+<span class="sig-name descname"><span class="pre">nmean_array</span></span><a class="headerlink" href="#zams.MultipleFraction.nmean_array" title="Permalink to this definition"></a></dt>
+<dd><p>Mean companion numbers corresponding to the primary masses in m1_array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MultipleFraction.binary_fraction">
+<span class="sig-name descname"><span class="pre">binary_fraction</span></span><a class="headerlink" href="#zams.MultipleFraction.binary_fraction" title="Permalink to this definition"></a></dt>
+<dd><p>Binary fractions corresponding to the primary masses in m1_array, when all stars are isolated or binaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MultipleFraction._multfreq_to_nmean">
+<span class="sig-name descname"><span class="pre">_multfreq_to_nmean</span></span><a class="headerlink" href="#zams.MultipleFraction._multfreq_to_nmean" title="Permalink to this definition"></a></dt>
+<dd><p>Multiplicity frequency to mean companion number interpolator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>scipy.interpolate interp1d</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MultipleFraction._m1_to_nmean">
+<span class="sig-name descname"><span class="pre">_m1_to_nmean</span></span><a class="headerlink" href="#zams.MultipleFraction._m1_to_nmean" title="Permalink to this definition"></a></dt>
+<dd><p>Primary mass to mean companion number interpolator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>scipy.interpolate interp1d</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MultipleFraction.nmax">
+<span class="sig-name descname"><span class="pre">nmax</span></span><a class="headerlink" href="#zams.MultipleFraction.nmax" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum companion number.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="zams.MultipleFraction.nmean_max">
+<span class="sig-name descname"><span class="pre">nmean_max</span></span><a class="headerlink" href="#zams.MultipleFraction.nmean_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum mean companion number, used for interpolation only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.MultipleFraction.solve">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zams.MultipleFraction.solve" title="Permalink to this definition"></a></dt>
+<dd><p>Set up interpolators and nmean_array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.MultipleFraction.ncomp_mean">
+<span class="sig-name descname"><span class="pre">ncomp_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.MultipleFraction.ncomp_mean" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the mean companion number for primary mass m1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.MultipleFraction.prob">
+<span class="sig-name descname"><span class="pre">prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.MultipleFraction.prob" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the companion number probability at value k, for a distribution with mean l.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.MultipleFraction.get_multiple_fraction">
+<span class="sig-name descname"><span class="pre">get_multiple_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#zams.MultipleFraction.get_multiple_fraction" title="Permalink to this definition"></a></dt>
+<dd><p>Compute fraction of order n multiples for the masses in m1_array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="zams.MultipleFraction.get_binary_fraction">
+<span class="sig-name descname"><span class="pre">get_binary_fraction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#zams.MultipleFraction.get_binary_fraction" title="Permalink to this definition"></a></dt>
+<dd><p>Compute binary fraction for the masses in m1_array, assuming all stars are either isolated or binary.</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UserWarning</strong> – If ncomp_mean(m1) is run before solve().</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Computation of the multiplicity fractions starts from the companion frequency distributed according to class
+CompanionFrequencyDistribution. As per its definition, the companion frequency does not differentiate betweem
+multiples of different orders: it simply gives the number of companions per primary per orbital period decade. The
+first step is to compute the number of companions per primary,</p>
+<div class="math notranslate nohighlight">
+\[f_{mult}(M_1) = \int_{0.2}^{0.8} d\log P\, f_{\log P; q&gt;0.3}(M_1,\log P),\]</div>
+<p>called the multiplicity frequency. The multiplicity fraction F_n is defined as the fraction of all primaries with a
+number n of companions. These relate to the multiplicity frequency as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f_mult</span><span class="p">(</span><span class="n">M_1</span><span class="p">)</span> <span class="o">=</span> <span class="n">F_1</span><span class="p">(</span><span class="n">M_1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="n">F_2</span><span class="p">(</span><span class="n">M_1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">3</span><span class="n">F_3</span><span class="p">(</span><span class="n">M_1</span><span class="p">)</span> <span class="o">+</span> <span class="o">...</span><span class="p">,</span>
+</pre></div>
+</div>
+<p>for a primary mass M1. The F_n are not, in general, empirically constrained. We follow Moe &amp; Di Stefano (2017) <a href="#id32"><span class="problematic" id="id20">[1]_</span></a>
+in extending the observed behavior for solar-type primaries to all primaries. In this case, the number of companions
+n is observed to be distributed over M1 in the form of a Poissonian distribution, with a M1-dependent mean n_mean
+fully determined by imposing the empirical f_{mult}(M_1) as a constraint. While in the original work the Poissonian
+is truncated to a maximum nmax=3, here nmax can be an arbitrary integer.</p>
+<p>By assuming a Poissonian truncated at nmax behavior, the companion number n is distributed as</p>
+<div class="math notranslate nohighlight">
+\[P_n(M_1) = ( \sum_{ n=0 }^{ n_{max} } {n_{mean}}^n / n! )^{-1}  n_{mean}^{n} / n!,\]</div>
+<p>and F_n(M1) = P_n(M1). Then, from the definition of P_n and the f_mult-F_n relation, f_mult is written as</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}f_{mult}(n_{mean}) = n_{mean} ( 1 + a/b )^{-1},\\a = {n_{mean}}^{n_{max}} n_{max}!,\\b = \sum_{ n=0 }^{ n_{max}-1 } {n_{mean}}^n / n!.\end{aligned}\end{align} \]</div>
+<p>From this relation an array of (f_mult, n_mean) pairs is calculated, and from it a f_mult to n_mean interpolator is
+built. f_mult is then determined by integrating the companion frequency for a given m1, as per its definition. This
+is done for masses m1_array, and the resulting (m1, f_mult) yields a (m1, n_mean) array through the above
+interpolator. A second, m1 to n_mean, interpolator is then built.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id21" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio
+(Q) Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6</p>
+</aside>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="sampling.html#sampling.SimpleBinaryPopulation" title="sampling.SimpleBinaryPopulation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sampling.SimpleBinaryPopulation</span></code></a></dt><dd><p>implement this class to generate a full binary population sample.</p>
+</dd>
+</dl>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id22" title="Permalink to this definition"></a></dt>
+<dd><p>Set up companion number probability distribution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">ncomp_mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id23" title="Permalink to this definition"></a></dt>
+<dd><p>Mean companion number for a given primary mass.</p>
+<p>Calls the _m1_to_nmean interpolator and returns the mean companion number for the given primary mass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>m1</strong> (<em>float</em>) – Primary mass.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Mean companion number.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>UserWarning</strong> – If the m1 to nmean interpolator is not set up (solve has not been run yet).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id24">
+<span class="sig-name descname"><span class="pre">prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id24" title="Permalink to this definition"></a></dt>
+<dd><p>Companion number probability function for a mean l, evaluated at k.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id25">
+<span class="sig-name descname"><span class="pre">get_multiple_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id25" title="Permalink to this definition"></a></dt>
+<dd><p>Compute fraction of order n multiples for a set of primary masses.</p>
+<p>For a number of companions n, compute the respective multiplicity fraction for the primary masses in m1_array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – Number of companions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fracs</strong> – (len(m1_array),) shaped array containing the multiplicity fractions evaluated at m1_array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id26">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">binary_fraction</span></span><a class="headerlink" href="#id26" title="Permalink to this definition"></a></dt>
+<dd><p>Compute binary fraction when all stars are either isolated or binaries, for a set of primary masses.</p>
+<p>Compute the binary fraction by computing the multiplicity fractions for all companion numbers up to nmax, then
+assuming all multiples are binaries, i.e., summing all fractions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>binary_fraction</strong> – (len(m1_array),) shaped array containing the binary fractions evaluated at m1_array.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="utils.html" class="btn btn-neutral float-left" title="utils module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lucas de Sá.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

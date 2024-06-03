@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>imf module &mdash; environIMF alpha documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="postprocessing module" href="postprocessing.html" />
+    <link rel="prev" title="constants module" href="constants.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            environIMF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="constants.html">constants module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">imf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="postprocessing.html">postprocessing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sampling.html">sampling module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sfr.html">sfr module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="zams.html">zams module</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">environIMF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+      <li class="breadcrumb-item active">imf module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/imf.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-imf">
+<span id="imf-module"></span><h1>imf module<a class="headerlink" href="#module-imf" title="Permalink to this heading"></a></h1>
+<p>Star, embedded cluster and galaxy mass functions.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="imf.PowerLawIMF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">imf.</span></span><span class="sig-name descname"><span class="pre">PowerLawIMF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m_tot</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_trunc_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_trunc_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">150.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">150.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">breaks</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[0.08,</span> <span class="pre">1.0,</span> <span class="pre">150.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponents</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[-</span> <span class="pre">1.3,</span> <span class="pre">-</span> <span class="pre">2.3]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.PowerLawIMF" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Generic broken power-law initial mass function.</p>
+<p>This class contains the attributes that are expected by the module
+from any choice of PowerLawIMF, as well as a method that returns
+dN/dM from a broken power-law PowerLawIMF with an arbitrary number
+of breaks.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.m_tot">
+<span class="sig-name descname"><span class="pre">m_tot</span></span><a class="headerlink" href="#imf.PowerLawIMF.m_tot" title="Permalink to this definition"></a></dt>
+<dd><p>Total mass of the population described by the PowerLawIMF. A
+normalization constraint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.m_trunc_min">
+<span class="sig-name descname"><span class="pre">m_trunc_min</span></span><a class="headerlink" href="#imf.PowerLawIMF.m_trunc_min" title="Permalink to this definition"></a></dt>
+<dd><p>The absolute minimum mass of an object in the described
+population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.m_trunc_max">
+<span class="sig-name descname"><span class="pre">m_trunc_max</span></span><a class="headerlink" href="#imf.PowerLawIMF.m_trunc_max" title="Permalink to this definition"></a></dt>
+<dd><p>The absolute maximum mass of an object in the described
+population.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.m_max">
+<span class="sig-name descname"><span class="pre">m_max</span></span><a class="headerlink" href="#imf.PowerLawIMF.m_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum mass for which the PowerLawIMF is defined.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.PowerLawIMF._breaks">
+<span class="sig-name descname"><span class="pre">_breaks</span></span><a class="headerlink" href="#imf.PowerLawIMF._breaks" title="Permalink to this definition"></a></dt>
+<dd><p>Power-law breaks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.PowerLawIMF._exponents">
+<span class="sig-name descname"><span class="pre">_exponents</span></span><a class="headerlink" href="#imf.PowerLawIMF._exponents" title="Permalink to this definition"></a></dt>
+<dd><p>Power law exponents. Should carry their sign.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.PowerLawIMF._norms">
+<span class="sig-name descname"><span class="pre">_norms</span></span><a class="headerlink" href="#imf.PowerLawIMF._norms" title="Permalink to this definition"></a></dt>
+<dd><p>Normalization constants for each broken power-law section.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.imf">
+<span class="sig-name descname"><span class="pre">imf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.PowerLawIMF.imf" title="Permalink to this definition"></a></dt>
+<dd><p>Return dN/dM at mass m.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>In keeping with the convention suggested by Hopkins (2018) <a href="#id33"><span class="problematic" id="id1">[1]_</span></a>, the
+power law index is defined to have the same signal as the power law
+slope, i.e.,</p>
+<div class="math notranslate nohighlight">
+\[dN/dM = k M^a.\]</div>
+<p>_limits, _exponents and _norms are properties to be set by this
+class’ subclasses.</p>
+<p>All masses are given and expected in solar masses.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id2" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Hopkins, A. (2018). The Dawes Review 8: Measuring the Stellar</p>
+</aside>
+<dl class="simple">
+<dt>Initial Mass Function. PASA, 35, E039.</dt><dd><p>doi:10.1017/pasa.2018.29</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">m_tot</span></span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id3">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">m_max</span></span><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id4">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">m_trunc_min</span></span><a class="headerlink" href="#id4" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id5">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">m_trunc_max</span></span><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.breaks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">breaks</span></span><a class="headerlink" href="#imf.PowerLawIMF.breaks" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.exponents">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">exponents</span></span><a class="headerlink" href="#imf.PowerLawIMF.exponents" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.norms">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">norms</span></span><a class="headerlink" href="#imf.PowerLawIMF.norms" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="imf.PowerLawIMF.integrate">
+<span class="sig-name descname"><span class="pre">integrate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mass</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.PowerLawIMF.integrate" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">imf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd><p>If m_max has already been computed, calculate dN/dm for a
+given stellar mass m. Otherwise, warn the user.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="imf.Star">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">imf.</span></span><span class="sig-name descname"><span class="pre">Star</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m_ecl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_ecl_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invariant</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.Star" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#imf.PowerLawIMF" title="imf.PowerLawIMF"><code class="xref py py-class docutils literal notranslate"><span class="pre">PowerLawIMF</span></code></a></p>
+<p>Compute the stellar initial mass function.</p>
+<p>Compute the stellar initial mass function (sIMF) specific to a given
+star-forming region (embedded cluster, or ECL), with a set
+metallicity, as [Fe/H], and a total ECL stellar mass, m_tot.</p>
+<p>The sIMF may follow either a Kroupa (2001) <a href="#id34"><span class="problematic" id="id7">[1]_</span></a> or Jerabkova et al.
+(2018) <a class="footnote-reference brackets" href="#id25" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>. In the first case it is a simple power-law, with m_tot
+as its only free parameter. In the second case, it is a series of
+three power laws between a minimum stellar mass M_TRUNC_MIN, and a
+maximum stellar mass m_max. While indices a1, a2 and a3 are given by
+analytic formulae, m_max and the normalization constants k1, k2 and</p>
+<blockquote>
+<div><p>k3 result from the numerical solution of two adequate constraints.</p>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.feh">
+<span class="sig-name descname"><span class="pre">feh</span></span><a class="headerlink" href="#imf.Star.feh" title="Permalink to this definition"></a></dt>
+<dd><p>Embedded cluster metallicity in [Fe/H].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.m_ecl_min">
+<span class="sig-name descname"><span class="pre">m_ecl_min</span></span><a class="headerlink" href="#imf.Star.m_ecl_min" title="Permalink to this definition"></a></dt>
+<dd><p>Absolute minimum embedded cluster mass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star._m_max">
+<span class="sig-name descname"><span class="pre">_m_max</span></span><a class="headerlink" href="#imf.Star._m_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum stellar mass. Embedded cluster-specific.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.k1">
+<span class="sig-name descname"><span class="pre">k1</span></span><a class="headerlink" href="#imf.Star.k1" title="Permalink to this definition"></a></dt>
+<dd><p>m&lt;0.5 PowerLawIMF normalization constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.k2">
+<span class="sig-name descname"><span class="pre">k2</span></span><a class="headerlink" href="#imf.Star.k2" title="Permalink to this definition"></a></dt>
+<dd><p>0.5&lt;=m&lt;1 PowerLawIMF normalization constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.k3">
+<span class="sig-name descname"><span class="pre">k3</span></span><a class="headerlink" href="#imf.Star.k3" title="Permalink to this definition"></a></dt>
+<dd><p>1&lt;= PowerLawIMF normalization constant.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.a1">
+<span class="sig-name descname"><span class="pre">a1</span></span><a class="headerlink" href="#imf.Star.a1" title="Permalink to this definition"></a></dt>
+<dd><p>First power-law index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.a2">
+<span class="sig-name descname"><span class="pre">a2</span></span><a class="headerlink" href="#imf.Star.a2" title="Permalink to this definition"></a></dt>
+<dd><p>Second power-law index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.a3">
+<span class="sig-name descname"><span class="pre">a3</span></span><a class="headerlink" href="#imf.Star.a3" title="Permalink to this definition"></a></dt>
+<dd><p>Third power-law index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.x">
+<span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#imf.Star.x" title="Permalink to this definition"></a></dt>
+<dd><p>Auxiliary variable used in computing a3.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.g1">
+<span class="sig-name descname"><span class="pre">g1</span></span><a class="headerlink" href="#imf.Star.g1" title="Permalink to this definition"></a></dt>
+<dd><p>Auxiliary variable from integrating the PowerLawIMF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.g2">
+<span class="sig-name descname"><span class="pre">g2</span></span><a class="headerlink" href="#imf.Star.g2" title="Permalink to this definition"></a></dt>
+<dd><p>Auxiliary variable from integrating the PowerLawIMF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="imf.Star.get_mmax_k">
+<span class="sig-name descname"><span class="pre">get_mmax_k</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#imf.Star.get_mmax_k" title="Permalink to this definition"></a></dt>
+<dd><p>Solves the system of equations made up of methods f1 and f2 to
+determine m_max and k1.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<dl class="simple">
+<dt>If variant is set to False, the sIMF is as given by Jerabkova et al.</dt><dd><p>(2018) <a href="#id35"><span class="problematic" id="id9">[1]_</span></a>. M_TRUNC_MIN is set at the hydrogen burning threshold
+of 0.08 Msun. Exponents k1 and k2 are found from k3 by continuity.
+k3 and m_max are determined from two constraints.</p>
+</dd>
+</dl>
+<p>m_tot sets the mass of the most massive formable star, m_max, but is
+not equal to it. Thus, the first constraint is obtained by imposing
+that the number of stars found with mass equal to or higher than
+m_max be one, i.e., by equating the integral of the PowerLawIMF
+between m_max and M_TRUNC_MAX to unity. This constraint is expressed</p>
+<blockquote>
+<div><p>in method f1.</p>
+</div></blockquote>
+<p>m_tot does set the total formed stellar mass. Thus, the second
+constraint is obtained by integrating m * PowerLawIMF(m) between
+M_TRUNC_MIN and m_max. This constraint is expressed in methods f1
+and f2.</p>
+<p>Solving f1 and f2 simultaneously determines m_max and k3, which also
+determines k1 and k2. This is done by the method get_mmax_k, which
+is the most expensive method of the class.</p>
+<p>All masses are given and expected in solar masses.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id10" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
+Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
+metallicity and star formation rate on the time-dependent,
+galaxy-wide stellar initial mass function. A&amp;A, 620, A39.
+doi:10.1051/0004-6361/20183</p>
+</aside>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.BREAKS">
+<span class="sig-name descname"><span class="pre">BREAKS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[0.08,</span> <span class="pre">0.5,</span> <span class="pre">1.0,</span> <span class="pre">150.0]</span></em><a class="headerlink" href="#imf.Star.BREAKS" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.M_TRUNC_MIN">
+<span class="sig-name descname"><span class="pre">M_TRUNC_MIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.08</span></em><a class="headerlink" href="#imf.Star.M_TRUNC_MIN" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.Star.M_TRUNC_MAX">
+<span class="sig-name descname"><span class="pre">M_TRUNC_MAX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">150.0</span></em><a class="headerlink" href="#imf.Star.M_TRUNC_MAX" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id11">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">x</span></span><a class="headerlink" href="#id11" title="Permalink to this definition"></a></dt>
+<dd><p>Auxiliary variable. Function of [Fe/H] and m_tot.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id12">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">a1</span></span><a class="headerlink" href="#id12" title="Permalink to this definition"></a></dt>
+<dd><p>PowerLawIMF exponent for m &lt; 0.5 Msun. Function of [Fe/H].</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id13">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">a2</span></span><a class="headerlink" href="#id13" title="Permalink to this definition"></a></dt>
+<dd><p>PowerLawIMF exponent for 0.5 Msun &lt;= m &lt; 1.0 Msun. Function
+of [Fe/H].</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id14">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">a3</span></span><a class="headerlink" href="#id14" title="Permalink to this definition"></a></dt>
+<dd><p>PowerLawIMF exponent for m &gt;= 1.0 Msun. Dependent on [Fe/H]
+and m_tot through the auxiliary variable x.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id15">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">g1</span></span><a class="headerlink" href="#id15" title="Permalink to this definition"></a></dt>
+<dd><p>Auxiliary variable g1. Related to the PowerLawIMF integral
+over low masses.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id16">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">g2</span></span><a class="headerlink" href="#id16" title="Permalink to this definition"></a></dt>
+<dd><p>Auxiliary variable g2. Related to the PowerLawIMF integral
+over intermediary masses.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">get_mmax_k</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id17" title="Permalink to this definition"></a></dt>
+<dd><p>Use Scipy’s fsolve to solve the two constraints with adequate
+initial guesses for k3 and _m_max.</p>
+<p>After solving for k3 and _m_max, k1 and k2 are immediately
+determined. Automatically sets the PowerLawIMF to zero for all
+masses if the star-forming region mass is below a minimum of 5
+solar masses.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">imf.</span></span><span class="sig-name descname"><span class="pre">EmbeddedCluster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sfr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formation_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m_tot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.EmbeddedCluster" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#imf.PowerLawIMF" title="imf.PowerLawIMF"><code class="xref py py-class docutils literal notranslate"><span class="pre">PowerLawIMF</span></code></a></p>
+<p>Compute the embedded cluster initial mass function.</p>
+<p>Compute the embedded cluster initial mass function (eIMF) specific
+to a given galaxy with a set star formation rate (SFR) and star
+formation duration (time). The eIMF is a simple power law between
+M_TRUNC_MIN and M_max. The index beta is given as a function of the
+SFR, while the normalization constant, k, and m_max result from the
+numerical solution of two adequate constraints.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster.beta">
+<span class="sig-name descname"><span class="pre">beta</span></span><a class="headerlink" href="#imf.EmbeddedCluster.beta" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster.sfr">
+<span class="sig-name descname"><span class="pre">sfr</span></span><a class="headerlink" href="#imf.EmbeddedCluster.sfr" title="Permalink to this definition"></a></dt>
+<dd><p>Galactic SFR.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster.time">
+<span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#imf.EmbeddedCluster.time" title="Permalink to this definition"></a></dt>
+<dd><p>Duration of ECL formation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster._m_max">
+<span class="sig-name descname"><span class="pre">_m_max</span></span><a class="headerlink" href="#imf.EmbeddedCluster._m_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum mass of an ECL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster.k">
+<span class="sig-name descname"><span class="pre">k</span></span><a class="headerlink" href="#imf.EmbeddedCluster.k" title="Permalink to this definition"></a></dt>
+<dd><p>Normalization constant of the eIMF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster.get_mmax_k">
+<span class="sig-name descname"><span class="pre">get_mmax_k</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#imf.EmbeddedCluster.get_mmax_k" title="Permalink to this definition"></a></dt>
+<dd><p>Solves the system of equations made up of methods f1 and f2 to
+determine m_max and k.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<dl class="simple">
+<dt>The eIMF is as given by Jerabkova et al. (2018) <a href="#id36"><span class="problematic" id="id18">[1]_</span></a>. M_TRUNC_MIN is</dt><dd><p>set to the default 5 Msun, and the maximum mass m_max is at most
+1e9 Msun. k and m_max are determined from two constraints.</p>
+</dd>
+</dl>
+<p>A constant star formation history (SFH) is assumed. Given the
+duration of the period of formation of new ECLs within a galaxy,
+time, the total galactic stellar ECL mass is m_tot=time*SFR. The
+first constraint is obtained by imposing that the total stellar mass
+of all ECLs be equal to m_tot, i.e., by equaling to m_tot the
+integral of the eIMF between M_TRUNC_MIN and m_max.</p>
+<p>The second constraint is obtained by imposing that only one ECL be
+found with stellar mass equal to or greater than m_max, i.e., by
+equaling to unity the integral of the eIMF between m_max and 1e9.</p>
+<p>All masses in this class are given in units of solar mass. The SFR
+is given in units of solar masses per year. The ECL formation time
+is given in years.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id19" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,</p>
+</aside>
+<p>Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of metallicity
+and star formation rate on the time-dependent, galaxy-wide stellar
+initial mass function. A&amp;A, 620,</p>
+<blockquote>
+<div><p>A39. doi:10.1051/0004-6361/20183</p>
+</div></blockquote>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster.M_TRUNC_MIN">
+<span class="sig-name descname"><span class="pre">M_TRUNC_MIN</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">5.0</span></em><a class="headerlink" href="#imf.EmbeddedCluster.M_TRUNC_MIN" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.EmbeddedCluster.M_TRUNC_MAX">
+<span class="sig-name descname"><span class="pre">M_TRUNC_MAX</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000000000.0</span></em><a class="headerlink" href="#imf.EmbeddedCluster.M_TRUNC_MAX" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id20">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">beta</span></span><a class="headerlink" href="#id20" title="Permalink to this definition"></a></dt>
+<dd><p>eIMF exponent beta. Function of the SFR.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">get_mmax_k</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id21" title="Permalink to this definition"></a></dt>
+<dd><p>Use Scipy’s fsolve to solve the constraints with an adequate
+initial guess and determine the maximum mass.</p>
+<p>Use Scipy’s fsolve to solve the constraints with an adequate
+initial guess from the initial_guess method and determine
+_m_max.</p>
+<p class="rubric">Notes</p>
+<p>This method must be run before get_k, otherwise get_k will
+return None.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="imf.IGIMF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">imf.</span></span><span class="sig-name descname"><span class="pre">IGIMF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sfr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.IGIMF" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Compute the galactic initial mass function.</p>
+<p>The galactic PowerLawIMF (gIMF) is computed according to the
+integrated galaxy-wide PowerLawIMF (IGIMF) framework by integrating
+the product between the embedded cluster (ECL) and stellar IMFs
+(eIMF and sIMF, respectively) over all embedded clusters in the
+galaxy. This corresponds to integrating over the product of the imf
+methods of the Star and EmbeddedCluster classes with respect to ECL
+mass, with all other parameters (including stellar mass) fixed.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.sfr">
+<span class="sig-name descname"><span class="pre">sfr</span></span><a class="headerlink" href="#imf.IGIMF.sfr" title="Permalink to this definition"></a></dt>
+<dd><p>SFR of the galaxy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.feh">
+<span class="sig-name descname"><span class="pre">feh</span></span><a class="headerlink" href="#imf.IGIMF.feh" title="Permalink to this definition"></a></dt>
+<dd><p>[Fe/H] metallicity of the galaxy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.time">
+<span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#imf.IGIMF.time" title="Permalink to this definition"></a></dt>
+<dd><p>Duration of the period of ECL formation in the galaxy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.m_trunc_min">
+<span class="sig-name descname"><span class="pre">m_trunc_min</span></span><a class="headerlink" href="#imf.IGIMF.m_trunc_min" title="Permalink to this definition"></a></dt>
+<dd><p>Minimum possible stellar mass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.m_trunc_max">
+<span class="sig-name descname"><span class="pre">m_trunc_max</span></span><a class="headerlink" href="#imf.IGIMF.m_trunc_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum possible stellar mass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.m_ecl_min">
+<span class="sig-name descname"><span class="pre">m_ecl_min</span></span><a class="headerlink" href="#imf.IGIMF.m_ecl_min" title="Permalink to this definition"></a></dt>
+<dd><p>Minimum possible embedded cluster mass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.m_ecl_max">
+<span class="sig-name descname"><span class="pre">m_ecl_max</span></span><a class="headerlink" href="#imf.IGIMF.m_ecl_max" title="Permalink to this definition"></a></dt>
+<dd><p>Maximum mass of embedded clusters in the galaxy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.clusters">
+<span class="sig-name descname"><span class="pre">clusters</span></span><a class="headerlink" href="#imf.IGIMF.clusters" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the eIMF of the galaxy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>EmbeddedCluster object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.m_ecl_array">
+<span class="sig-name descname"><span class="pre">m_ecl_array</span></span><a class="headerlink" href="#imf.IGIMF.m_ecl_array" title="Permalink to this definition"></a></dt>
+<dd><p>Array of ECL masses over which to compute the sIMF for
+interpolation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.IGIMF.stellar_imf_ip">
+<span class="sig-name descname"><span class="pre">stellar_imf_ip</span></span><a class="headerlink" href="#imf.IGIMF.stellar_imf_ip" title="Permalink to this definition"></a></dt>
+<dd><p>Interpolation of the sIMF over ECL masses, for a fixed star
+mass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>scipy.interpolate interp1d</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="imf.IGIMF.get_clusters">
+<span class="sig-name descname"><span class="pre">get_clusters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#imf.IGIMF.get_clusters" title="Permalink to this definition"></a></dt>
+<dd><p>Instantiate an EmbeddedCluster object and compute the maximum
+embedded cluster mass.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="imf.IGIMF.imf">
+<span class="sig-name descname"><span class="pre">imf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.IGIMF.imf" title="Permalink to this definition"></a></dt>
+<dd><p>Integrate the product of the sIMF and eIMF with respect to the
+ECL mass, for a given stellar mass.</p>
+</dd></dl>
+
+<dl class="field-list simple">
+<dt class="field-odd">Warns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>UserWarning</strong> – If method imf(m) is run before get_clusters().</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The IGIMF framework is applied as described in Jerabkova et al.
+(2018) <a href="#id37"><span class="problematic" id="id22">[1]_</span></a>, Yan et al. (2017) <a class="footnote-reference brackets" href="#id25" id="id23" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a> and references therein.
+Explicitly, the gIMF at a given stellar mass m is</p>
+<div class="math notranslate nohighlight">
+\[PowerLawIMF(m|SFR,Z) = \int_0^\infty dM\, sIMF(m|M,Z)\,
+eIMF(M|SFR,t),\]</div>
+<p>where M is the ECL stellar mass; Z the galaxy metallicity, which is
+assumed uniform; and t is the star formation time, by default
+10 Myr. The integration interval is broken into log-uniform
+intervals. Integration is performed with Scipy’s quad function.</p>
+<dl class="simple">
+<dt>This constitutes a spatial integration over the whole galaxy for all</dt><dd><p>the stars formed within the ECLs formed during an interval t,
+without taking into account the spatial distribution of
+star-forming regions or their differing chemical properties.
+Thus, the entire galaxy is specified by an SFR and a single
+metallicity.</p>
+</dd>
+</dl>
+<p>The SFR is given in solar masses per year. The metallicity is
+expressed as [Fe/H]. The duration of ECL formation is given in
+years. All masses are given in solar masses.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id24" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
+Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
+metallicity and star formation rate on the time-dependent,
+galaxy-wide stellar initial mass function. A&amp;A, 620, A39.
+doi:10.1051/0004-6361/20183</p>
+</aside>
+<aside class="footnote brackets" id="id25" role="note">
+<span class="label"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id8">1</a>,<a role="doc-backlink" href="#id23">2</a>)</span>
+<p>Yan, Z., Jerabkova, T., Kroupa, P. (2017). The optimally
+sampled galaxy-wide stellar initial mass function: Observational
+tests and the publicly available GalIMF code. A&amp;A, 607, A126.
+doi:10.1051/0004-6361/201730987</p>
+</aside>
+<dl class="py method">
+<dt class="sig sig-object py" id="imf.IGIMF.set_clusters">
+<span class="sig-name descname"><span class="pre">set_clusters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#imf.IGIMF.set_clusters" title="Permalink to this definition"></a></dt>
+<dd><p>Instantiate an EmbeddedCluster object and compute the maximum
+ECL mass.</p>
+<p>Instantiate an EmbeddedCluster object and compute the maximum
+ECL mass, which is also saved as an instance attribute.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Must be called before the imf method, otherwise the eIMF will
+not be available for integration.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id26">
+<span class="sig-name descname"><span class="pre">imf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id26" title="Permalink to this definition"></a></dt>
+<dd><p>Integrate the product of the sIMF and the eIMF with respect
+to ECL mass, for a given stellar mass.</p>
+<p>Integrate the product of the sIMF and the eIMF with respect to
+ECL mass, for a given stellar mass, using Scipy’s quad function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>m</strong> (<em>float</em>) – Star mass at which to compute the imf.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>imf</strong> – PowerLawIMF value at mass m.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Warns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>UserWarning</strong> – If ‘clusters’ is not defined (get_clusters() has not been
+run).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="imf.GSMF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">imf.</span></span><span class="sig-name descname"><span class="pre">GSMF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redshift</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_slope</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.GSMF" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Compute the redshift-dependent galaxy stellar mass function.</p>
+<p>Compute the redshift-dependent galaxy stellar mass function (GSMF),
+a number density distribution of galaxies over galactic stellar
+masses. The GSMF is an empirical distribution well and commonly
+described with a Schechter function, which approximates a power law
+at low masses and a falling exponential at high masses. The GSMF
+implemented here consists of a Schechter function at high masses and
+a simple power law at low masses.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.GSMF.logmass_threshold">
+<span class="sig-name descname"><span class="pre">logmass_threshold</span></span><a class="headerlink" href="#imf.GSMF.logmass_threshold" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.GSMF.low_mass_slope">
+<span class="sig-name descname"><span class="pre">low_mass_slope</span></span><a class="headerlink" href="#imf.GSMF.low_mass_slope" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.GSMF.redshift">
+<span class="sig-name descname"><span class="pre">redshift</span></span><a class="headerlink" href="#imf.GSMF.redshift" title="Permalink to this definition"></a></dt>
+<dd><p>Redshift at which to compute the GSMF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="imf.GSMF.fixed_slope">
+<span class="sig-name descname"><span class="pre">fixed_slope</span></span><a class="headerlink" href="#imf.GSMF.fixed_slope" title="Permalink to this definition"></a></dt>
+<dd><p>Whether to use the fixed (True) or the varying (False) low-mass
+slope model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="imf.GSMF.log_gsmf">
+<span class="sig-name descname"><span class="pre">log_gsmf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#imf.GSMF.log_gsmf" title="Permalink to this definition"></a></dt>
+<dd><p>Computes log10(GSMF) for a given galaxy stellar mass as log10(m)
+at the set redshift.</p>
+</dd></dl>
+
+<p class="rubric">Notes</p>
+<p>The Schechter parameters are a normalization constant, phi; a
+cut-off mass where the function transitions from a power law to an
+exponential, m_co; and the power law slope, ‘a’.</p>
+<p>The parameters are taken from Chruslinska &amp; Nelemans (2019) <a href="#id38"><span class="problematic" id="id27">[1]_</span></a>,
+who interpolate between several fits from the existing literature,
+considering galaxies observed at redshift up to ~10, to constrain
+the Schechter parameters as functions of redshift. At low masses,
+due to poor constraining of the GSMF, the Schechter function is
+replaced by a simple power law. The GSMF implemented here is thus
+redshift-dependent.</p>
+<p>Two models are implemented, as describe in Chruslinska &amp; Nelemans
+(2019) <a href="#id39"><span class="problematic" id="id28">[1]_</span></a>: one with a fixed low-mass slope at all redshifts; and
+one with a slope that steepens with redshift.</p>
+<p class="rubric">References</p>
+<aside class="footnote brackets" id="id29" role="note">
+<span class="label"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></span>
+<p>Chruslinska, M., Nelemans, G. (2019). Metallicity of stars
+formed throughout the cosmic history based on the observational
+properties of star-forming galaxies. MNRAS, 488(4), 5300.
+doi:10.1093/mnras/stz2057</p>
+</aside>
+<dl class="py property">
+<dt class="sig sig-object py" id="id30">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logmass_threshold</span></span><a class="headerlink" href="#id30" title="Permalink to this definition"></a></dt>
+<dd><p>Log10 of the mass separating the Schechter function from the
+simple power-law.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id31">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">low_mass_slope</span></span><a class="headerlink" href="#id31" title="Permalink to this definition"></a></dt>
+<dd><p>Slope of the simple power law at low masses.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id32">
+<span class="sig-name descname"><span class="pre">log_gsmf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id32" title="Permalink to this definition"></a></dt>
+<dd><p>Take a galaxy stellar mass log10(m) and return log10(gsmf) at
+the set redshift.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="constants.html" class="btn btn-neutral float-left" title="constants module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="postprocessing.html" class="btn btn-neutral float-right" title="postprocessing module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lucas de Sá.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

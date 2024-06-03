@@ -10,8 +10,10 @@ from scipy.integrate import quad
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
 
-from .constants import CHR19_GSMF, LN10
-from .utils import interpolate
+import sys
+sys.path.append('..')
+from src.constants import CHR19_GSMF, LN10
+from src.utils import interpolate
 
 
 KROUPA_BREAKS = [0.08, 1., 150.]

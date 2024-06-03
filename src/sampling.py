@@ -19,11 +19,13 @@ from scipy.interpolate import UnivariateSpline
 from concurrent.futures import ProcessPoolExecutor
 import inquirer
 
-from .imf import EmbeddedCluster, Star, GSMF, IGIMF
-from .sfr import MZR, SFMR, Corrections
-from .zams import ZAMSSystemGenerator, MultipleFraction
-from .utils import interpolate, ZOH_from_FeH, ZOH_to_FeH, create_logger, format_time
-from .constants import Z_SUN, DATA_PATH, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINARIES_CANONICAL_TABLE_PATH,\
+import sys
+sys.path.append('..')
+from src.imf import EmbeddedCluster, Star, GSMF, IGIMF
+from src.sfr import MZR, SFMR, Corrections
+from src.zams import ZAMSSystemGenerator, MultipleFraction
+from src.utils import interpolate, ZOH_from_FeH, ZOH_to_FeH, create_logger, format_time
+from src.constants import Z_SUN, DATA_PATH, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINARIES_CANONICAL_TABLE_PATH,\
     COMPAS_12XX_PROC_OUTPUT_DIR_PATH, COMPAS_21XX_PROC_OUTPUT_DIR_PATH, COMPAS_12XX_GRIDS_PATH, COMPAS_21XX_GRIDS_PATH,\
     IGIMF_ZAMS_DIR_PATH, COMPACT_OBJ_DIR_PATH, GALAXYGRID_DIR_PATH, PHYSICAL_CORE_COUNT, TOTAL_PHYSICAL_MEMORY
 

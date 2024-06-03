@@ -17,11 +17,13 @@ from scipy.integrate import quad
 from scipy.optimize import newton
 from scipy.interpolate import interp1d
 
-from .sfr import ChruslinskaSFRD
-from .imf import Star, IGIMF
-from .zams import ZAMSSystemGenerator
-from .utils import pull_snmass1, pull_snmass2, chirp_mass, bintype, mass_ratio, create_logger, ZOH_to_FeH
-from .constants import LOG_PATH, COMPAS_PROC_OUTPUT_DIR_PATH, COMPAS_WORK_PATH,BINARIES_CORRELATED_TABLE_PATH
+import sys
+sys.path.append('..')
+from src.sfr import ChruslinskaSFRD
+from src.imf import Star, IGIMF
+from src.zams import ZAMSSystemGenerator
+from src.utils import pull_snmass1, pull_snmass2, chirp_mass, bintype, mass_ratio, create_logger, ZOH_to_FeH
+from src.constants import LOG_PATH, COMPAS_PROC_OUTPUT_DIR_PATH, COMPAS_WORK_PATH,BINARIES_CORRELATED_TABLE_PATH
 
 CO_CODES = [10, 11, 12, 13, 14]  # HeWD, COWD, ONeMgWD, NS, BH
 PARQUET_SETTINGS = {'engine': 'pyarrow',

@@ -11,7 +11,9 @@ from scipy.interpolate import interp1d
 import astropy.constants as ct
 import astropy.units as u
 
-from .constants import ZOH_SUN, Z_SUN, stellar_types
+import sys
+sys.path.append('..')
+from src.constants import ZOH_SUN, Z_SUN, stellar_types
 
 Quantity = float | u.quantity.Quantity
 

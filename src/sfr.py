@@ -9,71 +9,72 @@ from numpy._typing import NDArray
 from scipy.optimize import curve_fit, fsolve
 from scipy.stats import norm
 
-from .constants import (
+import sys
+sys.path.append('..')
+from src.constants import (
     Z_SUN, T04_MZR_params_list, M09_MZR_params_list, KK04_MZR_params_list,
     PP04_MZR_params_list, REDSHIFT_SFRD_DATA_PATH, LOWMET_SFRD_PATH,
     MIDMET_SFRD_DATA_PATH, HIGHMET_SFRD_DATA_PATH, LOWMET_CANON_SFRD_PATH,
     MIDMET_CANON_SFRD_DATA_PATH, HIGHMET_CANON_SFRD_DATA_PATH
 )
-from .utils import ZOH_to_FeH, FeH_to_Z, interpolate, float_or_arr_input
+from src.utils import ZOH_to_FeH, FeH_to_Z, interpolate, float_or_arr_input
 
 
 class BoogaardSFMR:
     """Redshift-dependent SFMR with no flattening at high masses.
 
-    Compute the redshift-dependent star formation-mass relation (SFMR) 
-    with no flattening at high masses, at a given redshift. Calculates 
-    either the star-formation rate (SFR) from the galaxy stellar mass, 
-    or the galaxy stellar mass from the SFR.
+    Computes the redshift-dependent star formation-mass relation (SFMR)
+    with no flattening at high masses, for a given redshift. Allows
+    calculating either the star-formation rate (SFR) from the galaxy
+    stellar mass, or the galaxy stellar mass from the SFR. Meant to be
+    implemented trough :func:`sfr.SFMR`.
+
+    Parameters
+    ----------
+    redshift : float
+        Redshift at which to compute the relation.
 
     Attributes
     ----------
-    b
-    c
     redshift : float
         Redshift at which to compute the relation.
-    a : float
-        SFMR constant. Slope of the log-linear SFR(m).
 
     Methods
     -------
     sfr(logm)
-        Computes the SFR for a given galactic stellar mass log10(m).
+        Compute the SFR for a given galactic stellar mass log10(m).
     logm(sfr)
-        Computes the galactic stellar mass log10(m) for a given SFR.
+        Compute the galactic stellar mass log10(m) for a given SFR.
 
     Notes
     -----
-    The model is by Boogaard et al. (2018) [1]_, with the SFR as a 
-    log-linear function of the mass, 'a' the slope and 'b' the intercept.
+    The model is by Boogaard et al. (2018) [1]_ , with the SFR as a
+    log-linear function of the mass, `a` the slope and `b` the
+    intercept.
+
+    See Also
+    --------
+    SFMR : Implements this class.
 
     References
     ----------
-    .. [1] Boogaard,L. A., Brinchmann, J., Bouche, N. et al. (2018). The 
-        MUSE Hubble Ultra Deep Field Survey - XI. Constraining the 
+    .. [1] Boogaard,L. A., Brinchmann, J., Bouche, N. et al. (2018). The
+        MUSE Hubble Ultra Deep Field Survey - XI. Constraining the
         low-mass end of the stellar mass-star formation rate relation at
         z<1. A&A, 619, A27. doi:10.1051/0004-6361/201833136
     """
 
-    def __init__(self, redshift):
-        """
-        Parameters
-        ----------
-        redshift : float
-            Redshift at which to compute the relation.
-        """
+    A = 0.83
+    """float: Slope of the log-linear SFR(m)."""
 
+    def __init__(self, redshift: float) -> None:
         self.redshift = redshift
-        self.a = 0.83
         self._b = None  # property
         self._c = None  # property
 
     @property
-    def b(self):
-        """SFMR redshift-dependent parameter. Intercept of the
-        log-linear SFR(m).
-        """
-        
+    def b(self) -> float:
+        """float: Log-linear SFR(m) intercept. Redshift-dependent."""
         if self._b is None:
             if self.redshift <= 1.8:
                 self._b = self.c * np.log10(1 + self.redshift) - 8.2
@@ -83,8 +84,8 @@ class BoogaardSFMR:
         return self._b
 
     @property
-    def c(self):
-        """SFMR redshift-dependent parameter. Auxiliary variable."""
+    def c(self) -> float:
+        """float: SFMR auxiliary variable. Redshift-dependent."""
         if self._c is None:
             if self.redshift <= 1.8:
                 self._c = 2.8
@@ -92,79 +93,65 @@ class BoogaardSFMR:
                 self._c = 1
         return self._c
 
-    def _sfr(self, logm):
-        """Compute the SFR for a given galactic stellar mass log10."""
-        return self.a * logm + self.b
+    def _sfr(self, logm: float) -> float:
+        """Compute the SFR for a log galactic stellar mass `logm`."""
+        return self.A * logm + self.b
 
-    def _logm(self, sfr):
-        """Compute the log10 galactic stellar mass for a given SFR."""
-        return (sfr - self.b) / self.a
+    def _logm(self, sfr: float) -> float:
+        """Compute log of galactic stellar mass for `sfr`."""
+        return (sfr - self.b) / self.A
 
 
 class SpeagleSFMR:
-    """Redshift-dependent star formation-mass relation with moderate 
-    flattening at high masses.
+    """Redshift-dependent SFMR with moderate flattening at high masses.
 
-    Compute the redshift-dependent star formation-mass relation (SFMR) 
-    with moderate flattening at high masses, while keeping the SFMR from
-    the BoogaardSFMR class at low masses. Calculates either the
-    star-formation rate (SFR) from the galaxy stellar mass, or the
-    galaxy stellar mass from the SFR.
+    Computes the redshift-dependent star formation-mass relation (SFMR)
+    with moderate flattening at high masses, while keeping a
+    :class:`~sfr.BoogaardSFMR` at low masses, for a given redshift.
+    Allows calculating the star-formation rate (SFR) from the galaxy
+    stellar mass. Meant to be implemented trough :func:`sfr.SFMR`.
+
+    Parameters
+    ----------
+    redshift : float
+        Redshift at which to compute the relation.
 
     Attributes
     ----------
     redshift : float
         Redshift at which to compute the relation.
-    LOGM_TH : float
-        Threshold mass between the Boogaard and Speagle SFMRs.
-    lowmass_sfmr : BoogaardSFMR object
-        SFMR below logm_th.
-    time : float
-        Age of the universe at redshift.
-    a : float
-        SFMR constant. Slope of the log-linear SFR(m).
-    b : float
-        SFMR constant. Intercept of the log-linear SFR(m).
+    lowmass_sfmr : :class:`sfr.BoogaardSFMR`.
+        SFMR below :const:`LOGM_BREAK`.
 
     Methods
     -------
     sfr(logm)
-        Computes the SFR for a given galactic stellar mass log10(m).
+        Computes the SFR for a given galactic stellar mass log.
     logm(sfr)
-        Computes the galactic stellar mass log10(m) for a given SFR.
+        Computes the galactic stellar mass log for a given SFR.
 
     Notes
     -----
-    The SFR is modeled as a log-linear function of the mass, with 'a' as
-    the slope and b the intercept. Below a threshold mass m_th 
-    (logm_th=9.7), the SFMR is given by the BoogaardSFMR class, with the 
-    model by Boogaard et al. (2018) [1]_. Above m_th, the log-linear form
-     is kept, but the slope becomes time(redshift)-dependent, following 
-     the model by Speagle et al. (2014) [2]_. The intercept is defined 
-     by continuity with the Boogaard SFMR.
+    The SFR is modeled as a log-linear function of the mass, with
+    :attr:`a` as the slope and :attr:`b` the intercept. Below a break
+    mass :const:LOGM_BREAK, the SFMR is given by a
+    :class:`~BoogaardSFMR` (Boogaard et al., 2018) [1]_. Above the
+    break, the log-linear form is kept, but the slope becomes
+    redshift-dependent, following the model by Speagle et al. (2014)
+    [2]_. The intercept is defined by continuity with the Boogaard SFMR.
 
     References
     ----------
-    .. [1] Boogaard,L. A., Brinchmann, J., Bouche, N. et al. (2018). The 
-        MUSE Hubble Ultra Deep Field Survey - XI. Constraining the 
-        low-mass end of the stellar mass-star formation rate relation at
-         z<1. A&A, 619, A27. doi:10.1051/0004-6361/201833136
-    .. [2] Speagle, J. S., Steinhardt, C. L., Capak, P. L., Silverman, 
+    .. [2] Speagle, J. S., Steinhardt, C. L., Capak, P. L., Silverman,
         J. D. (2014). A highly consistent framework for the evolution of
-         the star-forming "main sequence" from z~0-6. ApJS, 214, 15.
-         doi:10.1088/0067-0049/214/2/15
+        the star-forming "main sequence" from z~0-6. ApJS, 214, 15.
+        doi:10.1088/0067-0049/214/2/15.
     """
 
-    LOGM_TH = 9.7
+    LOGM_BREAK = 9.7
+    """float: Break mass between Boogaard and Speagle SFMRs."""
 
-    def __init__(self, redshift):
-        """
-        Parameters
-        ----------
-        redshift : float
-            Redshift at which to compute the relation.
-        """
-
+    def __init__(self, redshift: float) -> None:
         self.redshift = redshift
         self.lowmass_sfmr = BoogaardSFMR(self.redshift)
         self._time = None  # property
@@ -172,66 +159,54 @@ class SpeagleSFMR:
         self._b = None  # property
 
     @property
-    def time(self):
-        """Age of the universe, in Gyr, at the given redshift."""
+    def time(self) -> float:
+        """float: Age of the universe, in Gyr, at :attr:`redshift`."""
         if self._time is None:
             self._time = cosmo.age(self.redshift).value
         return self._time
 
     @property
-    def a(self):
-        """SFMR time(redshift)-dependent parameter. Slope of the 
-        log-linear SFR(m).
-        """
-        
+    def a(self) -> float:
+        """float: Log-linear SFR(m) slope. Redshift-dependent."""
         if self._a is None:
             self._a = 0.84 - 0.026 * self.time
         return self._a
 
     @property
-    def b(self):
-        """SMFR time(redshift)-dependent parameter. Intercept of the 
-        log-linear SFR(m).
-        """
-        
+    def b(self) -> float:
+        """float: Log-linear SFR(m) intercept. Redshift-dependent."""
         if self._b is None:
-            self._b = self.lowmass_sfmr._sfr(self.LOGM_TH) - self.a * 9.7
+            self._b = self.lowmass_sfmr._sfr(self.LOGM_BREAK) - self.a * 9.7
         return self._b
 
-    def _sfr(self, logm):
+    def _sfr(self, logm: float) -> float:
         """Compute the SFR for a given log10galactic stellar mass."""
-        if logm < self.LOGM_TH:
+        if logm < self.LOGM_BREAK:
             return self.lowmass_sfmr._sfr(logm)
         else:
             return self.a * logm + self.b
 
 
 class TomczakSFMR:
-    """Redshift-dependent star formation-mass relation with sharp 
-    flattening at high masses.
+    """Redshift-dependent SFMR with sharp flattening at high masses.
 
-    Compute the redshift-dependent star formation-mass relation (SFMR) 
-    with sharp flattening at high masses, while keeping the SFMR from 
-    the BoogaardSFMR class at low masses. Calculates either the 
-    star-formation rate (SFR) from the galaxy stellar mass, or the 
-    galaxy stellar mass from the SFR.
+    Computes the redshift-dependent star formation-mass relation (SFMR)
+    with sharp flattening at high masses, while keeping a
+    :class:`~sfr.BoogaardSFMR` at low masses, for a given redshift.
+    Allows calculating the star-formation rate (SFR) from the galaxy
+    stellar mass. Meant to be  implemented trough :func:`sfr.SFMR`.
+
+    Parameters
+    ----------
+    redshift : float
+        Redshift at which to compute the relation.
 
     Attributes
     ----------
     redshift : float
         Redshift at which to compute the relation.
-    lowmass_sfmr : BoogaardSFMR object
-        SFMR below logm_to.
-    gamma : float
-        Slope of the Tomczak SFMR at low masses.
-    yshift : float
-        SFR shift in the Tomczak SFMR for continuity.
-    yshift_logm : float
-        Mass (log10m) shift in the Tomczak SFMR for continuity.
-    s0 : float
-        Saturation value in the Tomczak SFMR.
-    logm_to : float
-        Log10 of the turn-off mass in the Tomczak SFMR.
+    lowmass_sfmr : :class:`sfr.BoogaardSFMR`
+        SFMR below :attr:`logm_break`.
 
     Methods
     -------
@@ -240,51 +215,41 @@ class TomczakSFMR:
 
     Notes
     -----
-    Tomczak et al. (2016) [1]_ model the SFMR as a power-law with slope 
-    gamma at low masses, which saturates to a value s0 above a turn-off 
-    mass m_to. Here the SFMR is given by the Boogaard et al. (2018) [2]_ 
-    SFMR below m_to, and by the Tomczak SFMR above m_to.
+    Tomczak et al. (2016) [3]_ model the SFMR as a power-law with slope
+    :const:`GAMMA` at low masses, which saturates to :attr:`s0` above a
+    turn-off mass :attr:`m_to`. Following Chruslinska & Nelemans (2019)
+    [4]_, here the SFMR is given as a :class:`sfr.BoogaardSFMR` below
+    the turn-off, and by the Tomczak SFMR above it.
 
     References
     ----------
-    .. [1] Tomczak, A. R., Quadri, R. F., Tran, K.-V. H. et al. (2014). 
+    .. [3] Tomczak, A. R., Quadri, R. F., Tran, K.-V. H. et al. (2014).
         Galaxy stellar mass functions from ZFOURGE/CANDELS: an excess of
         low-mass galaxies since z=2 and the rapid buildup of quiescent 
         galaxies. ApJ, 783, 95. doi:10.1088/0004-637X/783/2/85
-    .. [2] Boogaard, L. A., Brinchmann, J., Bouche, N. et al. (2018). The 
-        MUSE Hubble Ultra Deep Field Survey - XI. Constraining the 
-        low-mass end of the stellar mass-star formation rate relation at
-         z<1. A&A, 619, A27. doi:10.1051/0004-6361/201833136
     """
 
-    def __init__(self, redshift):
-        """
-        Parameters
-        ----------
-        redshift : float
-            Redshift at which to compute the relation.
-        """
+    GAMMA = 1.091
+    """float: Power-law slope."""
 
+    def __init__(self, redshift: float) -> None:
         self.redshift = redshift
         self.lowmass_sfmr = BoogaardSFMR(self.redshift)
-        self._s0 = None
-        self._logm_to = None
-        self.gamma = 1.091
-        self._yshift = None
-        self._yshift_logm = None
-        self._set_yshift()
+        self._s0 = None  # property
+        self._logm_to = None  # property
+        self._logm_break = None  # property
+        self._break_shift = None  # property
 
     @property
-    def s0(self):
-        """Saturation value in the Tomczak SFMR."""
+    def s0(self) -> float:
+        """float: High mass saturation SFR log. Redshift-dependent."""
         if self._s0 is None:
-            self._s0 = (0.448 + 1.220 * self.redshift 
-                        - 0.174 * self.redshift ** 2)
+            self._s0 = (0.448 + 1.220 * self.redshift - 0.174 * self.redshift ** 2)
         return self._s0
 
     @property
-    def logm_to(self):
-        """Log10 of the turn-off mass in the Tomczak SFMR."""
+    def logm_to(self) -> float:
+        """float: Turn-off mass log. Redshift-dependent."""
         if self._logm_to is None:
             if self.redshift < 0.5:
                 self._logm_to = self._logm_to_func(0.5)
@@ -294,43 +259,43 @@ class TomczakSFMR:
                 self._logm_to = self._logm_to_func(self.redshift)
         return self._logm_to
 
+    @property
+    def logm_break(self) -> float:
+        """float: Break mass between Boogaard and Tomczak SFMRs."""
+        if self._logm_break is None:
+            self._logm_break = fsolve(self._f, np.array(self.redshift) / 9 + 9)[0]
+        return self._logm_break
+
+    @property
+    def break_corr(self) -> float:
+        """float: Correction to match the SFMR models at the break."""
+        if self._break_shift is None:
+            self._break_shift = (self.lowmass_sfmr._sfr(self._logm_break)
+                                 - self._sfr(self._logm_break, yshift=0))
+        return self._break_shift
+
     @staticmethod
-    def _logm_to_func(redshift):
-        """Log10(m_to) as a function of redshift."""
+    def _logm_to_func(redshift: float) -> float:
+        """Turn-off mass log as a function of redshift."""
         return 9.458 + 0.865 * redshift - 0.132 * redshift ** 2
 
-    def _set_yshift(self):
-        """Set the mass and SFR shifts in the Tomczak SFMR for 
-        continuity with the Boogaard SFMR.
-        """
-        
-        self._yshift_logm = fsolve(self._f, np.array(self.redshift)/9 + 9)[0]
-        self._yshift = (self.lowmass_sfmr._sfr(self._yshift_logm)
-                        - self._sfr(self._yshift_logm, yshift=0))
-
-    def _f(self, x):
-        """Continuity condition between the Boogaard and Tomczak SFMRs.
-        """
+    def _f(self, x: float) -> float:
+        """Continuity constraint at the break."""
         
         if x < 8 or x > 11:
             return 10
         dx = x - self.logm_to
-        return np.abs(self.lowmass_sfmr.a * (1 + 10 ** (self.gamma * dx)) 
-                      - self.gamma)
+        return np.abs(self.lowmass_sfmr.A * (1 + 10 ** (self.GAMMA * dx)) - self.GAMMA)
 
-    def _sfr(self, logm, yshift=None):
+    def _sfr(self, logm: float, yshift: float | None = None) -> float:
         """Compute the SFR for a given log10 galactic stellar mass."""
-        if self._yshift_logm is None:
-            print('Please run set_yshift first.')
-            return
+        if logm < self._logm_break:
+            return self.lowmass_sfmr._sfr(logm)
         else:
-            if logm < self._yshift_logm:
-                return self.lowmass_sfmr._sfr(logm)
-            else:
-                if yshift is None:
-                    yshift = self._yshift
-                exp10 = 10 ** (-self.gamma * (logm - self.logm_to))
-                return self.s0 - np.log10(1 + exp10) + yshift
+            if yshift is None:
+                yshift = self._break_shift
+            exp10 = 10 ** (-self.GAMMA * (logm - self.logm_to))
+            return self.s0 - np.log10(1 + exp10) + yshift
 
 
 class SFMR:
@@ -339,8 +304,16 @@ class SFMR:
 
     General SFMR class, with options for no, moderate or sharp 
     flattening at high masses. Provides a unified way to access the 
-    three SFMR classes: BoogaardSFMR (no flattening), SpeagleSFMR 
-    (moderate flattening) and TomczakSFMR (sharp flattening).
+    three SFMR classes: :class:`~sfr.BoogaardSFMR` (no flattening),
+    :class:`~sfr.SpeagleSFMR` (moderate flattening) and
+    :class:`~sfr.TomczakSFMR` (sharp flattening).
+
+    Parameters
+    ----------
+    redshift : float
+        Redshift at which to compute the relation.
+    flattening : {'none', 'moderate', 'sharp'}, default: 'none'
+        SFMR model flattening option.
 
     Attributes
     ----------
@@ -353,17 +326,7 @@ class SFMR:
         class, depending on the flattening option.
     """
 
-    def __init__(self, redshift: float, flattening: str = 'none',
-                 scatter: str = 'none') -> None:
-        """
-        Parameters
-        ----------
-        redshift : float
-            Redshift at which to compute the relation.
-        flattening : {'none', 'moderate', 'sharp'}, default: 'none'
-            SFMR model flattening option.
-        """
-
+    def __init__(self, redshift: float, flattening: str = 'none', scatter: str = 'none') -> None:
         self.redshift = redshift
         self.sfmr = flattening
         self._dispersion = 0.3  # dex
@@ -437,6 +400,19 @@ class MZR:
     gamma, which flattens around a turnover mass m_to to an asymptotic 
     metallicity z_a. Metallicity given as Z_OH=12+log10(O/H).
 
+    Parameters
+    ----------
+    redshift : float
+        Redshift at which to compute the relation.
+    mzr_model : {'KK04', 'T04', 'M09', 'PP04'}, default: 'KK04'
+        Option of MZR parameter set.
+    logm_min : float, default: 7.0
+        Log10 of the minimum stellar galaxy mass in the relation.
+    logm_max : float, default: 12.0
+        Log10 of the maximum stellar galaxy mass in the relation.
+    scatter : {'none', 'normal', 'max', 'min'}, default : 'none'
+        Scatter model option.
+
     Attributes
     ----------
     ip_param_array
@@ -484,17 +460,17 @@ class MZR:
     -----
     Four sets of parameters for this same relation form are made 
     available, in following the models collected by Chruslinska & 
-    Nelemans (2019) [1]_: Tremontini et al. (2004) [2]_ (T04), 
-    Kobulnicky & Kewley [3]_ (2004) (KK04), Pettini & Pagel [4]_ (2004) 
-    (PP04) and Mannucci et al. [5]_ (2009) (M09).
+    Nelemans (2019) [4]_: Tremontini et al. (2004) [5]_ (T04),
+    Kobulnicky & Kewley [6]_ (2004) (KK04), Pettini & Pagel [7]_ (2004)
+    (PP04) and Mannucci et al. [8]_ (2009) (M09).
 
     The relation is fitted for four redshift bins z ~ 0.07, 0.7, 2.2, 
     3.5, such that each model provides four sets of corresponding MZR 
     parameters. In order to get the MZR at any other redshift, a 
     (mass, metallicity) array is generated at each of the four original 
     z and, for each mass, the metallicity is interpolated to the desired
-     z. Fitting of the MZR to the interpolated points sets the 
-     parameters at that z.
+    z. Fitting of the MZR to the interpolated points sets the
+    parameters at that z.
 
     For z > 3.5, parameters are kept as for z=3.5, but it is assumed 
     that the normalization varies linearly with redshift with the same 
@@ -502,43 +478,27 @@ class MZR:
 
     References
     ----------
-    .. [1] Chruslinska, M., Nelemans, G. (2019). Metallicity of stars 
-        formed throughout the cosmic history based on the observational 
-        properties of star-forming galaxies. MNRAS, 488(4), 5300. 
+    .. [4] Chruslinska, M. & Nelemans, G. (2019). Metallicity of stars
+        formed throughout the cosmic history based on the observational
+        properties of star-forming galaxies. MNRAS, 488(4), 5300.
         doi:10.1093/mnras/stz2057
-    .. [2] Tremontini, C. A., Heckamn, T. M., Kauffmann, G. et al. 
+    .. [5] Tremontini, C. A., Heckamn, T. M., Kauffmann, G. et al.
         (2004). The Origin of the Mass-Metallicity Relation: Insights 
         from 53,000 Star-forming Galaxies in the Sloan Digital Sky 
         Survey. ApJ, 613, 898. doi:10.1086/423264
-    .. [3] Kobulnicky, H. A., Kewley, L. J. (2004). Metallicities of 0.3
+    .. [6] Kobulnicky, H. A., Kewley, L. J. (2004). Metallicities of 0.3
         < z < 1.0 Galaxies in the GOODS-North Field. ApJ, 617, 240. 
         doi:10.1086/425299
-    .. [4] Pettini, M., Pagel, B. E. J. (2004). [Oiii]/[Nii] as an 
+    .. [7] Pettini, M., Pagel, B. E. J. (2004). [Oiii]/[Nii] as an
         abundance indicator at high redshift. MNRAS, 348(3), L59. 
         doi:10.1111/j.1365-2966.2004.07591.x
-    .. [5] Mannucci, F., Cresci, G., Maiolino, R. et al. (2009). LSD: 
+    .. [8] Mannucci, F., Cresci, G., Maiolino, R. et al. (2009). LSD:
         Lyman-break galaxies Stellar populations and Dynamics - I. Mass,
-         metallicity and gas at z~3.1. MNRAS, 398(4), 1915. 
-         doi:10.1111/j.1365-2966.2009.15185.x
+        metallicity and gas at z~3.1. MNRAS, 398(4), 1915.
+        doi:10.1111/j.1365-2966.2009.15185.x
     """
 
-    def __init__(self, redshift, mzr_model='KK04', logm_min=7.0, 
-                 logm_max=12.0, scatter='none'):
-        """
-        Parameters
-        ----------
-        redshift : float
-            Redshift at which to compute the relation.
-        mzr_model : {'KK04', 'T04', 'M09', 'PP04'}, default: 'KK04'
-            Option of MZR parameter set.
-        logm_min : float, default: 7.0
-            Log10 of the minimum stellar galaxy mass in the relation.
-        logm_max : float, default: 12.0
-            Log10 of the maximum stellar galaxy mass in the relation.
-        scatter : {'none', 'normal', 'max', 'min'}, default : 'none'
-            Scatter model option.
-        """
-
+    def __init__(self, redshift, mzr_model='KK04', logm_min=7.0,  logm_max=12.0, scatter='none'):
         self.redshift = redshift
         self.mzr_model = mzr_model
         self.logm_min = logm_min
@@ -797,14 +757,14 @@ class Corrections:
     -----
     The corrections are obtained for arbitrary values of SFR and
     metallicity by interpolation of the SFR density grid from
-    Chruslinska et al. (2020) [1]_, kindly made available in full by
+    Chruslinska et al. (2020) [9]_, kindly made available in full by
     Martyna Chruslinska.
 
     All metallicities are given as [Fe/H].
 
     References
     ----------
-    .. [1] Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z. (2020).
+    .. [9] Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z. (2020).
         The effect of the environment-dependent PowerLawIMF on the
         formation and metallicities of stars over cosmic history. A&A,
         636, A10. doi:10.1051/0004-6361/202037688
@@ -934,7 +894,7 @@ class ChruslinskaSFRD:
 
     Notes
     -----
-    The precomputed SFRD grids are by Chruslinska et al. (2020) [1]_ and
+    The precomputed SFRD grids are by Chruslinska et al. (2020) [9]_ and
     were calculated with the same GSMF, SFMR and MZR relations employed
     in this module. Different combinations of the different relation
     options lead to the three grid options, differentiated by the degree
@@ -942,13 +902,6 @@ class ChruslinskaSFRD:
     metallicities. These grids already take into account the corrections
     for environment-dependent PowerLawIMF treated in the Corrections
     class.
-
-    References
-    ----------
-    .. [1] Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z. (2020).
-        The effect of the environment-dependent PowerLawIMF on the
-        formation and metallicities of stars over cosmic history. A&A,
-        636, A10. doi:10.1051/0004-6361/202037688
     """
 
     MODEL_PATH_DICT = {'lowmet': LOWMET_SFRD_PATH,
