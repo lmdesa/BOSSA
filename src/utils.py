@@ -5,6 +5,7 @@ from functools import wraps
 from typing import Any, Callable, Annotated
 
 import numpy as np
+from numpy.typing import NDArray
 from scipy.optimize import fsolve
 from scipy.interpolate import interp1d
 import astropy.constants as ct
@@ -41,6 +42,22 @@ def input_unit(units: tuple):
             return func(*new_args, **kwargs)
         return wrapper_unit
     return decorator_unit
+
+def float_or_arr_input(
+        func: Callable[[object, float, ...], float]
+) -> Callable[[object, float | NDArray[float], ...], float | NDArray[float]]:
+    """Convert first parameter from float to 1-dimensional array."""
+    @wraps(func)
+    def wrapper(self: object, x: float | NDArray, *args: Any, **kwargs: Any) -> Any:
+        match x:
+            case float() | int():
+                return func(self, x, *args, **kwargs)
+            case NDArray:
+                eval_ = np.zeros(len(x))
+                for i, y in enumerate(x):
+                    eval_[i] = func(self, y, *args, **kwargs)
+                return eval_
+    return wrapper
 
 def FeH_to_OFe(FeH):
     if FeH < -1:

@@ -5,7 +5,9 @@ from pathlib import Path
 
 import numpy as np
 from astropy.cosmology import WMAP9 as cosmo
+from numpy._typing import NDArray
 from scipy.optimize import curve_fit, fsolve
+from scipy.stats import norm
 
 from .constants import (
     Z_SUN, T04_MZR_params_list, M09_MZR_params_list, KK04_MZR_params_list,
@@ -13,7 +15,7 @@ from .constants import (
     MIDMET_SFRD_DATA_PATH, HIGHMET_SFRD_DATA_PATH, LOWMET_CANON_SFRD_PATH,
     MIDMET_CANON_SFRD_DATA_PATH, HIGHMET_CANON_SFRD_DATA_PATH
 )
-from .utils import ZOH_to_FeH, FeH_to_Z, interpolate
+from .utils import ZOH_to_FeH, FeH_to_Z, interpolate, float_or_arr_input
 
 
 class BoogaardSFMR:
@@ -90,11 +92,11 @@ class BoogaardSFMR:
                 self._c = 1
         return self._c
 
-    def sfr(self, logm):
+    def _sfr(self, logm):
         """Compute the SFR for a given galactic stellar mass log10."""
         return self.a * logm + self.b
 
-    def logm(self, sfr):
+    def _logm(self, sfr):
         """Compute the log10 galactic stellar mass for a given SFR."""
         return (sfr - self.b) / self.a
 
@@ -193,13 +195,13 @@ class SpeagleSFMR:
         """
         
         if self._b is None:
-            self._b = self.lowmass_sfmr.sfr(self.LOGM_TH) - self.a * 9.7
+            self._b = self.lowmass_sfmr._sfr(self.LOGM_TH) - self.a * 9.7
         return self._b
 
-    def sfr(self, logm):
+    def _sfr(self, logm):
         """Compute the SFR for a given log10galactic stellar mass."""
         if logm < self.LOGM_TH:
-            return self.lowmass_sfmr.sfr(logm)
+            return self.lowmass_sfmr._sfr(logm)
         else:
             return self.a * logm + self.b
 
@@ -303,8 +305,8 @@ class TomczakSFMR:
         """
         
         self._yshift_logm = fsolve(self._f, np.array(self.redshift)/9 + 9)[0]
-        self._yshift = (self.lowmass_sfmr.sfr(self._yshift_logm) 
-                        - self.sfr(self._yshift_logm, yshift=0))
+        self._yshift = (self.lowmass_sfmr._sfr(self._yshift_logm)
+                        - self._sfr(self._yshift_logm, yshift=0))
 
     def _f(self, x):
         """Continuity condition between the Boogaard and Tomczak SFMRs.
@@ -316,14 +318,14 @@ class TomczakSFMR:
         return np.abs(self.lowmass_sfmr.a * (1 + 10 ** (self.gamma * dx)) 
                       - self.gamma)
 
-    def sfr(self, logm, yshift=None):
+    def _sfr(self, logm, yshift=None):
         """Compute the SFR for a given log10 galactic stellar mass."""
         if self._yshift_logm is None:
             print('Please run set_yshift first.')
             return
         else:
             if logm < self._yshift_logm:
-                return self.lowmass_sfmr.sfr(logm)
+                return self.lowmass_sfmr._sfr(logm)
             else:
                 if yshift is None:
                     yshift = self._yshift
@@ -351,7 +353,8 @@ class SFMR:
         class, depending on the flattening option.
     """
 
-    def __init__(self, redshift, flattening='none'):
+    def __init__(self, redshift: float, flattening: str = 'none',
+                 scatter: str = 'none') -> None:
         """
         Parameters
         ----------
@@ -362,24 +365,66 @@ class SFMR:
         """
 
         self.redshift = redshift
-        self.flattening = flattening  # 'none', 'moderate', 'sharp'
-        self.sfmr = None
-        self._set_sfmr_model()
+        self.sfmr = flattening
+        self._dispersion = 0.3  # dex
+        self.scatter = scatter
 
-    def _set_sfmr_model(self):
-        """Save the chosen SFMR class instance as a class attribute."""
-        if self.flattening == 'none':
-            self.sfmr = BoogaardSFMR(self.redshift)
-        elif self.flattening == 'moderate':
-            self.sfmr = SpeagleSFMR(self.redshift)
-        elif self.flattening == 'sharp':
-            self.sfmr = TomczakSFMR(self.redshift)
+    @property
+    def sfmr(self):
+        """Instance of one of the SFMR model classes."""
+        return self._sfmr
+
+    @sfmr.setter
+    def sfmr(self, flattening):
+        if flattening == 'none':
+            self._sfmr = BoogaardSFMR(self.redshift)
+        elif flattening == 'moderate':
+            self._sfmr = SpeagleSFMR(self.redshift)
+        elif flattening == 'sharp':
+            self._sfmr = TomczakSFMR(self.redshift)
         else:
-            print('Invalid flattening parameter.')
+            warnings.warn('Parameter flattening must be one of '
+                          '"none", "moderate", "sharp".')
+
+    @property
+    def scatter(self):
+        return self._scatter
+
+    @scatter.setter
+    def scatter(self, scatter):
+        scatter_models = {'none': self._none_scatter,
+                          'normal': self._normal_scatter,
+                          'min': self._min_scatter,
+                          'max': self._max_scatter}
+        if scatter in scatter_models:
+            self._scatter = scatter_models[scatter]
+        else:
+            raise ValueError('Parameter "scatter" must be one of '
+                             f'{', '.join(scatter_models.keys())}')
+
+
+    def _none_scatter(self):
+        return norm(0, 0).rvs()
+
+    def _normal_scatter(self):
+        scatter = norm(0, self._dispersion).rvs()
+        return scatter
+
+    def _min_scatter(self):
+        return -self._dispersion
+
+    def _max_scatter(self):
+        return self._dispersion
 
     def __getattr__(self, name):
         """Redirect calls to self to the chosen SFMR class instance."""
         return self.sfmr.__getattribute__(name)
+
+    @float_or_arr_input
+    def sfr(self, logm):
+        sfr = self._sfr(logm)
+        sfr += self.scatter()
+        return sfr
 
 
 class MZR:
@@ -478,7 +523,7 @@ class MZR:
     """
 
     def __init__(self, redshift, mzr_model='KK04', logm_min=7.0, 
-                 logm_max=12.0):
+                 logm_max=12.0, scatter='none'):
         """
         Parameters
         ----------
@@ -490,12 +535,15 @@ class MZR:
             Log10 of the minimum stellar galaxy mass in the relation.
         logm_max : float, default: 12.0
             Log10 of the maximum stellar galaxy mass in the relation.
+        scatter : {'none', 'normal', 'max', 'min'}, default : 'none'
+            Scatter model option.
         """
 
         self.redshift = redshift
         self.mzr_model = mzr_model
         self.logm_min = logm_min
         self.logm_max = logm_max
+        self.scatter = scatter
         self.z_a = None
         self.logm_to = None
         self.gamma = None
@@ -503,6 +551,42 @@ class MZR:
         self._ip_redshift_array = np.array([0, 0.7, 2.2, 3.5])
         self._ip_arrays_len = 50
         self._ip_param_array = None  # property
+
+    @property
+    def scatter(self):
+        return self._scatter
+
+    @scatter.setter
+    def scatter(self, scatter):
+        scatter_models = {'none': self._none_scatter,
+                          'normal': self._normal_scatter,
+                          'min': self._min_scatter,
+                          'max': self._max_scatter}
+        if scatter in scatter_models:
+            self._scatter = scatter_models[scatter]
+        else:
+            raise ValueError('Parameter "scatter" must be one of '
+                             f'{', '.join(scatter_models.keys())}')
+    @staticmethod
+    def _dispersion(logm):
+        if logm > 9.5:
+            return 0.1  # dex
+        else:
+            return -0.04 * logm + 0.48  # dex
+
+    def _none_scatter(self, logm):
+        return norm(0, 0).rvs()
+
+    def _normal_scatter(self, logm):
+        stdev = self._dispersion(logm)
+        scatter = norm(0, stdev).rvs()
+        return scatter
+
+    def _min_scatter(self, logm):
+        return -self._dispersion(logm)
+
+    def _max_scatter(self, logm):
+        return self._dispersion(logm)
 
     @property
     def ip_param_array(self):
@@ -517,10 +601,8 @@ class MZR:
             elif self.mzr_model == 'PP04':
                 self._ip_param_array = PP04_MZR_params_list
             else:
-                warnings.warn(
-                    'Could not retrieve MZR model. '
-                    'Please select one of: "T04", "M09", "KK04", "PP04".'
-                )
+                raise ValueError('Parameter "mzr_model" must be one of '
+                                 '"T04", "M09", "KK04", "PP04".')
         return self._ip_param_array
 
     def _get_ip_arrays(self):
@@ -640,32 +722,37 @@ class MZR:
         del_z = dz * (self.redshift - 3.5)
         return logm_to - np.log10(10 ** (z_a - zoh + del_z) - 1) / gamma
 
-    def logm(self, zoh):
+    @float_or_arr_input
+    def logm(self, zoh: float) -> float:
         """Compute the metallicity, Z_OH=12+log10(O/H), from the log10
         galactic stellar mass.
         """
 
         if self.z_a is None:
-            warnings.warn('No MZR parameters set. Please run set_params().')
-            return
+            raise AttributeError('No MZR parameters set. '
+                                 'Please call set_params() first.')
+
         if self.redshift <= 3.5:
             logm = self._lowredshift_logm(zoh)
         else:
             logm = self._highredshift_logm(zoh)
         return logm
 
-    def zoh(self, logm):
+    @float_or_arr_input
+    def zoh(self, logm: float) -> float:
         """Compute the log10 galactic stellar mass from the metallicity,
          Z_OH=12+log10(O/H).
          """
 
         if self.z_a is None:
-            warnings.warn('No MZR parameters set. Please run set_params().')
-            return
+            raise AttributeError('No MZR parameters set. '
+                                 'Please call set_params() first.')
+
         if self.redshift <= 3.5:
             zoh = self._lowredshift_zoh(logm)
         else:
             zoh = self._highredshift_zoh(logm)
+        zoh += self.scatter(logm)
         return zoh
 
 
