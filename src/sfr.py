@@ -2,10 +2,11 @@
 
 import warnings
 from pathlib import Path
+from typing import Any, Callable
 
 import numpy as np
 from astropy.cosmology import WMAP9 as cosmo
-from numpy._typing import NDArray
+from numpy._typing import ArrayLike, NDArray
 from scipy.optimize import curve_fit, fsolve
 from scipy.stats import norm
 
@@ -327,13 +328,19 @@ class SFMR:
         class, depending on the flattening option.
     """
 
+    DISPERSION = 0.3  # dex
+    """float: Empirical SFR dispersion around the SFMR.
+    
+    From Chruslisnka & Nelemans (2019).
+    """
+
     def __init__(self, redshift: float, flattening: str = 'none', scatter: str = 'none') -> None:
         self.redshift = redshift
         self.sfmr = flattening
-        self._dispersion = 0.3  # dex
+
         self.scatter = scatter
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         """Redirect calls to self to the chosen SFMR class instance."""
         return self.sfmr.__getattribute__(name)
 
@@ -343,7 +350,7 @@ class SFMR:
         return self._sfmr
 
     @sfmr.setter
-    def sfmr(self, flattening):
+    def sfmr(self, flattening: str) -> None:
         if flattening == 'none':
             self._sfmr = BoogaardSFMR(self.redshift)
         elif flattening == 'moderate':
@@ -355,23 +362,21 @@ class SFMR:
                           '"none", "moderate", "sharp".')
 
     @property
-    def scatter(self):
+    def scatter(self) -> Callable[[], float]:
         """Return a value for SFR scatter around the SFMR.
 
         Depending on :attr:`flattening`, will be a normal distribution
         with mean 0 and standard deviation equal to
-        :const:`_dispersion` (if :attr:`flattening` is "norm"); or fixed
+        :const:`DISPERSION` (if :attr:`flattening` is "norm"); or fixed
         to either `0` (if :attr:`flattening` is "none"),
-        :const:`_dispersion` (if :attr:`flattening` is "min") or
-        -:const:`_dispersion` (if :attr:`flattening` is "max").
-
-        Scatter value is drawn by calling `rvs()`.
+        :const:`DISPERSION` (if :attr:`flattening` is "min") or
+        -:const:`DISPERSION` (if :attr:`flattening` is "max").
         """
 
         return self._scatter
 
     @scatter.setter
-    def scatter(self, scatter):
+    def scatter(self, scatter: str) -> None:
         scatter_models = {'none': self._none_scatter,
                           'normal': self._normal_scatter,
                           'min': self._min_scatter,
@@ -384,31 +389,31 @@ class SFMR:
 
 
     @staticmethod
-    def _none_scatter():
+    def _none_scatter() -> float:
         """Return `0.0` scatter."""
         return 0.
 
-    def _normal_scatter(self):
+    def _normal_scatter(self) -> float:
         """Return scatter drawn from a normal distribution.
 
         The distribution is centered on zero and has standard deviation
-        equal to :const:`_dispersion`, from Chruslinska & Nelemans
+        equal to :const:`DISPERSION`, from Chruslinska & Nelemans
         (2019).
         """
 
-        scatter = norm(0, self._dispersion).rvs()
+        scatter = norm(0, self.DISPERSION).rvs()
         return scatter
 
-    def _min_scatter(self):
-        """Return -:const:`_dispersion` scatter."""
-        return -self._dispersion
+    def _min_scatter(self) -> float:
+        """Return -:const:`DISPERSION` scatter."""
+        return -self.DISPERSION
 
-    def _max_scatter(self):
-        """Return :const:`_dispersion` scatter."""
-        return self._dispersion
+    def _max_scatter(self) -> float:
+        """Return :const:`DISPERSION` scatter."""
+        return self.DISPERSION
 
     @float_or_arr_input
-    def sfr(self, logm):
+    def sfr(self, logm: ArrayLike) -> ArrayLike:
         """Compute the SFR for a galaxy stellar mass log."""
         sfr = self._sfr(logm)
         sfr += self.scatter()
@@ -435,24 +440,15 @@ class MZR:
         Redshift at which to compute the relation.
     mzr_model : {"KK04", "T04", "M09", "PP04"}, default: "KK04"
         Option of MZR parameter set.
-    logm_min : float, default: 7.0
-        Log10 of the minimum stellar galaxy mass in the relation.
-    logm_max : float, default: 12.0
-        Log10 of the maximum stellar galaxy mass in the relation.
     scatter : {"none", "normal", "max", "min"}, default : "none"
         Model for metallicity scatter about the MZR.
 
     Attributes
     ----------
-    ip_param_array
     redshift : float
         Redshift at which to compute the relation.
     mzr_model : str
         Option of MZR parameter set.
-    logm_min : float
-        Log10 of the minimum stellar galaxy mass in the relation.
-    logm_max : float
-        Log10 of the maximum stellar galaxy mass in the relation.
     z_a : float
         Asymptotic Z_OH metallicity of the high-mass end of the 
         relation. Redshift-dependent.
@@ -527,26 +523,24 @@ class MZR:
         doi:10.1111/j.1365-2966.2009.15185.x
     """
 
-    def __init__(self, redshift, mzr_model='KK04', logm_min=7.0,  logm_max=12.0, scatter='none'):
+    def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter: str = 'none') -> None:
         self.redshift = redshift
         self.mzr_model = mzr_model
-        self.logm_min = logm_min
-        self.logm_max = logm_max
         self.scatter = scatter
         self.z_a = None
         self.logm_to = None
         self.gamma = None
         self.dz = None
-        self._ip_redshift_array = np.array([0, 0.7, 2.2, 3.5])
+        self._ip_redshift_array = np.array([0, 0.7, 2.2, 3.5])  # property
         self._ip_arrays_len = 50
         self._ip_param_array = None  # property
 
     @property
-    def scatter(self):
+    def scatter(self) -> Callable[[float], float]:
         return self._scatter
 
     @scatter.setter
-    def scatter(self, scatter):
+    def scatter(self, scatter: str) -> None:
         scatter_models = {'none': self._none_scatter,
                           'normal': self._normal_scatter,
                           'min': self._min_scatter,
@@ -557,28 +551,28 @@ class MZR:
             raise ValueError('Parameter "scatter" must be one of '
                              f'{', '.join(scatter_models.keys())}')
     @staticmethod
-    def _dispersion(logm):
+    def _dispersion(logm: float) -> float:
         if logm > 9.5:
             return 0.1  # dex
         else:
             return -0.04 * logm + 0.48  # dex
 
-    def _none_scatter(self, logm):
+    def _none_scatter(self, logm: float) -> float:
         return norm(0, 0).rvs()
 
-    def _normal_scatter(self, logm):
+    def _normal_scatter(self, logm: float) -> float:
         stdev = self._dispersion(logm)
         scatter = norm(0, stdev).rvs()
         return scatter
 
-    def _min_scatter(self, logm):
+    def _min_scatter(self, logm: float) -> float:
         return -self._dispersion(logm)
 
-    def _max_scatter(self, logm):
+    def _max_scatter(self, logm: float) -> float:
         return self._dispersion(logm)
 
     @property
-    def ip_param_array(self):
+    def ip_param_array(self) -> list:
         """Array of MZR parameters from the chosen model."""
         if self._ip_param_array is None:
             if self.mzr_model == 'T04':
@@ -594,7 +588,7 @@ class MZR:
                                  '"T04", "M09", "KK04", "PP04".')
         return self._ip_param_array
 
-    def _get_ip_arrays(self):
+    def _get_ip_arrays(self) -> tuple[NDArray, NDArray]:
         """Generate the mass-metallicity arrays for interpolation."""
         ip_logm_array = np.linspace(self.logm_min, 
                                     self.logm_max, 
@@ -609,7 +603,7 @@ class MZR:
         ip_zoh_array = ip_zoh_array.T
         return ip_logm_array, ip_zoh_array
 
-    def set_params(self):
+    def set_params(self) -> None:
         """Interpolate from the original parameter set to the given 
         redshift.
 
@@ -650,7 +644,8 @@ class MZR:
             fit_params = np.concatenate((fit_params, [0]))
         self.z_a, self.logm_to, self.gamma, self.dz = fit_params
 
-    def _lowredshift_zoh(self, logm, z_a=None, logm_to=None, gamma=None):
+    def _lowredshift_zoh(self, logm: float, z_a: float | None = None, logm_to: float | None = None,
+                         gamma: float | None = None) -> float:
         """Compute the metallicity, Z_OH=12+log10(O/H), from the log10
         galactic stellar mass, for redshift <= 3.5.
         """
@@ -664,8 +659,9 @@ class MZR:
         exp = 10 ** (-gamma * (logm - logm_to))
         return z_a - np.log10(1 + exp)
 
-    def _highredshift_zoh(self, logm, z_a=None, logm_to=None, gamma=None,
-                          dz=None):
+    def _highredshift_zoh(self, logm: float, z_a: float | None = None,
+                          logm_to: float | None = None, gamma: float = None, dz: float = None
+                          ) -> float:
         """Compute the metallicity, Z_OH=12+log10(O/H), from the log10
         galactic stellar mass, for redshift > 3.5.
         """
@@ -681,7 +677,8 @@ class MZR:
         zoh_z35 = self._lowredshift_zoh(logm, z_a, logm_to, gamma)
         return zoh_z35 + dz * (self.redshift - 3.5)
 
-    def _lowredshift_logm(self, zoh, z_a=None, logm_to=None, gamma=None):
+    def _lowredshift_logm(self, zoh: float, z_a: float | None = None, logm_to: float | None = None,
+                          gamma: float | None = None):
         """Compute the log10 galactic stellar mass from the metallicity,
         Z_OH=12+log10(O/H), for redshift <= 3.5
         """
@@ -694,8 +691,9 @@ class MZR:
             gamma = self.gamma
         return logm_to - np.log10(10 ** (z_a - zoh) - 1) / gamma
 
-    def _highredshift_logm(self, zoh, z_a=None, logm_to=None, gamma=None,
-                           dz=None):
+    def _highredshift_logm(self, zoh: float, z_a: float | None = None,
+                           logm_to: float | None = None, gamma: float | None = None,
+                           dz: float | None = None):
         """Compute the log10 galactic stellar mass from the metallicity,
         Z_OH=12+log10(O/H), for redshift > 3.5
         """
@@ -712,7 +710,7 @@ class MZR:
         return logm_to - np.log10(10 ** (z_a - zoh + del_z) - 1) / gamma
 
     @float_or_arr_input
-    def logm(self, zoh: float) -> float:
+    def logm(self, zoh: ArrayLike) -> float | NDArray:
         """Compute the metallicity, Z_OH=12+log10(O/H), from the log10
         galactic stellar mass.
         """
@@ -728,7 +726,7 @@ class MZR:
         return logm
 
     @float_or_arr_input
-    def zoh(self, logm: float) -> float:
+    def zoh(self, logm: ArrayLike) -> float | NDArray:
         """Compute the log10 galactic stellar mass from the metallicity,
          Z_OH=12+log10(O/H).
          """
