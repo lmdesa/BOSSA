@@ -910,28 +910,27 @@ class IGIMF:
     -----
     The IGIMF framework is applied as described in Jerabkova et al.
     (2018) [1]_, Yan et al. (2017) [2]_ and references therein.
-    Explicitly, the gIMF at a given stellar mass m is
+    Explicitly, the gIMF at a given stellar mass `m` is
 
     .. math::
 
-        PowerLawIMF(m|SFR,Z) = \int_0^\infty dM\, sIMF(m|M,Z)\,
-        eIMF(M|SFR,t),
+        \\xi_\\mathrm{g}(m|\\mathrm{SFR},\\mathrm{Z}) = \\int_0^\\infty
+        \\mathrm{d}M\\, \\xi_\\mathrm{s}(m|M,\\mathrm{Z})\\,
+        \\xi_\\mathrm{e}(M|\\mathrm{SFR}),
 
-    where M is the ECL stellar mass; Z the galaxy metallicity, which is
-    assumed uniform; and t is the star formation time, by default
-    10 Myr. The integration interval is broken into log-uniform
+    where `M` is the ECL stellar mass; Z the galaxy metallicity, assumed
+    homogeneous. The integration interval is broken into log-uniform
     intervals. Integration is performed with Scipy's quad function.
 
     This constitutes a spatial integration over the whole galaxy for all
-     the stars formed within the ECLs formed during an interval t,
-     without taking into account the spatial distribution of
-     star-forming regions or their differing chemical properties.
-     Thus, the entire galaxy is specified by an SFR and a single
-     metallicity.
+    the stars formed within the ECLs during a time interval
+    :attr:`time`, without taking into account the spatial distribution
+    of star-forming regions or their differing chemical properties.
+    Thus, the entire galaxy is specified by :attr:`SFR` and :attr:`feh`.
 
     The SFR is given in solar masses per year. The metallicity is
-    expressed as [Fe/H]. The duration of ECL formation is given in
-    years. All masses are given in solar masses.
+    expressed as [Fe/H]. Time is given in years. All masses are given in
+    solar masses.
 
     References
     ----------
