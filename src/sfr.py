@@ -299,8 +299,7 @@ class TomczakSFMR:
 
 
 class SFMR:
-    """General SFMR, with either no, moderate or sharp flattening at 
-    high masses.
+    """General redshift-dependent star-formation mass relation class.
 
     General SFMR class, with options for no, moderate or sharp 
     flattening at high masses. Provides a unified way to access the 
@@ -313,7 +312,9 @@ class SFMR:
     redshift : float
         Redshift at which to compute the relation.
     flattening : {'none', 'moderate', 'sharp'}, default: 'none'
-        SFMR model flattening option.
+        SFMR flattening mode.
+    scatter : {'none', 'normal', 'min', 'max'}, default : 'none'
+        Model for SFR scatter about the SFMR.
 
     Attributes
     ----------
@@ -332,8 +333,12 @@ class SFMR:
         self._dispersion = 0.3  # dex
         self.scatter = scatter
 
+    def __getattr__(self, name):
+        """Redirect calls to self to the chosen SFMR class instance."""
+        return self.sfmr.__getattribute__(name)
+
     @property
-    def sfmr(self):
+    def sfmr(self) -> BoogaardSFMR | SpeagleSFMR | TomczakSFMR:
         """Instance of one of the SFMR model classes."""
         return self._sfmr
 
@@ -346,11 +351,23 @@ class SFMR:
         elif flattening == 'sharp':
             self._sfmr = TomczakSFMR(self.redshift)
         else:
-            warnings.warn('Parameter flattening must be one of '
+            warnings.warn('Parameter `flattening` must be one of '
                           '"none", "moderate", "sharp".')
 
     @property
     def scatter(self):
+        """Return a value for SFR scatter around the SFMR.
+
+        Depending on :attr:`flattening`, will be a normal distribution
+        with mean 0 and standard deviation equal to
+        :const:`_dispersion` (if :attr:`flattening` is "norm"); or fixed
+        to either `0` (if :attr:`flattening` is "none"),
+        :const:`_dispersion` (if :attr:`flattening` is "min") or
+        -:const:`_dispersion` (if :attr:`flattening` is "max").
+
+        Scatter value is drawn by calling `rvs()`.
+        """
+
         return self._scatter
 
     @scatter.setter
@@ -366,52 +383,64 @@ class SFMR:
                              f'{', '.join(scatter_models.keys())}')
 
 
-    def _none_scatter(self):
-        return norm(0, 0).rvs()
+    @staticmethod
+    def _none_scatter():
+        """Return `0.0` scatter."""
+        return 0.
 
     def _normal_scatter(self):
+        """Return scatter drawn from a normal distribution.
+
+        The distribution is centered on zero and has standard deviation
+        equal to :const:`_dispersion`, from Chruslinska & Nelemans
+        (2019).
+        """
+
         scatter = norm(0, self._dispersion).rvs()
         return scatter
 
     def _min_scatter(self):
+        """Return -:const:`_dispersion` scatter."""
         return -self._dispersion
 
     def _max_scatter(self):
+        """Return :const:`_dispersion` scatter."""
         return self._dispersion
-
-    def __getattr__(self, name):
-        """Redirect calls to self to the chosen SFMR class instance."""
-        return self.sfmr.__getattribute__(name)
 
     @float_or_arr_input
     def sfr(self, logm):
+        """Compute the SFR for a galaxy stellar mass log."""
         sfr = self._sfr(logm)
         sfr += self.scatter()
         return sfr
 
 
 class MZR:
-    """Redshift-dependent mass-(gas) metallicity relation for one of 
-    four parameter sets.
+    """General redshift-dependent metallicity-mass relation class.
 
     Compute the redshift-dependent mass-(gas) metallicity relation (MZR)
-    for one of four parameter sets: : 'KK04', 'T04', 'M09' or 'PP04'. 
-    The MZR takes the form of a power law at low masses with slope 
-    gamma, which flattens around a turnover mass m_to to an asymptotic 
-    metallicity z_a. Metallicity given as Z_OH=12+log10(O/H).
+    for one of four parameter sets: : "KK04", "T04", "M09" or "PP04".
+    The MZR takes the form of a power-law at low masses with slope
+    :attr:`gamma`, which flattens around a turnover mass :attr:`m_to` to
+    an asymptotic metallicity :attr:`z_a`. Metallicity given and
+    expected as
+
+    .. math ::
+
+        \\mathrm{Z}_\\mathrm{OH} = 12 + \\log(\\mathrm{O}/\\mathrm{H}).
 
     Parameters
     ----------
     redshift : float
         Redshift at which to compute the relation.
-    mzr_model : {'KK04', 'T04', 'M09', 'PP04'}, default: 'KK04'
+    mzr_model : {"KK04", "T04", "M09", "PP04"}, default: "KK04"
         Option of MZR parameter set.
     logm_min : float, default: 7.0
         Log10 of the minimum stellar galaxy mass in the relation.
     logm_max : float, default: 12.0
         Log10 of the maximum stellar galaxy mass in the relation.
-    scatter : {'none', 'normal', 'max', 'min'}, default : 'none'
-        Scatter model option.
+    scatter : {"none", "normal", "max", "min"}, default : "none"
+        Model for metallicity scatter about the MZR.
 
     Attributes
     ----------
