@@ -24,34 +24,34 @@ class PowerLawIMF:
     """Generic broken power-law initial mass function.
 
     This class contains the attributes that are expected by the module
-    from any choice of PowerLawIMF, as well as a method that returns
-    dN/dM from a broken power-law PowerLawIMF with an arbitrary number
-    of breaks.
+    from any choice of broken power-law IMF with an arbitrary number of
+    breaks, as well as methods for returning dN/dM and integrating the
+    IMF within an arbitrary interval.
 
     Attributes
     ----------
     m_tot : float
-        Total mass of the population described by the PowerLawIMF. A
-        normalization constraint.
+        Total mass of the population described by the IMF.
     m_trunc_min : float
-        The absolute minimum mass of an object in the described
-        population.
+        Lower truncation mass, taken as the IMF lower limit.
     m_trunc_max : float
-        The absolute maximum mass of an object in the described
-        population.
+        Upper truncation the same, can be >= ``m_max``.
     m_max : float
-        Maximum mass for which the PowerLawIMF is defined.
-    _breaks : list
+        IMF upper limit.
+    breaks : list
         Power-law breaks.
-    _exponents : list
-        Power law exponents. Should carry their sign.
-    _norms : list
-        Normalization constants for each broken power-law section.
+    exponents : list
+        Power law exponents with padding. Carries the sign.
+    norms : list
+        Normalization constants for each range, with padding.
 
     Methods
     -------
     imf(m)
-        Return dN/dM at mass m.
+        Return dN/dM at mass ``m``.
+    integrate(m0, m1, mass=False, normalized=True)
+        Return the integral of ``imf(m)`` or ``m*imf(m)`` between ``m0``
+        and ``m1``, for the IMF normalized to ``m_tot``.
 
     Notes
     -----
@@ -61,40 +61,51 @@ class PowerLawIMF:
 
     .. math:: dN/dM = k M^a.
 
-    _limits, _exponents and _norms are properties to be set by this
-    class' subclasses.
+   This class is written so that ``breaks``, ``exponents`` and ``norms``
+   may be set by subclasses. These properties' setters add appropriate
+   padding that is expected by the ``imf`` and ``integrate`` methods and
+   by the ``norms`` setter. The ``m_tot``, ``m_trunc_min`` and
+   ``m_trunc_max`` properties are defined so that this class will not
+   overwrite those of a subclass instance for which they are already
+   set.
 
     All masses are given and expected in solar masses.
 
     References
     ----------
     .. [1] Hopkins, A. (2018). The Dawes Review 8: Measuring the Stellar
-    Initial Mass Function. PASA, 35, E039.
-        doi:10.1017/pasa.2018.29
+        Initial Mass Function. PASA, 35, E039. doi:10.1017/pasa.2018.29
+
+    See Also
+    --------
+    Star : subclass for a variable stellar IMF.
+    EmbeddedCluster : subclass for a variable cluster IMF.
+    IGIMF : a galaxy IMF from ``Star`` and ``EmbeddedCluster``.
     """
 
-    def __init__(self, m_tot: float = 1.e10, m_trunc_min: float = 0.08,
-                 m_trunc_max: float = 150., m_max: float = 150.,
-                 breaks: list[float] = KROUPA_BREAKS,
+    def __init__(self, m_tot: float = 1.e10, m_trunc_min: float = 0.08, m_trunc_max: float = 150.,
+                 m_max: float = 150., breaks: list[float] = KROUPA_BREAKS,
                  exponents: list[float] = KROUPA_EXPONENTS,
                  norms: list[float] | None = None) -> None:
         """
         Parameters
         ----------
-        m_tot : float
-            Total mass of the population described by the PowerLawIMF.
-        m_trunc_min : float
-            Minimum possible mass of an object from the PowerLawIMF.
-        m_trunc_max : float
-            Maximum possible mass of an object from the PowerLawIMF.
-        m_max: float
-            Maximum mass for which the PowerLawIMF is defined.
-        breaks: list
-            List of power-law breaks.
-        exponents: list
-            List of power-law exponents.
-        norms: list
-            List of power-law normalization constants.
+        m_tot : float, default : 1.e10
+            Total mass of the population described by the IMF.
+        m_trunc_min : float, default : 0.08
+            Lower truncation mass, taken as the IMF lower limit.
+        m_trunc_max : float, default : 150.0
+            Upper truncation the same, can be >= ``m_max``.
+        m_max : float, default : 150.0
+            IMF upper limit.
+        breaks : list of floats, default : [0.08, 1., 150.]
+            Power-law breaks. Defaults to a Kroupa IMF.
+        exponents : list of floats, default : [-1.3, -2.3]
+            Power law exponents. Carries the sign. Defaults to a
+            Kroupa IMF.
+        norms : list of floats or None, default : None
+            Normalization constants for each range. If None, determined
+            from ``m_tot`` and continuity.
         """
 
         self.m_tot = m_tot
@@ -107,7 +118,7 @@ class PowerLawIMF:
 
     @staticmethod
     def _h1(a, m1, m2):
-        """Integral of m**a between m1 and m2."""
+        """Integral of ``m**a`` between ``m1`` and ``m2``."""
         if a == -1:
             return np.log(m2 / m1)
         else:
@@ -115,7 +126,7 @@ class PowerLawIMF:
 
     @staticmethod
     def _h2(a, m1, m2):
-        """Integral of m*m**a between m1 and m2."""
+        """Integral of ``m*m**a`` between ``m1`` and ``m2.``"""
         if a == -2:
             return np.log(m2 / m1)
         else:
@@ -123,6 +134,12 @@ class PowerLawIMF:
 
     @property
     def m_tot(self):
+        """Total mass represented by the IMF.
+
+        Total mass represented by the IMF. Will not overwrite itself in
+        a child class if also defined there.
+        """
+
         return self._m_tot
 
     @m_tot.setter
@@ -134,6 +151,11 @@ class PowerLawIMF:
 
     @property
     def m_max(self):
+        """Upper limit of the IMF.
+
+        Upper limit of the IMF. Will not overwrite itself in a child
+        class if also defined there.
+        """
         return self._m_max
 
     @m_max.setter
@@ -144,18 +166,13 @@ class PowerLawIMF:
             self._m_max = m_max
 
     @property
-    def m_trunc_min(self):
-        return self._m_trunc_min
-
-    @m_trunc_min.setter
-    def m_trunc_min(self, m_trunc_min):
-        if hasattr(self, '_m_trunc_min'):
-            pass
-        else:
-            self._m_trunc_min = m_trunc_min
-
-    @property
     def m_trunc_max(self):
+        """Upper truncation mass of the IMF.
+
+        Upper truncation mass of the IMF. Will not overwrite
+        itself in a child class if also defined there.
+        """
+
         return self._m_trunc_max
 
     @m_trunc_max.setter
@@ -166,7 +183,25 @@ class PowerLawIMF:
             self._m_trunc_max = m_trunc_max
 
     @property
+    def m_trunc_min(self):
+        """Lower truncation mass of the IMF.
+
+        Lower truncation mass of the IMF. Treated as the lower limit of
+        the IMF. Will not overwrite itself in a child class if also
+        defined there.
+        """
+        return self._m_trunc_min
+
+    @m_trunc_min.setter
+    def m_trunc_min(self, m_trunc_min):
+        if hasattr(self, '_m_trunc_min'):
+            pass
+        else:
+            self._m_trunc_min = m_trunc_min
+
+    @property
     def breaks(self):
+        """Power-law breaks."""
         return self._breaks
 
     @breaks.setter
@@ -175,6 +210,14 @@ class PowerLawIMF:
 
     @property
     def exponents(self):
+        """Padded broken power-law exponents.
+
+        Padded broken power-law exponents. The first and last exponents
+        are repeated in the padding. The padding is expected when
+        computing the norms and locating the appropriate region for
+        masses are passed to ``imf(m)`` and ``integrate(m0, m1)``.
+        """
+
         return self._exponents
 
     @exponents.setter
@@ -187,33 +230,57 @@ class PowerLawIMF:
 
     @property
     def norms(self):
+        """Padded broken power-law normalization constants.
+
+        Padded broken power-law normalization constants. Zeros are added
+        in the padding. The padding is expected when computing the norms
+        and when locating the appropriate region for masses passed to
+        ``imf(m)`` and ``integrate(m0, m1)``.
+        """
+
         return self._norms
 
     @norms.setter
     def norms(self, norms):
         if norms is None:
-            norms =     np.tile(
-                    self.m_tot/self.integrate(
-                        self.m_trunc_min,
-                        self.m_trunc_max,
-                        mass=True,
-                        normalized=False
-                    ),
-                    len(self.exponents)-1
-               )
-            self._norms = np.pad(norms, (1, 1), mode='constant',
+            norms = np.tile(
+                self.m_tot/self.integrate(self.m_trunc_min, self.m_trunc_max, mass=True, normalized=False),
+                len(self.exponents)-1)
+            self._norms = np.pad(norms,
+                                 (1, 1),
+                                 mode='constant',
                                  constant_values=(0, 0))
             norm = norms[0]
-            for i, (break_, exp) in enumerate(zip(self.breaks,
-                                                  self.exponents[1:])):
+            for i, (break_, exp) in enumerate(zip(self.breaks, self.exponents[1:])):
                 prev_exp = self.exponents[i]
                 norm *= break_**(prev_exp - exp)
                 self._norms[i] = norm
         else:
-            self._norms = np.pad(norms, (1, 1), mode='constant',
+            self._norms = np.pad(norms,
+                                 (1, 1),
+                                 mode='constant',
                                  constant_values=(0, 0))
 
     def integrate(self, m0, m1, mass=False, normalized=True):
+        """Integrate for number or mass with or without normalization.
+
+        Parameters
+        ----------
+        m0 : float
+            Lower integration limit.
+        m1 : float
+            Upper integration limit.
+        mass : bool, default : False
+            Whether to integrate for nuber (False) or mass (True).
+        normalized : bool, default : True
+            Whether to multiply (True) or not (False) by ``norms``.
+
+        Returns
+        -------
+        integral : float
+            Result of the integration.
+        """
+
         integration_limits = np.sort([m0, m1, *self.breaks])
         integration_limits = integration_limits[(integration_limits >= m0)
                                                 & (integration_limits <= m1)]
@@ -235,21 +302,38 @@ class PowerLawIMF:
         return integral
 
     def imf(self, m):
-        """If m_max has already been computed, calculate dN/dm for a
-        given stellar mass m. Otherwise, warn the user.
+        """Compute dN/dM at a given mass.
+
+        Compute dN/dM at mass ``m``. As some subclasses migh require a
+        ``set_mmax_k()`` method to be run to compute ``m_max`` and
+        the normalization constants, warn the user if ``m_mas`` is None.
+
+        Parameters
+        ----------
+        m : float
+            Mass at which to compute dN/dM.
+
+        Returns
+        -------
+        float
+            dN/dM at ``m``.
+
+        Warns
+        -----
+        UserWarning
+            If ``m_max`` is None (``set_mmax_k`` not run).
         """
 
         if self.m_max is None:
-            warnings.warn('m_max not yet defined. Please run set_mmax_k().')
+            warnings.warn('m_max not yet defined. '
+                          'Please run set_mmax_k().')
             return
         # Below we determine which power law region the mass m is in.
         # With limits, exponents and norms properly set up according to
         # the class docstring, this should work for both simple and
         # broken power-laws.
-        index, m_break = next(
-            ((i, m_th) for i, m_th in enumerate(self.breaks) if m_th > m),
-            (len(self.breaks), self.m_trunc_max)
-        )
+        index, m_break = (next((i, break_) for i, break_ in enumerate(self.breaks) if break_ > m),
+                          (len(self.breaks), self.m_trunc_max))
         k = self.norms[index]
         a = self.exponents[index]
         return k * m ** a
@@ -259,19 +343,17 @@ class Star(PowerLawIMF):
     """Compute the stellar initial mass function.
 
     Compute the stellar initial mass function (sIMF) specific to a given
-    star-forming region (embedded cluster, or ECL), with a set
-    metallicity, as [Fe/H], and a total ECL stellar mass, m_tot.
-
-    The sIMF may follow either a Kroupa (2001) [1]_ or Jerabkova et al.
-    (2018) [2]_. In the first case it is a simple power-law, with m_tot
-    as its only free parameter. In the second case, it is a series of
-    three power laws between a minimum stellar mass M_TRUNC_MIN, and a
-    maximum stellar mass m_max. While indices a1, a2 and a3 are given by
-    analytic formulae, m_max and the normalization constants k1, k2 and
-     k3 result from the numerical solution of two adequate constraints.
+    star-forming region (embedded cluster, or ECL), with a set [Fe/H],
+    and a total ECL stellar mass, ``m_tot``. According to the
+    ``invariant`` attribute, the sIMF might either follow an invariant
+    Kroupa (2001) [1]_ IMF or a metallicity- and star formation rate-
+    dependent Jerabkova et al. (2018) [2]_ IMF.
 
     Attributes
     ----------
+    x
+    g1
+    g2
     feh : float
         Embedded cluster metallicity in [Fe/H].
     m_ecl_min : float
@@ -285,17 +367,11 @@ class Star(PowerLawIMF):
     k3 : float
         1<= PowerLawIMF normalization constant.
     a1 : float
-        First power-law index.
+        First interval power-law index.
     a2 : float
-        Second power-law index.
+        Second interval power-law index.
     a3: float
-        Third power-law index.
-    x: float
-        Auxiliary variable used in computing a3.
-    g1: float
-        Auxiliary variable from integrating the PowerLawIMF.
-    g2: float
-        Auxiliary variable from integrating the PowerLawIMF.
+        Third interval power-law index.
 
     Methods
     -------
@@ -305,26 +381,27 @@ class Star(PowerLawIMF):
 
     Notes
     -----
-    If variant is set to False, the sIMF is as given by Jerabkova et al.
-     (2018) [1]_. M_TRUNC_MIN is set at the hydrogen burning threshold
-     of 0.08 Msun. Exponents k1 and k2 are found from k3 by continuity.
-     k3 and m_max are determined from two constraints.
+    If invariant is set to False, the sIMF is as given by Jerabkova et al.
+    (2018) [1]_. ``M_TRUNC_MIN`` is set at the hydrogen burning
+    threshold of 0.08 Msun. Normalization constants ``k1`` and ``k2``
+    are found from ``k3`` by continuity. ``k3`` and ``m_max`` are
+    determined from two constraints.
 
-    m_tot sets the mass of the most massive formable star, m_max, but is
-    not equal to it. Thus, the first constraint is obtained by imposing
-    that the number of stars found with mass equal to or higher than
-    m_max be one, i.e., by equating the integral of the PowerLawIMF
-    between m_max and M_TRUNC_MAX to unity. This constraint is expressed
-     in method f1.
+    ``M_TRUNC_MAX`` sets the mass of the most massive formable star,
+    ``m_max``, but is not equal to it. Thus, the first constraint is
+    obtained by imposing that the number of stars found with mass equal
+    to or higher than ``m_max`` be one, i.e., by equating the integral
+    of the IMF between ``m_max`` and ``M_TRUNC_MAX`` to unity. This
+    constraint is expressed in method ``f1``.
 
-    m_tot does set the total formed stellar mass. Thus, the second
-    constraint is obtained by integrating m * PowerLawIMF(m) between
-    M_TRUNC_MIN and m_max. This constraint is expressed in methods f1
-    and f2.
+    ``m_tot`` does set the total formed stellar mass. Thus, the second
+    constraint is obtained by integrating ``m*imf(m)`` between
+    ``M_TRUNC_MIN`` and ``m_max``. This constraint is expressed in
+    methods ``f1`` and ``f2``.
 
-    Solving f1 and f2 simultaneously determines m_max and k3, which also
-    determines k1 and k2. This is done by the method get_mmax_k, which
-    is the most expensive method of the class.
+    Solving ``f1`` and ``f2`` simultaneously determines ``m_max`` and
+    ``k3``, which also determines ``k1`` and ``k2``. This is done by the
+    method ``get_mmax_k``.
 
     All masses are given and expected in solar masses.
 
@@ -338,21 +415,24 @@ class Star(PowerLawIMF):
     """
 
     BREAKS = [0.08, 0.5, 1., 150.]
+    """Power-law breaks shared between both IMFs."""
     M_TRUNC_MIN = 0.08
+    """Lower truncation mass."""
     M_TRUNC_MAX = 150.
+    """Upper truncation mass."""
 
-    def __init__(self, m_ecl=1e7, m_ecl_min=5.0, feh=0, invariant=False):
+    def __init__(self, m_ecl=1.e7, m_ecl_min=5.0, feh=0., invariant=False):
         """
         Parameters
         ----------
         m_ecl : float
-            Embedded cluster stellar mass in solar masses.
+            Embedded cluster stellar mass.
         m_ecl_min : float
             Minimum possible embedded cluster mass.
-
-
         feh : float
-            Embedded cluster metallicity in [Fe/H].
+            Embedded cluster [Fe/H].
+        invariant : bool, default : False
+            Whether to use an invariant IMF.
         """
 
         self.m_tot = m_ecl
@@ -1104,7 +1184,7 @@ class GSMF:
         doi:10.1093/mnras/stz2057
     """
 
-    def __init__(self, redshift, fixed_slope=True):
+    def __init__(self, redshift=0., fixed_slope=True):
         """
         Parameters
         ----------
@@ -1171,7 +1251,8 @@ class GSMF:
             parameters.
         """
 
-        log_sch = logphi + (a + 1) * (logm - logm_co) - 10 ** (logm - logm_co) / LN10 - np.log10(LN10)
+        log_sch = (logphi + (a + 1) * (logm - logm_co) - 10 ** (logm - logm_co)
+                   / LN10 - np.log10(LN10))
         return log_sch
 
     def _power_law_norm(self, sch_params):
@@ -1180,7 +1261,8 @@ class GSMF:
         """
 
         schechter = self._schechter(self.logmass_threshold, *sch_params)
-        return schechter - (self.low_mass_slope + 1) * self.logmass_threshold - np.log10(LN10)
+        return (schechter - (self.low_mass_slope + 1) * self.logmass_threshold
+                - np.log10(LN10))
 
     def _power_law(self, logm, sch_params):
         """Compute the low mass power law at a mass log10(m), given a
