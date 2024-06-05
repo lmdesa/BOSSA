@@ -1,3 +1,6 @@
+# TODO: Add module documentation
+# TODO: Complete documentation
+
 """Sampling of arbitrary distributions, galaxy parameters and binary populations."""
 import gc
 import logging

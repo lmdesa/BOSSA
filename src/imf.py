@@ -1,3 +1,7 @@
+# TODO: Add module documentation
+# TODO: Revise documentation
+
+
 """Star, embedded cluster and galaxy mass functions."""
 
 import logging
