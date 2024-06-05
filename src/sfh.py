@@ -1144,7 +1144,6 @@ class ChruslinskaSFRD:
         Whether to assume an invariant IMF or not.
     per_redshift_met_bin : bool, default : False
         Alters the SFRD computation. For testing purposes only.
-
         .. deprecated:: 1.0
            Keep to default value.
 
@@ -1268,16 +1267,15 @@ class ChruslinskaSFRD:
                     )
 
     def set_grid(self) -> None:
-        """Build redshift and SFRD arrays corresponding to the grid from
-        the data files.
-        """
-
+        """Build redshift and SFRD arrays corresponding to SFRD grid."""
         self._set_sfrd_redshift_array()
         self._set_sfrd_array()
 
     def get_logsfrd(self, feh, redshift) -> NDArray:
-        """For a given [Fe/H],redshift pair, find the log10(SFRD)
-        corresponding to the closest pair in the grid.
+        """Return SFRD closest to ``(feh, redshift)``.
+
+        Searches for the closest ``(feh, redshift)`` in the SFRD grid
+        and returns the corresponding SFRD log value.
 
         Parameters
         ----------
@@ -1289,19 +1287,17 @@ class ChruslinskaSFRD:
         Returns
         -------
         logsfrd : float
-            Log10(SFRD) corresponding to the pair in the grid closest to
-            the given feh,redshift.
+            SFRD log corresponding to the closest point in the grid.
 
         Warns
         -----
         UserWarning
-            If the SFRD grid has not been loaded yet (load_grid() not
-            run).
+            If :meth:`load_grid` has not been called yet.
 
         Warnings
         --------
         The user should bear in mind the grids range from -4 to 1.7 in
-        metallicity and 0 to 10 in redshift. Passing values outside
+        [Fe/H] and 0 to 10 in redshift. Passing values outside
         these ranges will always return the edges of the grid.
         """
 
