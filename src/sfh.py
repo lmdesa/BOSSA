@@ -545,7 +545,6 @@ class MZR:
     LOGM_MAX = 12.
     """float: Maximum mass log for interpolation."""
 
-    # TODO: rename mzr_model to model
     def __init__(self, redshift: float, model: str = 'KK04', scatter_model: str = 'none'
                  ) -> None:
         self.redshift = redshift
@@ -874,22 +873,21 @@ class GSMF:
 
         self.redshift = redshift
         self.fixed_slope = fixed_slope
-        self._logmass_threshold = None  # property
+        self._logm_break = None  # property
         self._low_mass_slope = None  # property
 
-    # TODO: rename logmass_threshold to logm_break
     @property
-    def logmass_threshold(self):
+    def logm_break(self):
         """Log10 of the mass separating the Schechter function from the
         simple power-law.
         """
 
-        if self._logmass_threshold is None:
+        if self._logm_break is None:
             if self.redshift <= 5:
-                self._logmass_threshold = 7.8 + 0.4 * self.redshift
+                self._logm_break = 7.8 + 0.4 * self.redshift
             else:
-                self._logmass_threshold = 9.8
-        return self._logmass_threshold
+                self._logm_break = 9.8
+        return self._logm_break
 
     @property
     def low_mass_slope(self):
@@ -940,8 +938,8 @@ class GSMF:
         Computed by continuity with teh Schecther component.
         """
 
-        schechter = self._schechter(self.logmass_threshold, *sch_params)
-        return (schechter - (self.low_mass_slope + 1) * self.logmass_threshold - np.log10(LN10))
+        schechter = self._schechter(self.logm_break, *sch_params)
+        return (schechter - (self.low_mass_slope + 1) * self.logm_break - np.log10(LN10))
 
     def _power_law(self, logm, sch_params):
         """Power law component of the GSMF.
@@ -978,7 +976,7 @@ class GSMF:
             Galaxy number density per stellar mass at ``10**logm``.
         """
 
-        if logm > self.logmass_threshold:
+        if logm > self.logm_break:
             return self._schechter(logm, *schechter_params)
         else:
             return self._power_law(logm, schechter_params)
