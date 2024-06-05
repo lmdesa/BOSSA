@@ -988,16 +988,23 @@ class ChruslinskaSFRD:
     MODEL_PATH_DICT = {'lowmet': LOWMET_SFRD_PATH,
                        'midmet': MIDMET_SFRD_DATA_PATH,
                        'highmet': HIGHMET_SFRD_DATA_PATH}
+    """dict: Paths to variant IMF SFRD model files."""
     CANON_MODEL_PATH_DICT = {'lowmet': LOWMET_CANON_SFRD_PATH,
                              'midmet': MIDMET_CANON_SFRD_DATA_PATH,
                              'highmet': HIGHMET_CANON_SFRD_DATA_PATH}
+    """dict: Path to invariant IMF SFRD model files."""
     SFRD_ZOH_ARRAY = np.linspace(5.3, 9.7, 201)
+    """NDArray: SFRD grid Z_OH bin edges."""
     SFRD_ZOH_CENTERS_ARRAY = np.linspace(5.3, 9.7, 200)
+    """NDArray: SFRD grid Z_OH bin centers."""
     SFRD_FEH_ARRAY = np.array([ZOH_to_FeH(zoh) for zoh in SFRD_ZOH_ARRAY])
+    """NDArray: SFRD grid [Fe/H] bin edges."""
     SFRD_Z_ARRAY = np.array([FeH_to_Z(feh) for feh in SFRD_FEH_ARRAY])
+    """NDArray: SFRD grid Z bin edges."""
     SFRD_Z_CENTERS_ARRAY = np.array(
         [FeH_to_Z(ZOH_to_FeH(zoh)) for zoh in SFRD_ZOH_CENTERS_ARRAY]
     )
+    """NDArray: SFRD grid Z bin centers."""
 
     def __init__(self, model='midmet', canon=False,
                  per_redshift_met_bin=False):
