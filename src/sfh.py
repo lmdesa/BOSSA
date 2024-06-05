@@ -1001,13 +1001,11 @@ class ChruslinskaSFRD:
     """NDArray: SFRD grid [Fe/H] bin edges."""
     SFRD_Z_ARRAY = np.array([FeH_to_Z(feh) for feh in SFRD_FEH_ARRAY])
     """NDArray: SFRD grid Z bin edges."""
-    SFRD_Z_CENTERS_ARRAY = np.array(
-        [FeH_to_Z(ZOH_to_FeH(zoh)) for zoh in SFRD_ZOH_CENTERS_ARRAY]
-    )
+    SFRD_Z_CENTERS_ARRAY = np.array([FeH_to_Z(ZOH_to_FeH(zoh)) for zoh in SFRD_ZOH_CENTERS_ARRAY])
     """NDArray: SFRD grid Z bin centers."""
 
-    def __init__(self, model='midmet', canon=False,
-                 per_redshift_met_bin=False):
+    def __init__(self, model: str ='midmet', canon: bool = False,
+                 per_redshift_met_bin: bool = False) -> None:
         """
         Parameters
         ----------
@@ -1022,7 +1020,7 @@ class ChruslinskaSFRD:
         self.per_redshift_met_bin = per_redshift_met_bin
         self.logsfrd_array = np.empty((2, 0))
 
-    def _set_sfrd_redshift_array(self):
+    def _set_sfrd_redshift_array(self) -> None:
         """Set redshift and timestep arrays corresponding to the SFRD
         grids from the redshift/time data file.
         """
@@ -1032,7 +1030,7 @@ class ChruslinskaSFRD:
                                                    [0.0]))
         self.sfrd_dtime_array = redshift_time_data[:, 2]
 
-    def _set_sfrd_array(self):
+    def _set_sfrd_array(self) -> None:
         """Set grid SFRD values."""
         if self.canon:
             sfrd_data_path = self.CANON_MODEL_PATH_DICT[self.model]
@@ -1055,7 +1053,7 @@ class ChruslinskaSFRD:
                         self.logsfrd_array[i, j]
                     )
 
-    def set_grid(self):
+    def set_grid(self) -> None:
         """Build redshift and SFRD arrays corresponding to the grid from
         the data files.
         """
@@ -1063,7 +1061,7 @@ class ChruslinskaSFRD:
         self._set_sfrd_redshift_array()
         self._set_sfrd_array()
 
-    def get_logsfrd(self, feh, redshift):
+    def get_logsfrd(self, feh, redshift) -> NDArray:
         """For a given [Fe/H],redshift pair, find the log10(SFRD)
         corresponding to the closest pair in the grid.
 
