@@ -658,8 +658,7 @@ class MZR:
             # Get mass-metallicity arrays for interpolation.
             ip_logm_array, ip_zoh_array = self._get_ip_arrays()
             # Get redshift array with the same shape as ip_zoh_array.
-            ip_redshift_array = np.tile(self.IP_REDSHIFT_ARRAY,
-                                        (self.IP_ARRAYS_LEN, 1))
+            ip_redshift_array = np.tile(self.IP_REDSHIFT_ARRAY, (self.IP_ARRAYS_LEN, 1))
             fitting_zoh_array = interpolate(ip_redshift_array,
                                             ip_zoh_array,
                                             [self.redshift]).T[0]
