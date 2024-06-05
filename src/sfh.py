@@ -540,6 +540,10 @@ class MZR:
     """NDArray: Redshifts from which to interpolate."""
     IP_ARRAYS_LEN = 50
     """int: Length of mass array to use for interpolation."""
+    LOGM_MIN = 7.
+    """float: Minimum mass log for interpolation."""
+    LOGM_MAX = 12.
+    """float: Maximum mass log for interpolation."""
 
     def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter_model: str = 'none'
                  ) -> None:
@@ -635,8 +639,8 @@ class MZR:
 
     def _get_ip_arrays(self) -> tuple[NDArray, NDArray]:
         """Return the mass-metallicity arrays for interpolation."""
-        ip_logm_array = np.linspace(self.logm_min,
-                                    self.logm_max,
+        ip_logm_array = np.linspace(self.LOGM_MIN,
+                                    self.LOGM_MAX,
                                     self.IP_ARRAYS_LEN)
         # Initialize Z_OH array with one line of length IP_ARRAYS LEN
         # per fit redshift (4).
