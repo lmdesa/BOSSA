@@ -537,7 +537,8 @@ class MZR:
     IP_ARRAYS_LEN = 50
     """int: Length of mass array to use for interpolation."""
 
-    def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter_model: str = 'none') -> None:
+    def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter_model: str = 'none'
+                 ) -> None:
         self.redshift = redshift
         self.mzr_model = mzr_model
         self.scatter_model = scatter_model
@@ -636,14 +637,14 @@ class MZR:
         # TODO: Initialize ip_zoh_array with shape (len(ip_param_array), ip_array_len)
         # Initialize Z_OH array with one line of length IP_ARRAYS LEN
         # per fit redshift (4).
-        ip_zoh_array = np.empty((0, self.IP_ARRAYS_LEN), np.float64)
+        ip_zoh_array = np.zeros((len(self.ip_param_array), self.IP_ARRAYS_LEN), np.float64)
         # Fill the Z_OH array at the redshifts for which the MZR
         # parameters have been fitted.
-        for params in self.ip_param_array:
+        for i, params in enumerate(self.ip_param_array):
             ip_zohs = np.array(
                 [[self._lowredshift_zoh(logm, *params[:-1]) for logm in ip_logm_array]]
             )
-            ip_zoh_array = np.append(ip_zoh_array, ip_zohs, axis=0)
+            ip_zoh_array[i] = ip_zohs
         ip_zoh_array = ip_zoh_array.T
         return ip_logm_array, ip_zoh_array
 
