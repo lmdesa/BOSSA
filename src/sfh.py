@@ -434,6 +434,8 @@ class MZR:
 
         \\mathrm{Z}_\\mathrm{OH} = 12 + \\log(\\mathrm{O}/\\mathrm{H}).
 
+    Follows from Chruslinska & Nelemans (2019) [4]_.
+
     Parameters
     ----------
     redshift : float
@@ -526,7 +528,7 @@ class MZR:
     def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter: str = 'none') -> None:
         self.redshift = redshift
         self.mzr_model = mzr_model
-        self.scatter = scatter
+        self.scatter = scatter  # property
         self.z_a = None
         self.logm_to = None
         self.gamma = None
@@ -604,22 +606,21 @@ class MZR:
         return ip_logm_array, ip_zoh_array
 
     def set_params(self) -> None:
-        """Interpolate from the original parameter set to the given 
-        redshift.
+        """Interpolate MZR parameters to the :attr:`redshift`.
 
         Notes
         -----
-        The relation is fitted for four redshift bins z ~ 0.07, 0.7, 
-        2.2, 3.5, such that each model provides four sets of 
-        corresponding MZR parameters. In order to get the MZR at any 
-        other redshift, a (mass, metallicity) array is generated at each 
-        of the four original z and, for each mass, the metallicity is 
-        interpolated to the desired z. Fitting of the MZR to the
-        interpolated points sets the parameters at that z.
+        The MZR is fitted for redshift 0.07, 0.7, 2.2 and 3.5, such that
+        each model provides four sets of corresponding MZR parameters.
+        In order to get the MZR at any other redshift, a (mass,
+        metallicity) array is generated at each of the four original z
+        and, for each mass, the metallicity is interpolated to the
+        desired z. Fitting of the MZR to the interpolated points sets
+        the parameters at that z.
 
         For z > 3.5, parameters are kept as for z=3.5, but it is assumed
         that the normalization varies linearly with redshift with the
-        same rate as the average rate (dz) between z=2.2 and z=3.5.
+        same rate as the average rate (`dz`) between z=2.2 and z=3.5.
         """
 
         if self.redshift >= 3.5:
@@ -646,10 +647,7 @@ class MZR:
 
     def _lowredshift_zoh(self, logm: float, z_a: float | None = None, logm_to: float | None = None,
                          gamma: float | None = None) -> float:
-        """Compute the metallicity, Z_OH=12+log10(O/H), from the log10
-        galactic stellar mass, for redshift <= 3.5.
-        """
-
+        """Z_OH from mass log for redshift <= 3.5."""
         if z_a is None:
             z_a = self.z_a
         if logm_to is None:
@@ -662,10 +660,7 @@ class MZR:
     def _highredshift_zoh(self, logm: float, z_a: float | None = None,
                           logm_to: float | None = None, gamma: float = None, dz: float = None
                           ) -> float:
-        """Compute the metallicity, Z_OH=12+log10(O/H), from the log10
-        galactic stellar mass, for redshift > 3.5.
-        """
-
+        """Z_OH from mass log for redshift > 3.5."""
         if z_a is None:
             z_a = self.z_a
         if logm_to is None:
@@ -679,10 +674,7 @@ class MZR:
 
     def _lowredshift_logm(self, zoh: float, z_a: float | None = None, logm_to: float | None = None,
                           gamma: float | None = None):
-        """Compute the log10 galactic stellar mass from the metallicity,
-        Z_OH=12+log10(O/H), for redshift <= 3.5
-        """
-
+        """Mass log from Z_OG for redshift <= 3.5."""
         if z_a is None:
             z_a = self.z_a
         if logm_to is None:
@@ -694,10 +686,7 @@ class MZR:
     def _highredshift_logm(self, zoh: float, z_a: float | None = None,
                            logm_to: float | None = None, gamma: float | None = None,
                            dz: float | None = None):
-        """Compute the log10 galactic stellar mass from the metallicity,
-        Z_OH=12+log10(O/H), for redshift > 3.5
-        """
-
+        """Mass log from Z_OH for redshift > 3.5."""
         if z_a is None:
             z_a = self.z_a
         if logm_to is None:
@@ -711,9 +700,7 @@ class MZR:
 
     @float_or_arr_input
     def logm(self, zoh: ArrayLike) -> float | NDArray:
-        """Compute the metallicity, Z_OH=12+log10(O/H), from the log10
-        galactic stellar mass.
-        """
+        """Inverse of the MZR with no scatter."""
 
         if self.z_a is None:
             raise AttributeError('No MZR parameters set. '
@@ -727,9 +714,29 @@ class MZR:
 
     @float_or_arr_input
     def zoh(self, logm: ArrayLike) -> float | NDArray:
-        """Compute the log10 galactic stellar mass from the metallicity,
-         Z_OH=12+log10(O/H).
-         """
+        """MZR with chosen scatter.
+
+        Parameters
+        ----------
+        logm : ArrayLike
+            Logarithm of the galaxy stellar mass. Either a scalar or an
+            array-like (e.g., list, NDArray).
+
+        Returns
+        -------
+        float or numpy array
+            Z_OH metallicity, either a float or array according to input
+            mass.
+
+        Raises
+        ------
+        AttributeError
+            If :meth:`set_params` has not been called yet.
+
+        Notes
+        -----
+        Follows the Chruslinska & Nelemans (2019) [4]_ parametrization.
+        """
 
         if self.z_a is None:
             raise AttributeError('No MZR parameters set. '

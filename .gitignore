@@ -4,3 +4,4 @@ __pycache__/
 *.py[cod]
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/codeStyles/codeStyleConfig.xml
+docs/
