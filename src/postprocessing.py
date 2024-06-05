@@ -19,7 +19,7 @@ from scipy.interpolate import interp1d
 
 import sys
 sys.path.append('..')
-from src.sfr import ChruslinskaSFRD
+from src.sfh import ChruslinskaSFRD
 from src.imf import Star, IGIMF
 from src.zams import ZAMSSystemGenerator
 from src.utils import pull_snmass1, pull_snmass2, chirp_mass, bintype, mass_ratio, create_logger, ZOH_to_FeH

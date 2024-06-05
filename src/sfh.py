@@ -206,7 +206,7 @@ class TomczakSFMR:
     ----------
     redshift : float
         Redshift at which to compute the relation.
-    lowmass_sfmr : :class:`sfr.BoogaardSFMR`
+    lowmass_sfmr : :class:`sfh.BoogaardSFMR`
         SFMR below :attr:`logm_break`.
 
     Methods
@@ -724,7 +724,7 @@ class MZR:
 
         Returns
         -------
-        float or numpy array
+        float or NDArray
             Z_OH metallicity, either a float or array according to input
             mass.
 
