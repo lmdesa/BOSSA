@@ -397,8 +397,7 @@ class SFMR:
         """Return scatter drawn from a normal distribution.
 
         The distribution is centered on zero and has standard deviation
-        equal to :const:`DISPERSION`, from Chruslinska & Nelemans
-        (2019).
+        equal to :const:`DISPERSION`.
         """
 
         scatter = norm(0, self.DISPERSION).rvs()
@@ -460,12 +459,7 @@ class MZR:
     gamma : float
         Low-mass end slope. Redshift-dependent.
     dz : float
-        Normalization variation rate with redshift between z=2.2 and 
-        z=3.5.
-    _ip_redshift_array : numpy array
-        Array of redshifts from which to interpolate.
-    _ip_arrays_len : int
-        Length of mass array to use for interpolation.
+        Mean variation rate of the MZR between z=2.2 and z=3.5.
 
     Methods
     -------
@@ -485,19 +479,32 @@ class MZR:
 
     Notes
     -----
-    Four sets of parameters for this same relation form are made 
-    available, in following the models collected by Chruslinska & 
+    This class implements the MZR models in from Chruslinska & Nelemans
+    (2019) [4]_. They choose a parametrization
+
+    .. math::
+
+        12 + \\log[\\mathrm{O/H}] = \\mathrm{Z}_a -
+        \\log\\left[
+        1 + \\left(\\frac{M_\\ast}{M_\\mathrm{TO}}\\right)^{-\\gamma}
+        \\right],
+
+    where the parameters are the asymptotic metallicity :attr:`z_a`, the
+    turn-off mass (log) :attr:`logm_to` and the low-mass end slope
+    :attr:`gamma.
+
+    Four sets of parameters are collected by Chruslinska &
     Nelemans (2019) [4]_: Tremontini et al. (2004) [5]_ (T04),
     Kobulnicky & Kewley [6]_ (2004) (KK04), Pettini & Pagel [7]_ (2004)
     (PP04) and Mannucci et al. [8]_ (2009) (M09).
 
     The relation is fitted for four redshift bins z ~ 0.07, 0.7, 2.2, 
     3.5, such that each model provides four sets of corresponding MZR 
-    parameters. In order to get the MZR at any other redshift, a 
-    (mass, metallicity) array is generated at each of the four original 
-    z and, for each mass, the metallicity is interpolated to the desired
-    z. Fitting of the MZR to the interpolated points sets the
-    parameters at that z.
+    parameters. In order to get the MZR at arbitrary redshift, a (mass,
+    metallicity) array is generated at each of the four original z and,
+    for each mass, the metallicity is interpolated to the desired z.
+    Fitting of the MZR to the interpolated points sets the parameters at
+    that z.
 
     For z > 3.5, parameters are kept as for z=3.5, but it is assumed 
     that the normalization varies linearly with redshift with the same 
@@ -525,20 +532,34 @@ class MZR:
         doi:10.1111/j.1365-2966.2009.15185.x
     """
 
-    def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter: str = 'none') -> None:
+    IP_REDSHIFT_ARRAY = np.array([0, 0.7, 2.2, 3.5])
+    """NDArray: Redshifts from which to interpolate."""
+    IP_ARRAYS_LEN = 50
+    """int: Length of mass array to use for interpolation."""
+
+    def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter_model: str = 'none') -> None:
         self.redshift = redshift
         self.mzr_model = mzr_model
-        self.scatter = scatter  # property
+        self.scatter_model = scatter_model
+        self.scatter = scatter_model  # property
         self.z_a = None
         self.logm_to = None
         self.gamma = None
         self.dz = None
-        self._ip_redshift_array = np.array([0, 0.7, 2.2, 3.5])  # property
-        self._ip_arrays_len = 50
-        self._ip_param_array = None  # property
+        self._ip_param_list = None  # property
 
     @property
     def scatter(self) -> Callable[[float], float]:
+        """Return a value for metallicity scatter around the MZR.
+
+        Depending on :attr:`scatter_model`, will be a normal distribution
+        with mean 0 and standard deviation equal to
+        :const:`DISPERSION` (if :attr:`flattening` is "norm"); or fixed
+        to either `0` (if :attr:`flattening` is "none"),
+        :const:`DISPERSION` (if :attr:`flattening` is "min") or
+        -:const:`DISPERSION` (if :attr:`flattening` is "max").
+        """
+
         return self._scatter
 
     @scatter.setter
@@ -554,81 +575,90 @@ class MZR:
                              f'{', '.join(scatter_models.keys())}')
     @staticmethod
     def _dispersion(logm: float) -> float:
+        """Empirical Z_OH dispersion around the MZR. Mass-dependent."""
         if logm > 9.5:
             return 0.1  # dex
         else:
             return -0.04 * logm + 0.48  # dex
 
     def _none_scatter(self, logm: float) -> float:
+        """Return `0.0` scatter."""
         return norm(0, 0).rvs()
 
     def _normal_scatter(self, logm: float) -> float:
+        """Return scatter drawn from a normal distribution.
+
+        The distribution is centered on zero and has a mass-dependent
+        standard deviation given by :meth:`_dispersion`.
+        """
+
         stdev = self._dispersion(logm)
         scatter = norm(0, stdev).rvs()
         return scatter
 
     def _min_scatter(self, logm: float) -> float:
+        """Return -:meth:`_dispersion` scatter."""
         return -self._dispersion(logm)
 
     def _max_scatter(self, logm: float) -> float:
+        """Return :meth:`_dispersion` scatter."""
         return self._dispersion(logm)
 
     @property
     def ip_param_array(self) -> list:
-        """Array of MZR parameters from the chosen model."""
-        if self._ip_param_array is None:
+        """Array of MZR parameters from the chosen model.
+
+        Contains parameters for all fit redshifts simultaneously, for
+        use in interpolation to arbitrary redshift. Lines are
+        z = 0.07, 0.7, 2.2, 3.5; columns are :attr:`z_a`,
+        :attr:`logm_to`, :attr:`gamma`, :attr:`dz`.
+        """
+
+        if self._ip_param_list is None:
             if self.mzr_model == 'T04':
-                self._ip_param_array = T04_MZR_params_list
+                self._ip_param_list = T04_MZR_params_list
             elif self.mzr_model == 'M09':
-                self._ip_param_array = M09_MZR_params_list
+                self._ip_param_list = M09_MZR_params_list
             elif self.mzr_model == 'KK04':
-                self._ip_param_array = KK04_MZR_params_list
+                self._ip_param_list = KK04_MZR_params_list
             elif self.mzr_model == 'PP04':
-                self._ip_param_array = PP04_MZR_params_list
+                self._ip_param_list = PP04_MZR_params_list
             else:
                 raise ValueError('Parameter "mzr_model" must be one of '
                                  '"T04", "M09", "KK04", "PP04".')
-        return self._ip_param_array
+        return self._ip_param_list
 
     def _get_ip_arrays(self) -> tuple[NDArray, NDArray]:
-        """Generate the mass-metallicity arrays for interpolation."""
-        ip_logm_array = np.linspace(self.logm_min, 
-                                    self.logm_max, 
-                                    self._ip_arrays_len)
-        ip_zoh_array = np.empty((0, self._ip_arrays_len), np.float64)
+        """Return the mass-metallicity arrays for interpolation."""
+        ip_logm_array = np.linspace(self.logm_min,
+                                    self.logm_max,
+                                    self.IP_ARRAYS_LEN)
+        # TODO: Initialize ip_zoh_array with shape (len(ip_param_array), ip_array_len)
+        # Initialize Z_OH array with one line of length IP_ARRAYS LEN
+        # per fit redshift (4).
+        ip_zoh_array = np.empty((0, self.IP_ARRAYS_LEN), np.float64)
+        # Fill the Z_OH array at the redshifts for which the MZR
+        # parameters have been fitted.
         for params in self.ip_param_array:
             ip_zohs = np.array(
-                [[self._lowredshift_zoh(logm, *params[:-1])
-                  for logm in ip_logm_array]]
+                [[self._lowredshift_zoh(logm, *params[:-1]) for logm in ip_logm_array]]
             )
             ip_zoh_array = np.append(ip_zoh_array, ip_zohs, axis=0)
         ip_zoh_array = ip_zoh_array.T
         return ip_logm_array, ip_zoh_array
 
     def set_params(self) -> None:
-        """Interpolate MZR parameters to the :attr:`redshift`.
-
-        Notes
-        -----
-        The MZR is fitted for redshift 0.07, 0.7, 2.2 and 3.5, such that
-        each model provides four sets of corresponding MZR parameters.
-        In order to get the MZR at any other redshift, a (mass,
-        metallicity) array is generated at each of the four original z
-        and, for each mass, the metallicity is interpolated to the
-        desired z. Fitting of the MZR to the interpolated points sets
-        the parameters at that z.
-
-        For z > 3.5, parameters are kept as for z=3.5, but it is assumed
-        that the normalization varies linearly with redshift with the
-        same rate as the average rate (`dz`) between z=2.2 and z=3.5.
-        """
-
+        """Interpolate MZR parameters to :attr:`redshift`."""
+        # Fix parameters above z=3.5.
         if self.redshift >= 3.5:
             fit_params = self.ip_param_array[-1]
+        # Interpolate params below z=3.5.
         else:
+            # Get mass-metallicity arrays for interpolation.
             ip_logm_array, ip_zoh_array = self._get_ip_arrays()
-            ip_redshift_array = np.tile(self._ip_redshift_array,
-                                        (self._ip_arrays_len, 1))
+            # Get redshift array with the same shape as ip_zoh_array.
+            ip_redshift_array = np.tile(self.IP_REDSHIFT_ARRAY,
+                                        (self.IP_ARRAYS_LEN, 1))
             fitting_zoh_array = interpolate(ip_redshift_array,
                                             ip_zoh_array,
                                             [self.redshift]).T[0]
@@ -639,7 +669,7 @@ class MZR:
             fit_params = curve_fit(fitting_f,
                                    ip_logm_array,
                                    fitting_zoh_array,
-                                   p0=self._ip_param_array[0][:3],
+                                   p0=self._ip_param_list[0][:3],
                                    bounds=(0, np.inf))[0]
 
             fit_params = np.concatenate((fit_params, [0]))
@@ -700,7 +730,25 @@ class MZR:
 
     @float_or_arr_input
     def logm(self, zoh: ArrayLike) -> float | NDArray:
-        """Inverse of the MZR with no scatter."""
+        """Inverse of the MZR with no scatter.
+
+        Parameters
+        ----------
+        zoh : array_like
+            `Z_OH` metallicity. Either a scalar or an array-like
+            (e.g., list, NDArray).
+
+        Returns
+        -------
+        float or NDArray
+            Logarithm of the galaxy stellar mass. Either a float or an
+            array according to input metallicity.
+
+        Raises
+        ------
+        AttributeError
+            If :meth:`set_params` has not been called yet.
+        """
 
         if self.z_a is None:
             raise AttributeError('No MZR parameters set. '
@@ -718,24 +766,20 @@ class MZR:
 
         Parameters
         ----------
-        logm : ArrayLike
+        logm : array_like
             Logarithm of the galaxy stellar mass. Either a scalar or an
             array-like (e.g., list, NDArray).
 
         Returns
         -------
         float or NDArray
-            Z_OH metallicity, either a float or array according to input
+            Z_OH metallicity. Either a float or array according to input
             mass.
 
         Raises
         ------
         AttributeError
             If :meth:`set_params` has not been called yet.
-
-        Notes
-        -----
-        Follows the Chruslinska & Nelemans (2019) [4]_ parametrization.
         """
 
         if self.z_a is None:
