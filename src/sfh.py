@@ -326,6 +326,17 @@ class SFMR:
     sfmr : class instance
         An instance of the BoogaardSFMR, SpeagleSFMR or Tomczak SFMR 
         class, depending on the flattening option.
+
+    Notes
+    -----
+    Follows Chruslinska & Nelemans (2019) [4]_.
+
+    References
+    ----------
+    .. [4] Chruslinska, M. & Nelemans, G. (2019). Metallicity of stars
+        formed throughout the cosmic history based on the observational
+        properties of star-forming galaxies. MNRAS, 488(4), 5300.
+        doi:10.1093/mnras/stz2057
     """
 
     DISPERSION = 0.3  # dex
@@ -433,8 +444,6 @@ class MZR:
 
         \\mathrm{Z}_\\mathrm{OH} = 12 + \\log(\\mathrm{O}/\\mathrm{H}).
 
-    Follows from Chruslinska & Nelemans (2019) [4]_.
-
     Parameters
     ----------
     redshift : float
@@ -512,10 +521,6 @@ class MZR:
 
     References
     ----------
-    .. [4] Chruslinska, M. & Nelemans, G. (2019). Metallicity of stars
-        formed throughout the cosmic history based on the observational
-        properties of star-forming galaxies. MNRAS, 488(4), 5300.
-        doi:10.1093/mnras/stz2057
     .. [5] Tremontini, C. A., Heckamn, T. M., Kauffmann, G. et al.
         (2004). The Origin of the Mass-Metallicity Relation: Insights 
         from 53,000 Star-forming Galaxies in the Sloan Digital Sky 
@@ -634,7 +639,6 @@ class MZR:
         ip_logm_array = np.linspace(self.logm_min,
                                     self.logm_max,
                                     self.IP_ARRAYS_LEN)
-        # TODO: Initialize ip_zoh_array with shape (len(ip_param_array), ip_array_len)
         # Initialize Z_OH array with one line of length IP_ARRAYS LEN
         # per fit redshift (4).
         ip_zoh_array = np.zeros((len(self.ip_param_array), self.IP_ARRAYS_LEN), np.float64)
@@ -795,48 +799,52 @@ class MZR:
 
 
 class Corrections:
-    """Corrections to a Kroupa initial mass function-based star
-    formation rate distribution.
+    """Corrections to a Kroupa IMF-based star formation rate.
 
-    Calculates the appropriate corrections to the star formation rate
-    (SFR) obtained when the Kroupa universal initial mass function
-    (PowerLawIMF), or simply Kroupa SFR, is assumed, for the
-    environment-dependent galactic PowerLawIMF (gIMF) obtained in the
-    integrated galaxy-wide PowerLawIMF (IGIMF) framework. The
-    corrections are a multiplicative factor dependent on the Kroupa SFR
-    value and the metallicity, [Fe/H].
+    Calculates corrections to a star formation rate (SFR) measured
+    by assuming a Kroupa initial mass function (IMF), from
+    :class:`imf.Star(invariant=True)`, for the environment-dependent IMF
+    from :class:`imf.IGIMF`. The corrections are a multiplicative factor
+    dependent on the SFR and associated [Fe/H].
+
+    Parameters
+    ----------
+    metallicity : NDArray
+        Array of metallicities at which to compute the corrections.
+    sfr : NDArray
+        Array of kSFR values for which to compute corrections.
 
     Attributes
     ----------
     data_path : pathlib Path
         Path to the precalculated correction grid file.
-    metallicity : numpy array
+    metallicity : NDArray
         Array of metallicities at which to compute the corrections.
-    sfr_kroupa : numpy array
-        Array of Kroupa SFR values correspondent to each metallicity for
+    sfr_kroupa : NDArray
+        Array of kSFR values correspondent to each metallicity for
          which to compute corrections.
-    corrections : numpy array
+    corrections : NDArray
         Array of calculated corrections for the given SFR-metallicity
         pairs.
-    metallicity_data : numpy array
+    metallicity_data : NDArray
         Metallicity column from the precalculated grid.
-    sfr_kroupa_data : numpy array
-        Kroupa SFR column from the precalculated grid.
-    sfr_correction_data : numpy array
+    sfr_kroupa_data : NDArray
+        kSFR column from the precalculated grid.
+    sfr_correction_data : NDArray
         Correction columns from the precalculated grid.
 
     Methods
     -------
     get_corrections()
         Interpolates from the precalculated correction grid to the given
-         metallicity-Kroupa SFR pairs.
+        metallicity-kSFR pairs.
 
     Notes
     -----
     The corrections are obtained for arbitrary values of SFR and
     metallicity by interpolation of the SFR density grid from
-    Chruslinska et al. (2020) [9]_, kindly made available in full by
-    Martyna Chruslinska.
+    Chruslinska et al. (2020) [9]_, kindly made available by Martyna
+    Chruslinska.
 
     All metallicities are given as [Fe/H].
 
@@ -849,15 +857,6 @@ class Corrections:
     """
 
     def __init__(self, metallicity: float, sfr: float) -> None:
-        """
-        Parameters
-        ----------
-        metallicity : numpy array
-            Array of metallicities at which to compute the corrections.
-        sfr : numpy array
-            Array of Kroupa SFR values for which to compute corrections.
-        """
-
         self.data_path = Path('..', 'Data', 'C20_Results',
                               'IGIMF3_SFR_corrections_extended.dat')
         self.metallicity = metallicity
@@ -868,7 +867,7 @@ class Corrections:
         self.sfr_correction_data = None
 
     def load_data(self) -> None:
-        """Load original correction data into the appropriate arrays."""
+        """Load original correction data."""
         data = np.loadtxt(self.data_path, unpack=True).T
         feh_metallicity_array = np.empty((0, 1), np.float64)
         sfr_kroupa_array = []
@@ -876,7 +875,7 @@ class Corrections:
         previous_feh = 0
         feh_count = -1
 
-        # each row holds cols [Fe/H], Kroupa SFR, Correction
+        # each row holds cols [Fe/H], kSFR, Correction
         for row in data:
             # collect [Fe/H]
             feh_metallicity_array = np.append(feh_metallicity_array, np.array([[row[0]]]), axis=0)
@@ -899,8 +898,16 @@ class Corrections:
         self.metallicity_data = np.unique(feh_metallicity_array)
 
     def get_corrections(self) -> NDArray:
-        """Compute corrections for the grid of metallicities and Kroupa
-        SFR values provided.
+        """Compute corrections for :attr:`metallicity`, :attr:`sfr`.
+
+        Computes a 2D grid of corrections for all SFR-metallicity pairs from
+        :attr:`sfr` and :attr:`metallicity`.
+
+        Returns
+        -------
+        corrections : NDArray
+            Correction array of shape
+            ``(len(`metallicity`), len(`sfr`))``.
         """
 
         metallicity_ip = np.tile(self.metallicity_data,
@@ -920,7 +927,8 @@ class Corrections:
                 sfr
             )
             self.corrections = np.append(self.corrections, correction, axis=0)
-        # A new correction grid is returned for the given [Fe/H]-SFR pairs.
+        # A new correction grid is returned for the given [Fe/H]-SFR
+        # pairs.
         return self.corrections
 
 
