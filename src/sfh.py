@@ -848,7 +848,7 @@ class Corrections:
         636, A10. doi:10.1051/0004-6361/202037688
     """
 
-    def __init__(self, metallicity, sfr):
+    def __init__(self, metallicity: float, sfr: float) -> None:
         """
         Parameters
         ----------
@@ -862,13 +862,12 @@ class Corrections:
                               'IGIMF3_SFR_corrections_extended.dat')
         self.metallicity = metallicity
         self.sfr_kroupa = sfr
-        self.corrections = np.empty((0, self.sfr_kroupa.shape[0]),
-                                    np.float64)
+        self.corrections = np.empty((0, self.sfr_kroupa.shape[0]), np.float64)
         self.metallicity_data = None
         self.sfr_kroupa_data = None
         self.sfr_correction_data = None
 
-    def load_data(self):
+    def load_data(self) -> None:
         """Load original correction data into the appropriate arrays."""
         data = np.loadtxt(self.data_path, unpack=True).T
         feh_metallicity_array = np.empty((0, 1), np.float64)
@@ -880,8 +879,7 @@ class Corrections:
         # each row holds cols [Fe/H], Kroupa SFR, Correction
         for row in data:
             # collect [Fe/H]
-            feh_metallicity_array = np.append(feh_metallicity_array,
-                                              np.array([[row[0]]]), axis=0)
+            feh_metallicity_array = np.append(feh_metallicity_array, np.array([[row[0]]]), axis=0)
             if row[0] == previous_feh:
                 sfr_kroupa_array[feh_count].append(row[1])
                 sfr_correction_array[feh_count].append(row[2])
@@ -900,7 +898,7 @@ class Corrections:
         # col titles for the two above arrays
         self.metallicity_data = np.unique(feh_metallicity_array)
 
-    def get_corrections(self):
+    def get_corrections(self) -> NDArray:
         """Compute corrections for the grid of metallicities and Kroupa
         SFR values provided.
         """
@@ -918,10 +916,7 @@ class Corrections:
         for i, sfr in enumerate(self.sfr_kroupa):
             correction = interpolate(
                 sfr_kroupa_ip.reshape(1, sfr_kroupa_ip.shape[0]),
-                metallicity_ip_corrections[i].reshape(
-                    1,
-                    metallicity_ip_corrections[i].shape[0]
-                ),
+                metallicity_ip_corrections[i].reshape(1, metallicity_ip_corrections[i].shape[0]),
                 sfr
             )
             self.corrections = np.append(self.corrections, correction, axis=0)
