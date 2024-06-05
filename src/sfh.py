@@ -447,7 +447,7 @@ class MZR:
     ----------
     redshift : float
         Redshift at which to compute the relation.
-    mzr_model : {"KK04", "T04", "M09", "PP04"}, default: "KK04"
+    model : {"KK04", "T04", "M09", "PP04"}, default: "KK04"
         Option of MZR parameter set.
     scatter : {"none", "normal", "max", "min"}, default : "none"
         Model for metallicity scatter about the MZR.
@@ -546,10 +546,10 @@ class MZR:
     """float: Maximum mass log for interpolation."""
 
     # TODO: rename mzr_model to model
-    def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter_model: str = 'none'
+    def __init__(self, redshift: float, model: str = 'KK04', scatter_model: str = 'none'
                  ) -> None:
         self.redshift = redshift
-        self.mzr_model = mzr_model
+        self.mzr_model = model
         self.scatter_model = scatter_model
         self.scatter = scatter_model  # property
         self.z_a = None
