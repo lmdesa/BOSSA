@@ -545,6 +545,7 @@ class MZR:
     LOGM_MAX = 12.
     """float: Maximum mass log for interpolation."""
 
+    # TODO: rename mzr_model to model
     def __init__(self, redshift: float, mzr_model: str = 'KK04', scatter_model: str = 'none'
                  ) -> None:
         self.redshift = redshift
@@ -1135,48 +1136,72 @@ class ChruslinskaSFRD:
     for choosing between the extreme low- and high-metallicity models,
     or a moderate-metallicity model.
 
+    Parameters
+    ----------
+    model : {'midmet', 'lowmet', 'highmet'}, default: 'midmet'
+        Option of SFRD grid model.
+    canon : bool, default : False
+        Whether to assume an invariant IMF or not.
+    per_redshift_met_bin : bool, default : False
+        Alters the SFRD computation. For testing purposes only.
+
+        .. deprecated:: 1.0
+           Keep to default value.
+
     Attributes
     ----------
-    MODEL_PATH_DICT : dict
-        Dictionary containing the paths to the precomputed SFRD grids.
-    SFRD_ZOH_ARRAY : numpy array
-        Array of Z_OH metallicity values making up one axis of the SFRD
-        grids.
-    SFRD_Z_ARRAY : numpy array
-        Array of Z metallicity values making up one axis of the SFRD
-        grid.
     model : str
         Choice of SFRD grid model.
-    sfrd_redshift_array : numpy array
-        Array of redshifts making up the other axis of the SFRD grid.
+    canon : str
+        Whether to assume an invariant IMF or not.
+    sfrd_redshift_array : NDArray
+        Array of redshifts corresponding to the SFRD grid.
     sfrd_dtime_array : numpy array
         Array of time steps defining the SFRD grid redshifts.
     logsfrd_array : numpy array
-        Log10(SFRD) array over the redshift-metallicity grid.
+        SFRD log array over the redshift-metallicity grid.
 
     Methods
     -------
     load_grid()
-        Loads the SFRD grid from disk.
+        Loads the pre-computed SFRD grid from disk.
     get_logsfrd(feh, redshift)
-        Returns the log10(SFRD) corresponding to the pair in the grid
-        closest to the given (feh, redshift).
+        Returns the SFRD log corresponding to the closest
+        `(feh, redshift)` in the SFRD grid.
 
     Warns
     -----
     UserWarning
-        If get_logsfrd(feh, redshift) is run before set_grid().
+        If :meth:`get_logsfrd` is run before :meth:`set_grid`.
+
+    Warnings
+    --------
+    The ``per_redshift_met_bin`` parameter is for testing purposes only
+    and will result in a wrong computation of the star formation rate.
+    It should be kept to the default value (False).
 
     Notes
     -----
     The precomputed SFRD grids are by Chruslinska et al. (2020) [9]_ and
     were calculated with the same GSMF, SFMR and MZR relations employed
-    in this module. Different combinations of the different relation
-    options lead to the three grid options, differentiated by the degree
-    to which the SFR distribution is shifted towards higher or lower
-    metallicities. These grids already take into account the corrections
-    for environment-dependent PowerLawIMF treated in the Corrections
-    class.
+    in this module. These grids already take into account the
+    corrections for the environment-dependent IMF from
+    :class:`sfh.Corrections`.
+
+    At the moment only three permutations are included. These correspond
+    to the high, moderate and low metallicity , defined by Chruslinska &
+    Nelemans (2019) [4_]. They are,
+
+    * Low metallicity: combines :class:`sfh.MZR(model='PP04')`,
+      :class:`sfh.SFMR(flattening='sharp')` and
+      :class:`sfh.GSMF(fixed_slope=True)`.
+    * Moderate metallicity: combines :class:`sfh.MZR(model='M09')`,
+      :class:`sfh.SFMR(flattening='moderate')` and
+      :class:`sfh.GSMF(fixed_slope=True)`.
+    * High metallicity: combines :class:`sfh.MZR(model='KK04')`,
+      :class:`sfh.SFMR(flattening='none')` and
+      :class:`sfh.GSMF(fixed_slope=True)`.
+
     """
 
     MODEL_PATH_DICT = {'lowmet': LOWMET_SFRD_PATH,
@@ -1200,23 +1225,18 @@ class ChruslinskaSFRD:
 
     def __init__(self, model: str ='midmet', canon: bool = False,
                  per_redshift_met_bin: bool = False) -> None:
-        """
-        Parameters
-        ----------
-        model : {'midmet', 'lowmet', 'highmet'}, default: 'midmet'
-            Option of SFRD grid model.
-        """
-
         self.model = model
         self.canon = canon
         self.sfrd_redshift_array = None
         self.sfrd_dtime_array = None
-        self.per_redshift_met_bin = per_redshift_met_bin
+        self._per_redshift_met_bin = per_redshift_met_bin
         self.logsfrd_array = np.empty((2, 0))
 
     def _set_sfrd_redshift_array(self) -> None:
-        """Set redshift and timestep arrays corresponding to the SFRD
-        grids from the redshift/time data file.
+        """Set redshift and timestep arrays.
+
+        Arrays corresponding to the SFRD grids from the
+        redshift/time data file.
         """
 
         redshift_time_data = np.genfromtxt(REDSHIFT_SFRD_DATA_PATH)
@@ -1235,7 +1255,7 @@ class ChruslinskaSFRD:
             for j, col in enumerate(row):
                 dt = self.sfrd_dtime_array[i]
                 self.logsfrd_array[i, j] /= dt
-                if self.per_redshift_met_bin:
+                if self._per_redshift_met_bin:
                     dz = (self.sfrd_redshift_array[i]
                           - self.sfrd_redshift_array[i+1])
                     dfeh = self.SFRD_FEH_ARRAY[j+1] - self.SFRD_FEH_ARRAY[j]
