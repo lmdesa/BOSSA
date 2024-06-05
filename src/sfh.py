@@ -1239,8 +1239,7 @@ class ChruslinskaSFRD:
         """
 
         redshift_time_data = np.genfromtxt(REDSHIFT_SFRD_DATA_PATH)
-        self.sfrd_redshift_array = np.concatenate((redshift_time_data[:, 1],
-                                                   [0.0]))
+        self.sfrd_redshift_array = np.concatenate((redshift_time_data[:, 1], [0.]))
         self.sfrd_dtime_array = redshift_time_data[:, 2]
 
     def _set_sfrd_array(self) -> None:
@@ -1255,16 +1254,13 @@ class ChruslinskaSFRD:
                 dt = self.sfrd_dtime_array[i]
                 self.logsfrd_array[i, j] /= dt
                 if self._per_redshift_met_bin:
-                    dz = (self.sfrd_redshift_array[i]
-                          - self.sfrd_redshift_array[i+1])
+                    dz = self.sfrd_redshift_array[i] - self.sfrd_redshift_array[i+1]
                     dfeh = self.SFRD_FEH_ARRAY[j+1] - self.SFRD_FEH_ARRAY[j]
                     self.logsfrd_array[i, j] /= dz*dfeh
                 if self.logsfrd_array[i, j] == 0.0:
                     self.logsfrd_array[i, j] = np.nan
                 else:
-                    self.logsfrd_array[i, j] = np.log10(
-                        self.logsfrd_array[i, j]
-                    )
+                    self.logsfrd_array[i, j] = np.log10(self.logsfrd_array[i, j])
 
     def set_grid(self) -> None:
         """Build redshift and SFRD arrays corresponding to SFRD grid."""
@@ -1306,8 +1302,7 @@ class ChruslinskaSFRD:
                           'Please run load_grid() first.')
             return
         z = Z_SUN * 10 ** feh
-        redshift_i = np.argmin(np.abs(self.sfrd_redshift_array[:-1]
-                                      - redshift))
+        redshift_i = np.argmin(np.abs(self.sfrd_redshift_array[:-1] - redshift))
         z_i = np.argmin(np.abs(self.SFRD_Z_CENTERS_ARRAY - z))
         logsfrd = self.logsfrd_array[redshift_i, z_i]
         return logsfrd
