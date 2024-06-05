@@ -13,10 +13,10 @@ from scipy.stats import norm
 import sys
 sys.path.append('..')
 from src.constants import (
-    Z_SUN, T04_MZR_params_list, M09_MZR_params_list, KK04_MZR_params_list,
-    PP04_MZR_params_list, REDSHIFT_SFRD_DATA_PATH, LOWMET_SFRD_PATH,
-    MIDMET_SFRD_DATA_PATH, HIGHMET_SFRD_DATA_PATH, LOWMET_CANON_SFRD_PATH,
-    MIDMET_CANON_SFRD_DATA_PATH, HIGHMET_CANON_SFRD_DATA_PATH
+    LN10, Z_SUN, T04_MZR_params_list, M09_MZR_params_list, KK04_MZR_params_list,
+    PP04_MZR_params_list, REDSHIFT_SFRD_DATA_PATH, LOWMET_SFRD_PATH, MIDMET_SFRD_DATA_PATH,
+    HIGHMET_SFRD_DATA_PATH, LOWMET_CANON_SFRD_PATH, MIDMET_CANON_SFRD_DATA_PATH,
+    HIGHMET_CANON_SFRD_DATA_PATH, CHR19_GSMF
 )
 from src.utils import ZOH_to_FeH, FeH_to_Z, interpolate, float_or_arr_input
 
@@ -348,7 +348,6 @@ class SFMR:
     def __init__(self, redshift: float, flattening: str = 'none', scatter: str = 'none') -> None:
         self.redshift = redshift
         self.sfmr = flattening
-
         self.scatter = scatter
 
     def __getattr__(self, name: str) -> Any:
@@ -796,6 +795,197 @@ class MZR:
             zoh = self._highredshift_zoh(logm)
         zoh += self.scatter(logm)
         return zoh
+
+class GSMF:
+    """Compute the redshift-dependent galaxy stellar mass function.
+
+    Compute the redshift-dependent galaxy stellar mass function (GSMF),
+    a number density distribution of galaxies over galactic stellar
+    masses. The GSMF is an empirical distribution well and commonly
+    described with a Schechter function, which approximates a power law
+    at low masses and a falling exponential at high masses. The GSMF
+    implemented here consists of a Schechter function at high masses and
+    a simple power law at low masses.
+
+    Attributes
+    ----------
+    logmass_threshold
+    low_mass_slope
+    redshift : float
+        Redshift at which to compute the GSMF.
+    fixed_slope : bool
+        Whether to use the fixed (True) or the varying (False) low-mass
+        slope model.
+
+    Methods
+    -------
+    log_gsmf(logm)
+        Computes log10(GSMF) for a given galaxy stellar mass as log10(m)
+        at the set redshift.
+
+    Notes
+    -----
+    The Schechter parameters are a normalization constant, phi; a
+    cut-off mass where the function transitions from a power law to an
+    exponential, m_co; and the power law slope, 'a'.
+
+    The parameters are taken from Chruslinska & Nelemans (2019) [1]_,
+    who interpolate between several fits from the existing literature,
+    considering galaxies observed at redshift up to ~10, to constrain
+    the Schechter parameters as functions of redshift. At low masses,
+    due to poor constraining of the GSMF, the Schechter function is
+    replaced by a simple power law. The GSMF implemented here is thus
+    redshift-dependent.
+
+    Two models are implemented, as describe in Chruslinska & Nelemans
+    (2019) [1]_: one with a fixed low-mass slope at all redshifts; and
+    one with a slope that steepens with redshift.
+
+    References
+    ----------
+    .. [1] Chruslinska, M., Nelemans, G. (2019). Metallicity of stars
+        formed throughout the cosmic history based on the observational
+        properties of star-forming galaxies. MNRAS, 488(4), 5300.
+        doi:10.1093/mnras/stz2057
+    """
+
+    def __init__(self, redshift=0., fixed_slope=True):
+        """
+        Parameters
+        ----------
+        redshift : float
+            Redshift at which to compute the GSMF.
+        fixed_slope : bool, default: True
+            Whether to use the fixed (True) or the varying (False)
+            low-mass slope model.
+        """
+
+        self.redshift = redshift
+        self.fixed_slope = fixed_slope
+        self._logmass_threshold = None  # property
+        self._low_mass_slope = None  # property
+
+    @property
+    def logmass_threshold(self):
+        """Log10 of the mass separating the Schechter function from the
+        simple power-law.
+        """
+
+        if self._logmass_threshold is None:
+            if self.redshift <= 5:
+                self._logmass_threshold = 7.8 + 0.4 * self.redshift
+            else:
+                self._logmass_threshold = 9.8
+        return self._logmass_threshold
+
+    @property
+    def low_mass_slope(self):
+        """Slope of the simple power law at low masses."""
+        if self._low_mass_slope is None:
+            if self.fixed_slope:
+                self._low_mass_slope = -1.45
+            else:
+                if self.redshift < 8:
+                    self._low_mass_slope = -0.1 * self.redshift - 1.34
+                else:
+                    self._low_mass_slope = -0.1 * 8 - 1.34
+        return self._low_mass_slope
+
+    @staticmethod
+    def _schechter(logm, a, logphi, logm_co):
+        """Compute the log10 of the Schechter function for given
+        parameters at a given mass log10(m).
+
+        Parameters
+        ----------
+        logm : float
+            Log10 of the galaxy stellar mass at which to compute the
+            Schechter function.
+        a : float
+            Index of the power law component of the Schechter function.
+        logphi : float
+            Log10 of the normalization constants of the Schechter
+            function.
+        logm_co : float
+            Log10 of the cut-off mass of the Schechter function.
+
+        Returns
+        -------
+        log_sch : float
+            Log10 of the Schechter function evaluated with the given
+            parameters.
+        """
+
+        log_sch = (logphi + (a + 1) * (logm - logm_co) - 10 ** (logm - logm_co)
+                   / LN10 - np.log10(LN10))
+        return log_sch
+
+    def _power_law_norm(self, sch_params):
+        """Compute the low-mass power law normalization such that it is
+        continuous with the Schechter function part.
+        """
+
+        schechter = self._schechter(self.logmass_threshold, *sch_params)
+        return (schechter - (self.low_mass_slope + 1) * self.logmass_threshold
+                - np.log10(LN10))
+
+    def _power_law(self, logm, sch_params):
+        """Compute the low mass power law at a mass log10(m), given a
+        set of Schechter parameters for continuity.
+        """
+
+        norm = self._power_law_norm(sch_params)
+        return (self.low_mass_slope + 1) * logm + norm + np.log10(LN10)
+
+    def _f(self, logm, schechter_params):
+        """General GSMF function. Schechter above logmass_threshold,
+        simple power law below.
+        """
+
+        if logm > self.logmass_threshold:
+            return self._schechter(logm, *schechter_params)
+        else:
+            return self._power_law(logm, schechter_params)
+
+    def log_gsmf(self, logm):
+        """Take a galaxy stellar mass log10(m) and return log10(gsmf) at
+        the set redshift.
+        """
+
+        # use parameters at z=0.05 for all z<=0.05
+        if self.redshift <= 0.05:
+            # collect params for z=0.05
+            schechter_params = CHR19_GSMF[0, 1]
+            logn = self._f(logm, schechter_params)
+
+        # for 0.05<z<=9, interpolate parameters to the set redshift
+        elif self.redshift <= 9:
+            # collect params at all redshifts
+            schechter_params = CHR19_GSMF[:, 1]
+            # collect corresponding redshifts
+            ipX = np.array([CHR19_GSMF[:, 0]], dtype=np.float64)
+            # compute log10(gsmf) for logm
+            ipY = np.array(
+                [[self._f(logm, params) for params in schechter_params]]
+            )
+            # interpolate to set redshift
+            logn = interpolate(ipX, ipY, self.redshift)
+
+        # for z>10, keep logm_co and a, and assume that logphi increases
+        # linearly with the same rate as in (8,9)
+        else:
+            # logphi variation rate between z=8 and z=9
+            dnorm_dz = CHR19_GSMF[-1, 1][1] - CHR19_GSMF[-2, 1][1]
+            # corresponding logphi change between z=9 and set redshift
+            dnorm = dnorm_dz * (self.redshift - 9)
+            # new logphi at set redshift
+            norm = CHR19_GSMF[-1, 1][1] + dnorm
+            schechter_params = (CHR19_GSMF[-1, 1][0],
+                                norm,
+                                CHR19_GSMF[-1, 1][2])
+            logn = self._f(logm, schechter_params)
+
+        return logn
 
 
 class Corrections:
