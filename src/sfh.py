@@ -862,7 +862,7 @@ class GSMF:
         doi:10.1093/mnras/stz2057
     """
 
-    def __init__(self, redshift=0., fixed_slope=True):
+    def __init__(self, redshift: float, fixed_slope: bool = True) -> None:
         """
         Parameters
         ----------
@@ -879,7 +879,7 @@ class GSMF:
         self._low_mass_slope = None  # property
 
     @property
-    def logm_break(self):
+    def logm_break(self) -> float:
         """Break mass log between Schechter and power-law components."""
 
         if self._logm_break is None:
@@ -890,7 +890,7 @@ class GSMF:
         return self._logm_break
 
     @property
-    def low_mass_slope(self):
+    def low_mass_slope(self) -> float:
         """Slope of the simple power law at low masses."""
         if self._low_mass_slope is None:
             if self.fixed_slope:
@@ -903,7 +903,7 @@ class GSMF:
         return self._low_mass_slope
 
     @staticmethod
-    def _schechter(logm, a, logphi, logm_co):
+    def _schechter(logm: float, a: float, logphi: float, logm_co: float) -> float:
         """Log of Schechter function.
 
         Receives the log of m and returns the log of a Schechter
@@ -932,7 +932,7 @@ class GSMF:
                    / LN10 - np.log10(LN10))
         return log_sch
 
-    def _power_law_norm(self, sch_params):
+    def _power_law_norm(self, sch_params: tuple | list | NDArray) -> float:
         """Normalization of the low-mass power-law GSMF component.
 
         Computed by continuity with teh Schecther component.
@@ -941,7 +941,7 @@ class GSMF:
         schechter = self._schechter(self.logm_break, *sch_params)
         return (schechter - (self.low_mass_slope + 1) * self.logm_break - np.log10(LN10))
 
-    def _power_law(self, logm, sch_params):
+    def _power_law(self, logm: float, sch_params: tuple | list | NDArray) -> float:
         """Power law component of the GSMF.
 
         Parameters
@@ -960,7 +960,7 @@ class GSMF:
         norm = self._power_law_norm(sch_params)
         return (self.low_mass_slope + 1) * logm + norm + np.log10(LN10)
 
-    def _f(self, logm, schechter_params):
+    def _f(self, logm: float, schechter_params: tuple | list | NDArray) -> float:
         """GSMF for a set of known Schechter component parameters.
 
         Parameters
@@ -981,7 +981,7 @@ class GSMF:
         else:
             return self._power_law(logm, schechter_params)
 
-    def log_gsmf(self, logm):
+    def log_gsmf(self, logm: float) -> float:
         """Log of the GSMF as function of log of the mass.
 
         Parameters
