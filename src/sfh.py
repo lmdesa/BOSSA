@@ -829,6 +829,7 @@ class GSMF:
     :attr:`logm_break`, it is a Schechter function,
 
     .. math::
+
         \\Phi(M_\\ast) = \\Phi_\\ast e^{-M/M_\\ast}
         \\left(\\frac{M_\\ast}{M_\\mathrm{co}}\\right)^{a}.
     
@@ -838,7 +839,7 @@ class GSMF:
     2019) [4]_ are kept in :data:`CHR19_GSMF`.
 
     For ``z<= 0.05``, the parameters are assumed to be the same as
-    at `0.05`. For ``0.05<z<=9`, they are interpolated from
+    at `0.05`. For ``0.05<z<=9``, they are interpolated from
     :data:`CHR19_GSMF`. Beyond, `log(M_co)` and `a` retain their `z=9`
     values, while `log(phi)` is assumed to increase linearly with its
     mean variation rate between `z=8-9`.
@@ -848,6 +849,7 @@ class GSMF:
     either be fixed to `-1.45`, or increase as
 
     .. math::
+
         f(z) = 7.8 + 0.4 z
 
     up to `z=8` and be constant beyond.
@@ -878,9 +880,7 @@ class GSMF:
 
     @property
     def logm_break(self):
-        """Log10 of the mass separating the Schechter function from the
-        simple power-law.
-        """
+        """Break mass log between Schechter and power-law components."""
 
         if self._logm_break is None:
             if self.redshift <= 5:
@@ -907,9 +907,9 @@ class GSMF:
         """Log of Schechter function.
 
         Receives the log of m and returns the log of a Schechter
-        function at m. Takes the power-law exponent ,``a``; the logarithm
-        of the normalization constant, ``logphi``; and the logarithm of
-        the cut-off mass, ``logm_co``, as arguments.
+        function at m. Takes the power-law exponent ,``a``; the
+        logarithm of the normalization constant, ``logphi``; and the
+        logarithm of the cut-off mass, ``logm_co``, as arguments.
 
         Parameters
         ----------
@@ -1182,6 +1182,7 @@ class ChruslinskaSFRD:
         Whether to assume an invariant IMF or not.
     per_redshift_met_bin : bool, default : False
         Alters the SFRD computation. For testing purposes only.
+
         .. deprecated:: 1.0
            Keep to default value.
 
