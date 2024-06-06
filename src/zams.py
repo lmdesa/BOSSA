@@ -35,12 +35,22 @@ def gen_seed(logp, q, e):
 class EccentricityDistribution:
     """Eccentricity probability distribution for a ZAMS star pair.
 
-    For a given primary of mass m1 and a companion orbit of
-    log10(period) logp, compute the eccentricity probability density
-    function (PDF) for that orbit. All orbits with logp <= 0.5 (default)
-    are assumed to be circularized. Orbits with logp > 8.0 are not
-    allowed (p=0). Primaries with m1 < 0.8 Msun or m1 > 150.0 Msun are
-    not allowed (p=0).
+    For a given primary of mass ``m1`` and a companion orbit of
+    log10(period) ``logp``, compute the eccentricity probability density
+    function (PDF) for that orbit. All orbits with ``logp <= 0.5``
+    (default) are assumed to be circularized. Orbits with ``logp > 8.0``
+    are not allowed (``p=0``). Primaries with ``m1 < 0.8`` or
+    ``m1 > 150.0`` are not allowed (p=0).
+
+    Allows for either a mass- and orbital-period dependent distribution
+    or to set all orbits to be circular.
+
+    All orbital periods are in days and masses in solar masses.
+
+    Parameters
+    ----------
+    canonical : bool, default : False
+        Whether to assume a correlated distribution or not.
 
     Attributes
     ----------
@@ -52,48 +62,49 @@ class EccentricityDistribution:
         Maximum eccentricity set by the <70% Roche lobe filling factor
         at periastron.
     m1 : float
-        Mass of the system primary.
+        Mass of the primary.
     logp : float
         Log10(period) of the given orbit.
     logp_circ : float
         Log10(period) below which all orbits are assumed to be
-        circularized. Should always be greater than logp_min.
+        circularized. Should always be greater than attr:`logp_min`.
     logp_min : float
         Minimum allowed log10(period).
     logp_max : float
         Maximum allowed log10(period).
     m1_min : float
-        Minimum allowed m1_table.
+        Minimum allowed ``m1``.
     m1_max : float
-        Maximum allowed m1_table.
+        Maximum allowed ``m1``.
 
     Methods
     -------
     set_parameters(m1, logp)
-        Set the PDF power law parameters eta, k and e_max.
+        Set :attr:`eta`, :attr:`k` and :attr:`e_max`.
     prob(e)
-        Return the PDF value at eccentricity e.
+        Return the PDF value at eccentricity `e`.
 
     Warns
     -----
     UserWarning
-        If method prob(e) is run before set_parameters(m1, logp).
+        If :meth:`prob` is run before :meth:`set_parameters`.
 
     Notes
     -----
-    The distribution is by Moe & Di Stefano (2017) [1]_ with small
-    adjustments as described by OUR WORK. It takes the shape of a simple
-    power law, with the index eta being dependent on logp; the
-    functional form of this dependency itself depends on m1. A maximum
-    eccentricity is set as a function of logp from the condition that
-    the Roche lobe filling fraction be <70% at periastron.
+    The correlated distribution is by Moe & Di Stefano (2017) [1]_
+    with small adjustments as described by de Sá et al. (submitted)
+    [2]_. It takes the shape of a simple power law, with the index eta
+    being dependent on logp; the functional form of this dependency
+    itself depends on m1. A maximum eccentricity is set as a function of
+    logp from the condition that the Roche lobe filling fraction be
+    <70% at periastron.
 
     The minimum, maximum and circularization periods are set as in the
-    original work, with log10 values 0.2, 8.0 and 0.5, respectively.
+    original work, with log values 0.2, 8.0 and 0.5, respectively.
     The minimum m1 is set to 0.8 Msun also in accordance with the
     original work, but the mass range is extended up to 150.0 Msun.
 
-    All orbital periods are given in days and masses in solar masses.
+    The uncorrelated option always returns zero eccentricity.
 
     References
     ----------
@@ -101,12 +112,14 @@ class EccentricityDistribution:
         Interrelation between Period (P) and Mass-ratio (Q)
         Distributions of Binary Stars. ApJS, 230(2), 55.
         doi:10.3847/1538-4365/aa6fb6
+    .. [2] de Sá, L. M., Bernardo, A., Rocha, L. S., Bachega, R. R. A.,
+       Horvath, J. E. (submitted).
     """
 
     def __init__(self, canonical=False):
         self.eta = None
         self.k = 1
-        self.e_max = 1
+        self.e_max = 0
         self.m1 = 0
         self.logp = 0
         self.logp_circ = 0.5
@@ -118,36 +131,30 @@ class EccentricityDistribution:
 
     @staticmethod
     def _eta_lowmass(logp):
-        """Compute the power law index eta for the given log10(period)
-        and m1 <= 3 Msun.
-        """
-
+        """Compute the power-law index for ``logp``and ``m1 <= 3``."""
         return 0.6 - 0.7 / (logp-0.5)
 
     @staticmethod
     def _eta_highmass(logp):
-        """Compute the power law index eta for the given log10(period)
-        and m1 >= 7 Msun.
-        """
-
+        """Compute the power-law index for ``logp`` and ``m1 >= 7``."""
         return 0.9 - 0.2 / (logp-0.5)
 
     def _set_e_max(self, logp):
-        """Set e_max from the condition of <70% Roche lobe filling
-        factor at periastron.
+        """Set the maximum eccentricity :attr:`e_max`.
+
+        The maximum eccentricity is set by the condition that the Roche
+        lobe filling factor be < 70% at periastron.
         """
 
         p = 10 ** logp
         self.e_max = 1 - (p/2) ** (-2/3)
 
     def _eta_midmass(self, logp, m1):
-        """Compute the power law index eta for the given log10(period)
-        and 3 Msun < m1 < 7 Msun.
+        """Compute the power-law index for the ``logp`` and ``3<m1<7``.
 
-        Compute the power law index eta for the given log10(period) and
-        3 Msun < m1 < 7 Msun. This is given by a linear interpolation
-        between the eta functions for late- (<= 3 Msun) and early-type
-        (>= 7 Msun) primaries.
+        The index is given by a linear interpolation between the eta
+        functions for late- (<= 3 Msun), :meth:`_eta_lowmass`; and
+        early-type (>= 7 Msun), :meth:`_eta_highmass` primaries.
         """
 
         eta_highmass = self._eta_highmass(logp)
@@ -156,8 +163,12 @@ class EccentricityDistribution:
         return eta_midmass
 
     def set_parameters(self, m1, logp):
-        """Set power law parameters according to the given m1 and
-        log10(period).
+        """Set power-law parameters at ``m1``, ``logp``.
+
+        Sets :attr:`eta`, :attr:`k` and :attr:`e_max` at ``m1`` and
+        :attr:``logp``. If the distribution is set to uncorrelated, or
+        if ``m1`` and/or ``logp`` are out of bounds, all parameters are
+        set to zero.
         """
 
         self.m1 = m1
@@ -185,9 +196,7 @@ class EccentricityDistribution:
             self.k = 0
 
     def _force_circular_orbit(self, e):
-        """Probability distribution allowing only for circular orbits.
-        """
-
+        """Eccentricity distribution forcing circular orbits."""
         if e <= 1e-4:
             prob = 1e4
         else:
@@ -210,18 +219,17 @@ class EccentricityDistribution:
         Warns
         -----
         UserWarning
-            If power law parameters are not set up (set_parameters has
-            not been run yet).
+            If power law parameters are not set up
+            (:meth:`set_parameters` has not been called yet).
 
         Notes
         -----
-        If the set logp is <= the circularization logp
-        (by default, 0.5), forces e=0 by approximating a delta at e=0
-        with a finite step; this is done to avoid dividing by zero while
-        still allowing the PDF to integrate to 1. An artificial plateau
-        is also inserted at e <= 0.0001 to avoid the probability
-        exploding for circular systems, at the cost of slightly shifting
-        the PDF's norm from 1.
+        If ``logp <=``:attr:`logp_circ` (default 0.5), the method forces
+        `e=0` by approximating a delta at `e=0` with a finite step. This
+        is done to avoid dividing by zero while still allowing the PDF
+        to integrate to 1. An artificial plateau is also inserted at
+        ``e <= 0.0001`` to avoid the probability exploding for circular
+        systems, at the cost of slightly shifting the PDF's norm from 1.
         """
 
         if self.eta is None:
