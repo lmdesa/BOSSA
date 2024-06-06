@@ -116,7 +116,7 @@ class EccentricityDistribution:
        Horvath, J. E. (submitted).
     """
 
-    def __init__(self, canonical=False):
+    def __init__(self, canonical: bool = False) -> None:
         self.eta = None
         self.k = 1
         self.e_max = 0
@@ -130,16 +130,16 @@ class EccentricityDistribution:
         self.canonical = canonical
 
     @staticmethod
-    def _eta_lowmass(logp):
+    def _eta_lowmass(logp: float) -> float:
         """Compute the power-law index for ``logp``and ``m1 <= 3``."""
         return 0.6 - 0.7 / (logp-0.5)
 
     @staticmethod
-    def _eta_highmass(logp):
+    def _eta_highmass(logp: float) -> float:
         """Compute the power-law index for ``logp`` and ``m1 >= 7``."""
         return 0.9 - 0.2 / (logp-0.5)
 
-    def _set_e_max(self, logp):
+    def _set_e_max(self, logp: float) -> None:
         """Set the maximum eccentricity :attr:`e_max`.
 
         The maximum eccentricity is set by the condition that the Roche
@@ -149,7 +149,7 @@ class EccentricityDistribution:
         p = 10 ** logp
         self.e_max = 1 - (p/2) ** (-2/3)
 
-    def _eta_midmass(self, logp, m1):
+    def _eta_midmass(self, logp: float, m1: float) -> float:
         """Compute the power-law index for the ``logp`` and ``3<m1<7``.
 
         The index is given by a linear interpolation between the eta
@@ -162,7 +162,7 @@ class EccentricityDistribution:
         eta_midmass = (m1-3) * (eta_highmass-eta_lowmass) / 4 + eta_lowmass
         return eta_midmass
 
-    def set_parameters(self, m1, logp):
+    def set_parameters(self, m1: float, logp: float) -> None:
         """Set power-law parameters at ``m1``, ``logp``.
 
         Sets :attr:`eta`, :attr:`k` and :attr:`e_max` at ``m1`` and
@@ -190,12 +190,11 @@ class EccentricityDistribution:
                 self.eta = 0
         if self.eta != 0:
             self._set_e_max(logp)
-            self.k = ((1+self.eta)
-                      / (self.e_max**(1+self.eta) - 0.1**(1+self.eta)))
+            self.k = (1+self.eta) / (self.e_max**(1+self.eta) - 0.1**(1+self.eta))
         else:
             self.k = 0
 
-    def _force_circular_orbit(self, e):
+    def _force_circular_orbit(self, e: float) -> float:
         """Eccentricity distribution forcing circular orbits."""
         if e <= 1e-4:
             prob = 1e4
@@ -203,7 +202,7 @@ class EccentricityDistribution:
             prob = 0
         return prob
 
-    def prob(self, e):
+    def prob(self, e: float) -> float:
         """Compute the eccentricity PDF value at the given e.
 
         Parameters
