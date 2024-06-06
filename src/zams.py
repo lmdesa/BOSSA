@@ -843,6 +843,325 @@ class CompanionFrequencyDistributionHighQ:
         return f
 
 
+class MultipleFraction:
+    """Compute the multiplicity fraction for a given primary mass in 0.1 <= q <= 1.0 pairs.
+
+    For a given primary of mass m1, compute the probability for having a number n of companions in 0.1 <= q <= 1.0
+    pairs. The probability distribution over n is discrete, and takes the form of a truncated Poisson distribution.
+
+    Attributes
+    ----------
+    q_distr : MassRatioDistribution object
+        MassRatioDistribution object used to set up the companion frequency distributions.
+    m1_array : numpy array
+        Primary masses used to set up the companion frequency distributions.
+    nmean_array : numpy array
+        Mean companion numbers corresponding to the primary masses in m1_array.
+    binary_fraction : numpy array
+        Binary fractions corresponding to the primary masses in m1_array, when all stars are isolated or binaries.
+    _multfreq_to_nmean : scipy.interpolate interp1d
+        Multiplicity frequency to mean companion number interpolator.
+    _m1_to_nmean : scipy.interpolate interp1d
+        Primary mass to mean companion number interpolator.
+    nmax : float
+        Maximum companion number.
+    nmean_max : float
+        Maximum mean companion number, used for interpolation only.
+
+    Methods
+    -------
+    solve()
+        Set up interpolators and nmean_array.
+    ncomp_mean(m1)
+        Compute the mean companion number for primary mass m1.
+    prob(l, k)
+        Compute the companion number probability at value k, for a distribution with mean l.
+    get_multiple_fraction(n)
+        Compute fraction of order n multiples for the masses in m1_array.
+    get_binary_fraction()
+        Compute binary fraction for the masses in m1_array, assuming all stars are either isolated or binary.
+
+    Warns
+    -----
+    UserWarning
+        If ncomp_mean(m1) is run before solve().
+
+    Notes
+    -----
+    Computation of the multiplicity fractions starts from the companion frequency distributed according to class
+    CompanionFrequencyDistribution. As per its definition, the companion frequency does not differentiate betweem
+    multiples of different orders: it simply gives the number of companions per primary per orbital period decade. The
+    first step is to compute the number of companions per primary,
+
+    .. math::
+
+        f_{mult}(M_1) = \int_{0.2}^{0.8} d\log P\, f_{\log P; q>0.3}(M_1,\log P),
+
+    called the multiplicity frequency. The multiplicity fraction F_n is defined as the fraction of all primaries with a
+    number n of companions. These relate to the multiplicity frequency as::
+
+        f_mult(M_1) = F_1(M_1) + 2F_2(M_1) + 3F_3(M_1) + ...,
+
+    for a primary mass M1. The F_n are not, in general, empirically constrained. We follow Moe & Di Stefano (2017) [1]_
+    in extending the observed behavior for solar-type primaries to all primaries. In this case, the number of companions
+    n is observed to be distributed over M1 in the form of a Poissonian distribution, with a M1-dependent mean n_mean
+    fully determined by imposing the empirical f_{mult}(M_1) as a constraint. While in the original work the Poissonian
+    is truncated to a maximum nmax=3, here nmax can be an arbitrary integer.
+
+    By assuming a Poissonian truncated at nmax behavior, the companion number n is distributed as
+
+    .. math::
+
+        P_n(M_1) = ( \\sum_{ n=0 }^{ n_{max} } {n_{mean}}^n / n! )^{-1}  n_{mean}^{n} / n!,
+
+    and F_n(M1) = P_n(M1). Then, from the definition of P_n and the f_mult-F_n relation, f_mult is written as
+
+    .. math::
+
+        f_{mult}(n_{mean}) = n_{mean} ( 1 + a/b )^{-1},
+
+        a = {n_{mean}}^{n_{max}} n_{max}!,
+
+        b = \\sum_{ n=0 }^{ n_{max}-1 } {n_{mean}}^n / n!.
+
+    From this relation an array of (f_mult, n_mean) pairs is calculated, and from it a f_mult to n_mean interpolator is
+    built. f_mult is then determined by integrating the companion frequency for a given m1, as per its definition. This
+    is done for masses m1_array, and the resulting (m1, f_mult) yields a (m1, n_mean) array through the above
+    interpolator. A second, m1 to n_mean, interpolator is then built.
+
+    References
+    ----------
+    .. [1] Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio
+        (Q) Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6
+
+    See Also
+    -------
+    sampling.SimpleBinaryPopulation : implement this class to generate a full binary population sample.
+    """
+
+    def __init__(self, mmin=0.8, mmax=150, nmax=3, nmean_max=11, only_binaries=False):
+        """
+        Parameters
+        ----------
+        mmin : float
+            Minimum primary mass.
+        mmax : float
+            Maximum primary mass.
+        nmax : float
+            Maximum companion number.
+        nmean_max : float
+            Maximum mean companion number, for interpolation.
+        only_binaries : bool
+            Whether all non-isolated stars are to be considered as binaries.
+        """
+
+        self.q_distr = MassRatioDistribution()
+        self.mmin = mmin
+        self.mmax = mmax
+        self.m1_array = np.zeros(20)
+        self.nmean_array = np.zeros(self.m1_array.shape)
+        self._binary_fraction = np.zeros(self.m1_array.shape)
+        self._multfreq_to_nmean = None
+        self._m1_to_nmean = None
+        self.nmax = nmax
+        self.nmean_max = nmean_max
+        self.only_binaries = only_binaries
+
+    @staticmethod
+    def _truncated_poisson_mdf(l, k_arr, k_max):
+        """Evaluate at k a Poissonian with mean l and truncated at k_max."""
+        probs = np.zeros(k_arr.shape)
+        for i, k in enumerate(k_arr):
+            if k > k_max:
+                pass
+            else:
+                distr = poisson(l)
+                norm = np.sum(distr.pmf(np.arange(0, k_max + 1, 1)))
+                probs[i] = distr.pmf(k) / norm
+        return probs
+
+    def _nmean_to_multfreq(self, nmean):
+        """Compute the multiplicity frequency from the mean companion number nmean.
+
+        By assuming that the companion number n is distributed as a Poissonian with mean nmean, truncated at nmax, the
+        multiplicity frequency can be computed analitically.
+
+        Notes
+        -----
+        The multiplicity frequency is
+
+         .. math::
+
+                f_{mult} (n_{mean}) = \\frac{ n_{mean} }{ 1 + a(n_{mean}) / b(n_{mean} }},
+        where
+
+        .. math::
+
+                a(n_{mean}) = \\frac{ {n_{mean}}^{n_{max}} }{ n_{max}! },
+
+                b(n_{mean}) = \sum^{ n_{max}-1 }_{ n=0 } \\frac{ {n_{mean}}^n }{ n! }
+        """
+
+        b = 0
+        for n in range(self.nmax):
+            b += nmean ** n / np.math.factorial(n)
+        a = nmean ** self.nmax / np.math.factorial(self.nmax)
+        return nmean / (1 + a/b)
+
+    def _m1_to_multfreq(self, m1):
+        freq_distr = CompanionFrequencyDistribution(m1, self.q_distr)
+        multfreq = 0
+        for logp0, logp1 in zip(freq_distr.LOGP_BREAKS[:-1], freq_distr.LOGP_BREAKS[1:]):
+            multfreq += quad(freq_distr.companion_frequency_q01, logp0, logp1, limit=100)[0]
+        return multfreq
+
+    def _set_m1_to_nmean(self):
+        """Compute the f_mult corresponding to each m1, convert to nmean and set up a m1 to nmean interpolator."""
+        print('Setting up M1 to companion Nmean interpolator...')
+        time0 = time()
+        multfreqs = [self._m1_to_multfreq(m1) for m1 in self.m1_array]
+        nmeans = [self._multfreq_to_nmean(multfreq) for multfreq in multfreqs]
+        self._m1_to_nmean = interp1d(self.m1_array, nmeans)
+        time1 = time() - time0
+        print(f'Done setting up interpolator. Elapsed time: {time1:.4f} s.')
+
+    def _set_multfreq_to_nmean(self):
+        """Compute the mult. freq. from nmean and set up a mult. freq. to nmean interpolator."""
+        nmeans = np.linspace(0, self.nmean_max, 100)
+        multfreqs = np.array([self._nmean_to_multfreq(nmean) for nmean in nmeans])
+        self._multfreq_to_nmean = interp1d(multfreqs, nmeans)
+
+    def _set_mmax(self):
+        if self.nmax >= 5:
+            self.mmax = 150.
+            self.m1_array = np.logspace(np.log10(self.mmin), np.log10(self.mmax), 20)
+            self.m1_array[-1] = self.mmax
+            return
+        def f(m1):
+            if m1 < 0.8:
+                return int(1e3)
+            multfreq = self._m1_to_multfreq(m1)
+            try:
+                nmean = self._multfreq_to_nmean(multfreq)
+            except:
+                nmean = int(1e4)
+            finally:
+                return np.abs(nmean - self.nmean_max)
+        diff = 1e4
+        x0 = 100
+        tries = 0
+        max_tries = 10
+        while diff > 1 and tries < max_tries:
+            mmax, diff, *_ = fmin(f, x0=x0, full_output=True, disp=False)
+            x0 /= 2
+            tries += 1
+        self.mmax = min(mmax[0], self.mmax)
+        self.m1_array = np.logspace(np.log10(self.mmin), np.log10(self.mmax), 20)
+        self.m1_array[-1] = self.mmax  # avoid floating point error from an implicit 10**np.log10(mmax)
+
+    def solve(self):
+        """Set up companion number probability distribution."""
+        self._set_multfreq_to_nmean()
+        self._set_mmax()
+        self._set_m1_to_nmean()
+        for i, m1 in enumerate(self.m1_array):
+            try:
+                nmean = self._m1_to_nmean(m1)
+            except:
+                self.m1_array = self.m1_array[:i]
+                self.nmean_array = self.nmean_array[:i]
+                self._binary_fraction = self.binary_fraction[:i]
+                break
+            else:
+                self.nmean_array[i] = nmean
+        self.m1_array = self.m1_array[:i + 1]
+        self.nmean_array = self.nmean_array[:i + 1]
+        self._binary_fraction = self.binary_fraction[:i + 1]
+
+    def ncomp_mean(self, m1):
+        """Mean companion number for a given primary mass.
+
+        Calls the _m1_to_nmean interpolator and returns the mean companion number for the given primary mass.
+
+        Parameters
+        ----------
+        m1 : float
+            Primary mass.
+
+        Returns
+        -------
+        float
+            Mean companion number.
+
+        Warns
+        -----
+        UserWarning
+            If the m1 to nmean interpolator is not set up (solve has not been run yet).
+        """
+
+        if self._m1_to_nmean is None:
+            warnings.warn('m1 to nmean interpolator not set up. Please run solve() first.')
+            return
+        return self._m1_to_nmean(m1)
+
+    def prob(self, l, k):
+        """Companion number probability function for a mean l, evaluated at k."""
+        k_arr = np.array(k).flatten()
+        prob_arr = np.zeros(k_arr.shape)
+        probs = self._truncated_poisson_mdf(l, k_arr, self.nmax)
+        if self.only_binaries:
+            prob_arr[0] = probs[0]
+            prob_arr[1] = probs[1:].sum()
+        else:
+            prob_arr = probs
+        return prob_arr
+
+    def get_multiple_fraction(self, n):
+        """Compute fraction of order n multiples for a set of primary masses.
+
+        For a number of companions n, compute the respective multiplicity fraction for the primary masses in m1_array.
+
+        Parameters
+        ----------
+        n : int
+            Number of companions.
+
+        Returns
+        -------
+        fracs : numpy array
+            (len(m1_array),) shaped array containing the multiplicity fractions evaluated at m1_array.
+        """
+
+        fracs = np.zeros(self.nmean_array.shape)
+        for i, nmean in enumerate(self.nmean_array):
+            frac = self._truncated_poisson_mdf(nmean, n, self.nmax)
+            fracs[i] = frac
+        fracs = np.array(fracs)
+        return fracs
+
+    @property
+    def binary_fraction(self):
+        """Compute binary fraction when all stars are either isolated or binaries, for a set of primary masses.
+
+        Compute the binary fraction by computing the multiplicity fractions for all companion numbers up to nmax, then
+        assuming all multiples are binaries, i.e., summing all fractions.
+
+        Returns
+        -------
+        binary_fraction : numpy array
+            (len(m1_array),) shaped array containing the binary fractions evaluated at m1_array.
+        """
+
+        if self._binary_fraction is None:
+            for i, nmean in enumerate(self.nmean_array):
+                fracs = [self._truncated_poisson_mdf(nmean, n, self.nmax) for n in np.arange(1, self.nmax + 1, 1)]
+                den = fracs[0]
+                for n, frac in list(enumerate(fracs))[1:]:
+                    den += n * frac
+                self._binary_fraction[i] = np.sum(fracs[1:]) / den
+        return self._binary_fraction
+
+
 # TODO : Add Sana+2012 orbital period distribution
 class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
     """Orbital period distribution for a ``0.1<=q<=1`` ZAMS star pair.
@@ -1425,322 +1744,3 @@ class ZAMSSystemGenerator:
             #self.logger.debug('Failed to build a valid system within the'
             #                   ' allowed number of attempts. Discarding...')
             return np.empty(0) #, 0
-
-
-class MultipleFraction:
-    """Compute the multiplicity fraction for a given primary mass in 0.1 <= q <= 1.0 pairs.
-
-    For a given primary of mass m1, compute the probability for having a number n of companions in 0.1 <= q <= 1.0
-    pairs. The probability distribution over n is discrete, and takes the form of a truncated Poisson distribution.
-
-    Attributes
-    ----------
-    q_distr : MassRatioDistribution object
-        MassRatioDistribution object used to set up the companion frequency distributions.
-    m1_array : numpy array
-        Primary masses used to set up the companion frequency distributions.
-    nmean_array : numpy array
-        Mean companion numbers corresponding to the primary masses in m1_array.
-    binary_fraction : numpy array
-        Binary fractions corresponding to the primary masses in m1_array, when all stars are isolated or binaries.
-    _multfreq_to_nmean : scipy.interpolate interp1d
-        Multiplicity frequency to mean companion number interpolator.
-    _m1_to_nmean : scipy.interpolate interp1d
-        Primary mass to mean companion number interpolator.
-    nmax : float
-        Maximum companion number.
-    nmean_max : float
-        Maximum mean companion number, used for interpolation only.
-
-    Methods
-    -------
-    solve()
-        Set up interpolators and nmean_array.
-    ncomp_mean(m1)
-        Compute the mean companion number for primary mass m1.
-    prob(l, k)
-        Compute the companion number probability at value k, for a distribution with mean l.
-    get_multiple_fraction(n)
-        Compute fraction of order n multiples for the masses in m1_array.
-    get_binary_fraction()
-        Compute binary fraction for the masses in m1_array, assuming all stars are either isolated or binary.
-
-    Warns
-    -----
-    UserWarning
-        If ncomp_mean(m1) is run before solve().
-
-    Notes
-    -----
-    Computation of the multiplicity fractions starts from the companion frequency distributed according to class
-    CompanionFrequencyDistribution. As per its definition, the companion frequency does not differentiate betweem
-    multiples of different orders: it simply gives the number of companions per primary per orbital period decade. The
-    first step is to compute the number of companions per primary,
-
-    .. math::
-
-        f_{mult}(M_1) = \int_{0.2}^{0.8} d\log P\, f_{\log P; q>0.3}(M_1,\log P),
-
-    called the multiplicity frequency. The multiplicity fraction F_n is defined as the fraction of all primaries with a
-    number n of companions. These relate to the multiplicity frequency as::
-
-        f_mult(M_1) = F_1(M_1) + 2F_2(M_1) + 3F_3(M_1) + ...,
-
-    for a primary mass M1. The F_n are not, in general, empirically constrained. We follow Moe & Di Stefano (2017) [1]_
-    in extending the observed behavior for solar-type primaries to all primaries. In this case, the number of companions
-    n is observed to be distributed over M1 in the form of a Poissonian distribution, with a M1-dependent mean n_mean
-    fully determined by imposing the empirical f_{mult}(M_1) as a constraint. While in the original work the Poissonian
-    is truncated to a maximum nmax=3, here nmax can be an arbitrary integer.
-
-    By assuming a Poissonian truncated at nmax behavior, the companion number n is distributed as
-
-    .. math::
-
-        P_n(M_1) = ( \\sum_{ n=0 }^{ n_{max} } {n_{mean}}^n / n! )^{-1}  n_{mean}^{n} / n!,
-
-    and F_n(M1) = P_n(M1). Then, from the definition of P_n and the f_mult-F_n relation, f_mult is written as
-
-    .. math::
-
-        f_{mult}(n_{mean}) = n_{mean} ( 1 + a/b )^{-1},
-
-        a = {n_{mean}}^{n_{max}} n_{max}!,
-
-        b = \\sum_{ n=0 }^{ n_{max}-1 } {n_{mean}}^n / n!.
-
-    From this relation an array of (f_mult, n_mean) pairs is calculated, and from it a f_mult to n_mean interpolator is
-    built. f_mult is then determined by integrating the companion frequency for a given m1, as per its definition. This
-    is done for masses m1_array, and the resulting (m1, f_mult) yields a (m1, n_mean) array through the above
-    interpolator. A second, m1 to n_mean, interpolator is then built.
-
-    References
-    ----------
-    .. [1] Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio
-        (Q) Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6
-
-    See Also
-    -------
-    sampling.SimpleBinaryPopulation : implement this class to generate a full binary population sample.
-    """
-
-    def __init__(self, mmin=0.8, mmax=150, nmax=3, nmean_max=11, only_binaries=False):
-        """
-        Parameters
-        ----------
-        mmin : float
-            Minimum primary mass.
-        mmax : float
-            Maximum primary mass.
-        nmax : float
-            Maximum companion number.
-        nmean_max : float
-            Maximum mean companion number, for interpolation.
-        only_binaries : bool
-            Whether all non-isolated stars are to be considered as binaries.
-        """
-
-        self.q_distr = MassRatioDistribution()
-        self.mmin = mmin
-        self.mmax = mmax
-        self.m1_array = np.zeros(20)
-        self.nmean_array = np.zeros(self.m1_array.shape)
-        self._binary_fraction = np.zeros(self.m1_array.shape)
-        self._multfreq_to_nmean = None
-        self._m1_to_nmean = None
-        self.nmax = nmax
-        self.nmean_max = nmean_max
-        self.only_binaries = only_binaries
-
-    @staticmethod
-    def _truncated_poisson_mdf(l, k_arr, k_max):
-        """Evaluate at k a Poissonian with mean l and truncated at k_max."""
-        probs = np.zeros(k_arr.shape)
-        for i, k in enumerate(k_arr):
-            if k > k_max:
-                pass
-            else:
-                distr = poisson(l)
-                norm = np.sum(distr.pmf(np.arange(0, k_max + 1, 1)))
-                probs[i] = distr.pmf(k) / norm
-        return probs
-
-    def _nmean_to_multfreq(self, nmean):
-        """Compute the multiplicity frequency from the mean companion number nmean.
-
-        By assuming that the companion number n is distributed as a Poissonian with mean nmean, truncated at nmax, the
-        multiplicity frequency can be computed analitically.
-
-        Notes
-        -----
-        The multiplicity frequency is
-
-         .. math::
-
-                f_{mult} (n_{mean}) = \\frac{ n_{mean} }{ 1 + a(n_{mean}) / b(n_{mean} }},
-        where
-
-        .. math::
-
-                a(n_{mean}) = \\frac{ {n_{mean}}^{n_{max}} }{ n_{max}! },
-
-                b(n_{mean}) = \sum^{ n_{max}-1 }_{ n=0 } \\frac{ {n_{mean}}^n }{ n! }
-        """
-
-        b = 0
-        for n in range(self.nmax):
-            b += nmean ** n / np.math.factorial(n)
-        a = nmean ** self.nmax / np.math.factorial(self.nmax)
-        return nmean / (1 + a/b)
-
-    def _m1_to_multfreq(self, m1):
-        freq_distr = CompanionFrequencyDistribution(m1, self.q_distr)
-        multfreq = 0
-        for logp0, logp1 in zip(freq_distr.LOGP_BREAKS[:-1], freq_distr.LOGP_BREAKS[1:]):
-            multfreq += quad(freq_distr.companion_frequency_q01, logp0, logp1, limit=100)[0]
-        return multfreq
-
-    def _set_m1_to_nmean(self):
-        """Compute the f_mult corresponding to each m1, convert to nmean and set up a m1 to nmean interpolator."""
-        print('Setting up M1 to companion Nmean interpolator...')
-        time0 = time()
-        multfreqs = [self._m1_to_multfreq(m1) for m1 in self.m1_array]
-        nmeans = [self._multfreq_to_nmean(multfreq) for multfreq in multfreqs]
-        self._m1_to_nmean = interp1d(self.m1_array, nmeans)
-        time1 = time() - time0
-        print(f'Done setting up interpolator. Elapsed time: {time1:.4f} s.')
-
-    def _set_multfreq_to_nmean(self):
-        """Compute the mult. freq. from nmean and set up a mult. freq. to nmean interpolator."""
-        nmeans = np.linspace(0, self.nmean_max, 100)
-        multfreqs = np.array([self._nmean_to_multfreq(nmean) for nmean in nmeans])
-        self._multfreq_to_nmean = interp1d(multfreqs, nmeans)
-
-    def _set_mmax(self):
-        if self.nmax >= 5:
-            self.mmax = 150.
-            self.m1_array = np.logspace(np.log10(self.mmin), np.log10(self.mmax), 20)
-            self.m1_array[-1] = self.mmax
-            return
-        def f(m1):
-            if m1 < 0.8:
-                return int(1e3)
-            multfreq = self._m1_to_multfreq(m1)
-            try:
-                nmean = self._multfreq_to_nmean(multfreq)
-            except:
-                nmean = int(1e4)
-            finally:
-                return np.abs(nmean - self.nmean_max)
-        diff = 1e4
-        x0 = 100
-        tries = 0
-        max_tries = 10
-        while diff > 1 and tries < max_tries:
-            mmax, diff, *_ = fmin(f, x0=x0, full_output=True, disp=False)
-            x0 /= 2
-            tries += 1
-        self.mmax = min(mmax[0], self.mmax)
-        self.m1_array = np.logspace(np.log10(self.mmin), np.log10(self.mmax), 20)
-        self.m1_array[-1] = self.mmax  # avoid floating point error from an implicit 10**np.log10(mmax)
-
-    def solve(self):
-        """Set up companion number probability distribution."""
-        self._set_multfreq_to_nmean()
-        self._set_mmax()
-        self._set_m1_to_nmean()
-        for i, m1 in enumerate(self.m1_array):
-            try:
-                nmean = self._m1_to_nmean(m1)
-            except:
-                self.m1_array = self.m1_array[:i]
-                self.nmean_array = self.nmean_array[:i]
-                self._binary_fraction = self.binary_fraction[:i]
-                break
-            else:
-                self.nmean_array[i] = nmean
-        self.m1_array = self.m1_array[:i + 1]
-        self.nmean_array = self.nmean_array[:i + 1]
-        self._binary_fraction = self.binary_fraction[:i + 1]
-
-    def ncomp_mean(self, m1):
-        """Mean companion number for a given primary mass.
-
-        Calls the _m1_to_nmean interpolator and returns the mean companion number for the given primary mass.
-
-        Parameters
-        ----------
-        m1 : float
-            Primary mass.
-
-        Returns
-        -------
-        float
-            Mean companion number.
-
-        Warns
-        -----
-        UserWarning
-            If the m1 to nmean interpolator is not set up (solve has not been run yet).
-        """
-
-        if self._m1_to_nmean is None:
-            warnings.warn('m1 to nmean interpolator not set up. Please run solve() first.')
-            return
-        return self._m1_to_nmean(m1)
-
-    def prob(self, l, k):
-        """Companion number probability function for a mean l, evaluated at k."""
-        k_arr = np.array(k).flatten()
-        prob_arr = np.zeros(k_arr.shape)
-        probs = self._truncated_poisson_mdf(l, k_arr, self.nmax)
-        if self.only_binaries:
-            prob_arr[0] = probs[0]
-            prob_arr[1] = probs[1:].sum()
-        else:
-            prob_arr = probs
-        return prob_arr
-
-    def get_multiple_fraction(self, n):
-        """Compute fraction of order n multiples for a set of primary masses.
-
-        For a number of companions n, compute the respective multiplicity fraction for the primary masses in m1_array.
-
-        Parameters
-        ----------
-        n : int
-            Number of companions.
-
-        Returns
-        -------
-        fracs : numpy array
-            (len(m1_array),) shaped array containing the multiplicity fractions evaluated at m1_array.
-        """
-
-        fracs = np.zeros(self.nmean_array.shape)
-        for i, nmean in enumerate(self.nmean_array):
-            frac = self._truncated_poisson_mdf(nmean, n, self.nmax)
-            fracs[i] = frac
-        fracs = np.array(fracs)
-        return fracs
-
-    @property
-    def binary_fraction(self):
-        """Compute binary fraction when all stars are either isolated or binaries, for a set of primary masses.
-
-        Compute the binary fraction by computing the multiplicity fractions for all companion numbers up to nmax, then
-        assuming all multiples are binaries, i.e., summing all fractions.
-
-        Returns
-        -------
-        binary_fraction : numpy array
-            (len(m1_array),) shaped array containing the binary fractions evaluated at m1_array.
-        """
-
-        if self._binary_fraction is None:
-            for i, nmean in enumerate(self.nmean_array):
-                fracs = [self._truncated_poisson_mdf(nmean, n, self.nmax) for n in np.arange(1, self.nmax + 1, 1)]
-                den = fracs[0]
-                for n, frac in list(enumerate(fracs))[1:]:
-                    den += n * frac
-                self._binary_fraction[i] = np.sum(fracs[1:]) / den
-        return self._binary_fraction
