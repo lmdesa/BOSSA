@@ -336,7 +336,7 @@ class MassRatioDistribution:
     `0.1` as in the original work.
     """
 
-    def __init__(self, canonical=False):
+    def __init__(self, canonical: bool=False) -> None:
         self.solar_llim = 0.8
         self.solar_ulim = 1.2
         self.a_point = 3.5
@@ -357,7 +357,7 @@ class MassRatioDistribution:
         self._canonical_prob_distribution = uniform()
 
     @staticmethod
-    def _get_logp_twin(m1):
+    def _get_logp_twin(m1: float) -> float:
         """Return maximum ``logp`` of the twin excess for ``m1``."""
         if m1 <= 6.5:
             return 8.0 - m1
@@ -365,11 +365,11 @@ class MassRatioDistribution:
             return 1.5
 
     @staticmethod
-    def _get_f_twin_logp_small(m1):
+    def _get_f_twin_logp_small(m1: float) -> float:
         """Return twin fraction at ``logp < 1``, for ``m1``."""
         return 0.3 - 0.15 * np.log10(m1)
 
-    def _get_f_twin_logp_large(self, m1, logp):
+    def _get_f_twin_logp_large(self, m1: float, logp: float) -> float:
         """Return twin fraction at ``logp >= 1``, for ``m1``."""
         logp_twin = self._get_logp_twin(m1)
         f_twin_logp_small = self._get_f_twin_logp_small(m1)
@@ -378,7 +378,7 @@ class MassRatioDistribution:
         return f_twin_logp_large
 
     # TODO: make f_twin 0 if m1 or logp is out of bounds
-    def _get_f_twin(self, m1, logp):
+    def _get_f_twin(self, m1: float, logp: float) -> float:
         """Return twin fraction at ``m1``, ``logp``."""
         logp_twin = self._get_logp_twin(m1)
         if logp < 1.0:
@@ -389,7 +389,7 @@ class MassRatioDistribution:
             ftwin = 0.0
         return ftwin
 
-    def _get_gamma_largeq_solar(self, logp):
+    def _get_gamma_largeq_solar(self, logp: float) -> float:
         """Return solar-type :attr:`gamma_largeq` at ``logp``.
 
         Returns the power-law index at ``0.3 <= q <= 1.0`` for
@@ -406,7 +406,7 @@ class MassRatioDistribution:
             g = 0.0
         return g
 
-    def _get_gamma_largeq_a(self, logp):
+    def _get_gamma_largeq_a(self, logp: float) -> float:
         """Return A/B :attr:`gamma_largeq` at ``logp``.
 
         Returns the power-law index at ``0.3 <= q <= 1.0`` for midpoint
@@ -427,7 +427,7 @@ class MassRatioDistribution:
             g = 0.0
         return g
 
-    def _get_gamma_largeq_ob(self, logp):
+    def _get_gamma_largeq_ob(self, logp: float) -> float:
         """Return B/O :attr:`gamma_largeq` at ``logp``.
 
         Returns the power-law index at ``0.3 <= q <= 1.0`` for mid B,
@@ -448,7 +448,7 @@ class MassRatioDistribution:
             g = 0.0
         return g
 
-    def _get_gamma_smallq_solar(self, logp):
+    def _get_gamma_smallq_solar(self, logp: float) -> float:
         """Return solar-type :attr:`gamma_smallq` at ``logp``.
 
         Returns the power-law index at ``0.1 <= q < 0.3`` for solar-type
@@ -463,7 +463,7 @@ class MassRatioDistribution:
             g = 0.0
         return g
 
-    def _get_gamma_smallq_a(self, logp):
+    def _get_gamma_smallq_a(self, logp: float) -> float:
         """Return A/B :attr:`gamma_smallq` at ``logp``.
 
         Returns the power-law index at ``0.1 <= q < 0.3`` for midpoint
@@ -482,7 +482,7 @@ class MassRatioDistribution:
             g = 0.0
         return g
 
-    def _get_gamma_smallq_ob(self, logp):
+    def _get_gamma_smallq_ob(self, logp: float) -> float:
         """Return B/O :attr:`gamma_smallq` at ``logp``.
 
         Returns the power-law index at ``0.1 <= q < 0.3`` for mid B-,
@@ -503,7 +503,7 @@ class MassRatioDistribution:
             g = 0
         return g
 
-    def _get_gamma_largeq_solar_a(self, m1, logp):
+    def _get_gamma_largeq_solar_a(self, m1: float, logp: float) -> float:
         """Return solar-A/B :attr:`gamma_largeq` at ``m1``, ``logp``.
 
         Compute the power-law index at 0.3 <= q <= 1.0 for primaries of
@@ -519,7 +519,7 @@ class MassRatioDistribution:
         midmass_g = (m1 - self.solar_ulim) * slope + lowmass_g
         return midmass_g
 
-    def _get_gamma_largeq_a_ob(self, m1, logp):
+    def _get_gamma_largeq_a_ob(self, m1: float, logp: float) -> float:
         """Return A/B-B/O :attr:`gamma_largeq` at ``m1``, ``logp``.
 
         Compute the power-law index at 0.3 <= q <= 1.0 for primaries of
@@ -535,7 +535,7 @@ class MassRatioDistribution:
         midmass_g = (m1 - self.a_point) * slope + lowmass_g
         return midmass_g
 
-    def _get_gamma_smallq_solar_a(self, m1, logp):
+    def _get_gamma_smallq_solar_a(self, m1: float, logp: float) -> float:
         """Return solar-A/B :attr:`gamma_smallq` at ``m1``, ``logp``.
 
         Compute the power-law index at 0.1 <= q < 0.3 for primaries of
@@ -551,7 +551,7 @@ class MassRatioDistribution:
         midmass_g = (m1 - self.solar_ulim) * slope + lowmass_g
         return midmass_g
 
-    def _get_gamma_smallq_a_ob(self, m1, logp):
+    def _get_gamma_smallq_a_ob(self, m1: float, logp: float) -> float:
         """Return A/B-B/O :attr:`gamma_smallq` at ``m1``, ``logp``.
 
         Compute the power-law index at 0.1 <= q < 0.3 for primaries of
@@ -567,7 +567,7 @@ class MassRatioDistribution:
         midmass_g = (m1 - self.a_point) * slope + lowmass_g
         return midmass_g
 
-    def set_parameters(self, m1, logp):
+    def set_parameters(self, m1: float, logp: float) -> None:
         """Set distribution power-law parameters at ``m1``, ``logp``.
 
         Sets :attr:`gamma_largeq`, :attr:`gamma_smallq`, :attr:`k` and
@@ -603,12 +603,12 @@ class MassRatioDistribution:
         self.f_twin = self._get_f_twin(m1, logp)
         self._set_k()
 
-    def _set_k(self):
+    def _set_k(self) -> None:
         """Set :attr:`k` so that the PDF integrates to 1."""
         norm = quad(self.prob, self.q_min, self.q_max)[0]
         self.k /= norm
 
-    def prob(self, q):
+    def prob(self, q: float) -> float:
         """Compute the mass ratio PDF value at the given e.
 
         Parameters
