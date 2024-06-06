@@ -650,7 +650,7 @@ class MassRatioDistribution:
 
 
 class CompanionFrequencyDistributionHighQ:
-    """Orbital period distribution for a ``0.3<=q<=1.0`` ZAMS star pair.
+    """Orbital period distribution for a ``0.3<=q<=1`` ZAMS star pair.
 
     For a primary of mass ``m1``, compute the log orbital period
     (``logp``) probability density function (PDF) for a companion with
@@ -726,14 +726,14 @@ class CompanionFrequencyDistributionHighQ:
                    LOGP_MAX]
     """list: Distribution `logp` breaks."""
 
-    def __init__(self, m1):
+    def __init__(self, m1: float) -> None:
         self.m1 = m1
         self._f_logp1_q03 = None
         self._f_logp27_q03 = None
         self._f_logp55_q03 = None
 
     @property
-    def f_logp1_q03(self):
+    def f_logp1_q03(self) -> float:
         """First companion frequency constant.
 
         Frequency of companions with ``0.2 <= logp < 1`` and
@@ -747,7 +747,7 @@ class CompanionFrequencyDistributionHighQ:
         return self._f_logp1_q03
 
     @property
-    def f_logp27_q03(self):
+    def f_logp27_q03(self) -> float:
         """Second companion frequency constant.
 
         Frequency of companions with ``logp = 2.7`` and
@@ -761,7 +761,7 @@ class CompanionFrequencyDistributionHighQ:
         return self._f_logp27_q03
 
     @property
-    def f_logp55_q03(self):
+    def f_logp55_q03(self) -> float:
         """Third companion frequency constant.
 
         Frequency of companions with ``logp = 5.5`` and
@@ -774,7 +774,7 @@ class CompanionFrequencyDistributionHighQ:
                                   + 0.04 * np.log10(self.m1) ** 2)
         return self._f_logp55_q03
 
-    def _f1(self):
+    def _f1(self) -> float:
         """Return companion frequency in the first interval.
 
         In the ``0.2 <= logp < 1`` interval, the companion frequency is
@@ -783,7 +783,7 @@ class CompanionFrequencyDistributionHighQ:
 
         return self.f_logp1_q03
 
-    def _f2(self, logp):
+    def _f2(self, logp: float) -> float:
         """Return companion frequency in the second interval.
 
         In the ``1<=logp<2.7-DELTA_LOGP`` interval, the companion
@@ -794,7 +794,7 @@ class CompanionFrequencyDistributionHighQ:
         b = self.f_logp27_q03 - self.f_logp1_q03 - self.A * self.DELTA_LOGP
         return self.f_logp1_q03 + a * b
 
-    def _f3(self, logp):
+    def _f3(self, logp: float) -> float:
         """Return companion frequency in the third interval.
 
         In the ``2.7-``:const:`DELTA_LOGP```<=logp<2.7+``
@@ -804,7 +804,7 @@ class CompanionFrequencyDistributionHighQ:
 
         return self.f_logp27_q03 + self.A * (logp - 2.7)
 
-    def _f4(self, logp):
+    def _f4(self, logp: float) -> float:
         """Return companion frequency in the fourth interval.
 
         In the ``2.7 +``:const:`DELTA_LOGP```<= logp < 5.5`` interval,
@@ -814,7 +814,7 @@ class CompanionFrequencyDistributionHighQ:
         b = self.f_logp55_q03 - self.f_logp27_q03 - self.A * self.DELTA_LOGP
         return self.f_logp27_q03 + self.A * self.DELTA_LOGP + a * b
 
-    def _f5(self, logp):
+    def _f5(self, logp: float) -> float:
         """Companion frequency in the fifth interval.
 
         In the ``5.5 <= logp <= 8.0`` interval, the companion frequency
@@ -824,7 +824,7 @@ class CompanionFrequencyDistributionHighQ:
         exp = np.exp(-0.3 * (logp - 5.5))
         return self.f_logp55_q03 * exp
 
-    def companion_frequency_q03(self, logp):
+    def companion_frequency_q03(self, logp: float) -> float:
         """Returns companion frequency at ``0.3<=q<=1.0``, ``logp``."""
         if logp < self.LOGP_BREAKS[0]:
             f = 0
