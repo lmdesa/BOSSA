@@ -843,6 +843,133 @@ class CompanionFrequencyDistributionHighQ:
         return f
 
 
+# TODO : Add Sana+2012 orbital period distribution
+class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
+    """Orbital period distribution for a ``0.1<=q<=1`` ZAMS star pair.
+
+    For a primary of mass ``m1``, compute the log orbital period
+    (``logp``) probability density function (PDF) for a companion with
+    some mass ``m_cp`` such that ``0.3 <= q <= 1.0`` (``q=m_cp/m1``).
+
+    Allows for either a strongly ``m1``- and ``logp``-dependent piecewise
+    function of power-law, linear and exponential components; or a
+    uniform on ``logp`` distribution.
+
+    All orbital periods are given in days and masses in solar masses.
+
+    Parameters
+    ----------
+    m1 : float
+        Primary mass.
+    q_distr : :class:`MassRatioDistribution`
+        Mass ratio distribution for the same :attr:`m1`.
+    uncorrelated : bool
+        Whether to assume a correlated distribution or not.
+    extrapolate_uncorrelated_distribution : bool
+        If an uncorrelated distribution is assumed, whether to
+        extrapolate it to the range of the correlated distribution.
+
+    Attributes
+    ----------
+    q_distr : :class:`MassRatioDistribution`
+        Mass ratio distribution for the same :attr:`m1`.
+    n_q03 : float
+        Fraction of `0.3 <= q <= 1.0` star pairs with :attr:`m1`.
+    n_q01 : float
+        Fraction of `0.1 <= q < 0.3` star pairs with :attr:`m1`.
+
+    Methods
+    -------
+    companion_frequency_q01(logp)
+        Return the companion frequency at ``logp`` for :attr:`m1`.
+
+    Notes
+    -----
+    The distribution is by Moe & Di Stefano (2017) [1]_ and covers the
+    0.2<=logp<=8` range. Most of the observational techniques considered
+    therein are not able to probe pairs below `q=0.3`, and thus the
+    period distribution is only empirically fitted to the `q>0.3`
+    region, yielding the distribution in
+    :class:`CompanionFrequencyDistributionHighQ`.
+
+    However, from the particular observations that do probe
+    `0.1 <= q < 0.3`, they are able to empirically fit the mass ratio
+    distribution in that region, in the form of
+    :attr:`MassRatioDistribution.gamma_smallq`. Thus, from the
+    integration of the mass ratio distribution it is possible to compute
+    the ratio :attr:`n_q01`/:attr:`n_q03` between pairs above and below
+    `q=0.3`.
+
+    This class calculates that ratio, and uses it as a correction
+    factor to obtain, from the companion frequency in
+    ``0.3 <= q <= 1.0`` (:math:`f_{\\log P; q>0.3}`), the companion
+    frequency in ``0.1 <= q <= 1.0`` (:math:`f_{\\log P; q>0.1}`).
+
+    The uncorrelated distribution is a uniform on ``logp`` probability
+    distribution between ``0.4`` and ``3``, or Öpik's law [4]_. The
+    :attr:`extrapolate_uncorrelated_distribution` parameter allows
+    extrapolating it to the same range as that of the correlated
+    distribution.
+
+    References
+    ----------
+    .. [3] Öpik, E. (1924). Statistical Studies of Double Stars: On the
+       Distribution of Relative Luminosities and Distances of Double
+       Stars in the Harvard Revised Photometry North of Declination
+       -31°. Publications of the Tartu Astrofizica Observatory, 25, 1.
+    """
+
+    def __init__(self, m1: float, q_distr: float, uncorrelated: bool = False,
+                 extrapolate_uncorrelated_distribution: bool = False) -> None:
+        super().__init__(m1)
+        self.q_distr = q_distr
+        self.n_q03 = None
+        self.n_q01 = None
+        self.uncorrelated = uncorrelated
+        self.extrapolate_uncorrelated_distribution = extrapolate_uncorrelated_distribution
+        self._uncorrelated_prob_distribution = self._get_uncorrelated_distribution()
+
+    @staticmethod
+    def _h1(a: float, x1: float, x2: float) -> float:
+        """Return integral of x**a between x1 and x2."""
+        if a == -1:
+            return np.log(x2 / x1)
+        else:
+            return (x2 ** (1 + a) - x1 ** (1 + a)) / (1 + a)
+
+    def _get_uncorrelated_distribution(self) -> scipy.stats.uniform:
+        """Return the uncorrelated distribution."""
+        if self.extrapolate_uncorrelated_distribution:
+            return uniform(loc=0.2, scale=8-0.2)
+        else:
+            return uniform(loc=0.4, scale=3-0.4)
+
+    def _set_n_q03(self) -> None:
+        """Compute the relative number of ``0.3<=q<=1.0`` star pairs."""
+        a = self._h1(self.q_distr.gamma_largeq, 0.95, 1.00)
+        b = self._h1(self.q_distr.gamma_largeq, 0.3, 0.95)
+        self.n_q03 = a * (1 + self.q_distr.f_twin) + b
+
+    def _set_n_q01(self) -> None:
+        """Compute the relative number of ``0.1<=q<0.3`` star pairs."""
+        a = self._h1(self.q_distr.gamma_smallq, 0.1, 0.3)
+        continuity_factor = 0.3 ** (self.q_distr.gamma_largeq
+                                    - self.q_distr.gamma_smallq)
+        self.n_q01 = self.n_q03 + continuity_factor * a
+
+    def companion_frequency_q01(self, logp: float) -> float:
+        """Returns companion frequency at ``0.1<=q<=1.0``, ``logp``."""
+        if self.uncorrelated:
+            return self._uncorrelated_prob_distribution.pdf(logp)
+        else:
+            self.q_distr.set_parameters(self.m1, logp)
+            self._set_n_q03()
+            self._set_n_q01()
+            f03 = self.companion_frequency_q03(logp)
+            f01 = f03 * self.n_q01 / self.n_q03
+            return f01
+
+
 class MultipleFraction:
     """Multiplicity fractions as a function of primary mass.
 
@@ -1167,159 +1294,6 @@ class MultipleFraction:
             fracs[i] = frac
         fracs = np.array(fracs)
         return fracs
-
-    @property
-    def binary_fraction(self):
-        """Compute binary fraction when all stars are either isolated or binaries, for a set of primary masses.
-
-        Compute the binary fraction by computing the multiplicity fractions for all companion numbers up to nmax, then
-        assuming all multiples are binaries, i.e., summing all fractions.
-
-        Returns
-        -------
-        binary_fraction : numpy array
-            (len(m1_array),) shaped array containing the binary fractions evaluated at m1_array.
-        """
-
-        if self.binary_fraction is None:
-            for i, nmean in enumerate(self.nmean_array):
-                fracs = [self._truncated_poisson_mdf(nmean, n, self.nmax) for n in np.arange(1, self.nmax + 1, 1)]
-                den = fracs[0]
-                for n, frac in list(enumerate(fracs))[1:]:
-                    den += n * frac
-                self.binary_fraction[i] = np.sum(fracs[1:]) / den
-        return self.binary_fraction
-
-    @binary_fraction.setter
-    def binary_fraction(self, value):
-        self._binary_fraction = value
-
-
-# TODO : Add Sana+2012 orbital period distribution
-class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
-    """Orbital period distribution for a ``0.1<=q<=1`` ZAMS star pair.
-
-    For a primary of mass ``m1``, compute the log orbital period
-    (``logp``) probability density function (PDF) for a companion with
-    some mass ``m_cp`` such that ``0.3 <= q <= 1.0`` (``q=m_cp/m1``).
-
-    Allows for either a strongly ``m1``- and ``logp``-dependent piecewise
-    function of power-law, linear and exponential components; or a
-    uniform on ``logp`` distribution.
-
-    All orbital periods are given in days and masses in solar masses.
-
-    Parameters
-    ----------
-    m1 : float
-        Primary mass.
-    q_distr : :class:`MassRatioDistribution`
-        Mass ratio distribution for the same :attr:`m1`.
-    uncorrelated : bool
-        Whether to assume a correlated distribution or not.
-    extrapolate_uncorrelated_distribution : bool
-        If an uncorrelated distribution is assumed, whether to
-        extrapolate it to the range of the correlated distribution.
-
-    Attributes
-    ----------
-    q_distr : :class:`MassRatioDistribution`
-        Mass ratio distribution for the same :attr:`m1`.
-    n_q03 : float
-        Fraction of `0.3 <= q <= 1.0` star pairs with :attr:`m1`.
-    n_q01 : float
-        Fraction of `0.1 <= q < 0.3` star pairs with :attr:`m1`.
-
-    Methods
-    -------
-    companion_frequency_q01(logp)
-        Return the companion frequency at ``logp`` for :attr:`m1`.
-
-    Notes
-    -----
-    The distribution is by Moe & Di Stefano (2017) [1]_ and covers the
-    0.2<=logp<=8` range. Most of the observational techniques considered
-    therein are not able to probe pairs below `q=0.3`, and thus the
-    period distribution is only empirically fitted to the `q>0.3`
-    region, yielding the distribution in
-    :class:`CompanionFrequencyDistributionHighQ`.
-
-    However, from the particular observations that do probe
-    `0.1 <= q < 0.3`, they are able to empirically fit the mass ratio
-    distribution in that region, in the form of
-    :attr:`MassRatioDistribution.gamma_smallq`. Thus, from the
-    integration of the mass ratio distribution it is possible to compute
-    the ratio :attr:`n_q01`/:attr:`n_q03` between pairs above and below
-    `q=0.3`.
-
-    This class calculates that ratio, and uses it as a correction
-    factor to obtain, from the companion frequency in
-    ``0.3 <= q <= 1.0`` (:math:`f_{\\log P; q>0.3}`), the companion
-    frequency in ``0.1 <= q <= 1.0`` (:math:`f_{\\log P; q>0.1}`).
-
-    The uncorrelated distribution is a uniform on ``logp`` probability
-    distribution between ``0.4`` and ``3``, or Öpik's law [4]_. The
-    :attr:`extrapolate_uncorrelated_distribution` parameter allows
-    extrapolating it to the same range as that of the correlated
-    distribution.
-
-    References
-    ----------
-    .. [3] Öpik, E. (1924). Statistical Studies of Double Stars: On the
-       Distribution of Relative Luminosities and Distances of Double
-       Stars in the Harvard Revised Photometry North of Declination
-       -31°. Publications of the Tartu Astrofizica Observatory, 25, 1.
-    """
-
-    def __init__(self, m1: float, q_distr: float, uncorrelated: bool = False,
-                 extrapolate_uncorrelated_distribution: bool = False) -> None:
-        super().__init__(m1)
-        self.q_distr = q_distr
-        self.n_q03 = None
-        self.n_q01 = None
-        self.uncorrelated = uncorrelated
-        self.extrapolate_uncorrelated_distribution = extrapolate_uncorrelated_distribution
-        self._uncorrelated_prob_distribution = self._get_uncorrelated_distribution()
-
-    @staticmethod
-    def _h1(a: float, x1: float, x2: float) -> float:
-        """Return integral of x**a between x1 and x2."""
-        if a == -1:
-            return np.log(x2 / x1)
-        else:
-            return (x2 ** (1 + a) - x1 ** (1 + a)) / (1 + a)
-
-    def _get_uncorrelated_distribution(self) -> scipy.stats.uniform:
-        """Return the uncorrelated distribution."""
-        if self.extrapolate_uncorrelated_distribution:
-            return uniform(loc=0.2, scale=8-0.2)
-        else:
-            return uniform(loc=0.4, scale=3-0.4)
-
-    def _set_n_q03(self) -> None:
-        """Compute the relative number of ``0.3<=q<=1.0`` star pairs."""
-        a = self._h1(self.q_distr.gamma_largeq, 0.95, 1.00)
-        b = self._h1(self.q_distr.gamma_largeq, 0.3, 0.95)
-        self.n_q03 = a * (1 + self.q_distr.f_twin) + b
-
-    def _set_n_q01(self) -> None:
-        """Compute the relative number of ``0.1<=q<0.3`` star pairs."""
-        a = self._h1(self.q_distr.gamma_smallq, 0.1, 0.3)
-        continuity_factor = 0.3 ** (self.q_distr.gamma_largeq
-                                    - self.q_distr.gamma_smallq)
-        self.n_q01 = self.n_q03 + continuity_factor * a
-
-    def companion_frequency_q01(self, logp: float) -> float:
-        """Returns companion frequency at ``0.1<=q<=1.0``, ``logp``."""
-        if self.uncorrelated:
-            return self._uncorrelated_prob_distribution.pdf(logp)
-        else:
-            self.q_distr.set_parameters(self.m1, logp)
-            self._set_n_q03()
-            self._set_n_q01()
-            f03 = self.companion_frequency_q03(logp)
-            f01 = f03 * self.n_q01 / self.n_q03
-            return f01
 
 
 class ZAMSSystemGenerator:
