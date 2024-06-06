@@ -11,6 +11,7 @@ from pathlib import Path
 
 import numpy as np
 import tables as tb
+import scipy
 from scipy.integrate import quad
 from scipy.interpolate import interp1d
 from scipy.stats import poisson, uniform
@@ -862,9 +863,9 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
         Primary mass.
     q_distr : :class:`MassRatioDistribution`
         Mass ratio distribution for the same :attr:`m1`.
-    canonical : bool
+    uncorrelated : bool
         Whether to assume a correlated distribution or not.
-    extrapolate_canonical_distribution : bool
+    extrapolate_uncorrelated_distribution : bool
         If an uncorrelated distribution is assumed, whether to
         extrapolate it to the range of the correlated distribution.
 
@@ -906,7 +907,7 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
 
     The uncorrelated distribution is a uniform on ``logp`` probability
     distribution between ``0.4`` and ``3``, or Öpik's law [4]_. The
-    :attr:`extrapolate_canonical_distribution` parameter allows
+    :attr:`extrapolate_uncorrelated_distribution` parameter allows
     extrapolating it to the same range as that of the correlated
     distribution.
 
@@ -918,51 +919,48 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
        -31°. Publications of the Tartu Astrofizica Observatory, 25, 1.
     """
 
-    # TODO: rename canonical to correlated
-    # TODO: make m1 first parameter and q_distr second
-    def __init__(self, m1, q_distr, canonical=False, extrapolate_canonical_distribution=False):
+    def __init__(self, m1: float, q_distr: float, uncorrelated: bool = False,
+                 extrapolate_uncorrelated_distribution: bool = False) -> None:
         super().__init__(m1)
         self.q_distr = q_distr
         self.n_q03 = None
         self.n_q01 = None
-        self.canonical = canonical
-        self.extrapolate_canonical_distribution = (
-            extrapolate_canonical_distribution)
-        self._canonical_prob_distribution = self._get_canonical_distribution()
+        self.uncorrelated = uncorrelated
+        self.extrapolate_uncorrelated_distribution = extrapolate_uncorrelated_distribution
+        self._uncorrelated_prob_distribution = self._get_uncorrelated_distribution()
 
     @staticmethod
-    def _h1(a, x1, x2):
+    def _h1(a: float, x1: float, x2: float) -> float:
         """Return integral of x**a between x1 and x2."""
         if a == -1:
             return np.log(x2 / x1)
         else:
             return (x2 ** (1 + a) - x1 ** (1 + a)) / (1 + a)
 
-    # TODO: import scipy for proper type hinting
-    def _get_canonical_distribution(self):
+    def _get_uncorrelated_distribution(self) -> scipy.stats.uniform:
         """Return the uncorrelated distribution."""
-        if self.extrapolate_canonical_distribution:
+        if self.extrapolate_uncorrelated_distribution:
             return uniform(loc=0.2, scale=8-0.2)
         else:
             return uniform(loc=0.4, scale=3-0.4)
 
-    def _set_n_q03(self):
+    def _set_n_q03(self) -> None:
         """Compute the relative number of ``0.3<=q<=1.0`` star pairs."""
         a = self._h1(self.q_distr.gamma_largeq, 0.95, 1.00)
         b = self._h1(self.q_distr.gamma_largeq, 0.3, 0.95)
         self.n_q03 = a * (1 + self.q_distr.f_twin) + b
 
-    def _set_n_q01(self):
+    def _set_n_q01(self) -> None:
         """Compute the relative number of ``0.1<=q<0.3`` star pairs."""
         a = self._h1(self.q_distr.gamma_smallq, 0.1, 0.3)
         continuity_factor = 0.3 ** (self.q_distr.gamma_largeq
                                     - self.q_distr.gamma_smallq)
         self.n_q01 = self.n_q03 + continuity_factor * a
 
-    def companion_frequency_q01(self, logp):
+    def companion_frequency_q01(self, logp: float) -> float:
         """Returns companion frequency at ``0.1<=q<=1.0``, ``logp``."""
-        if self.canonical:
-            return self._canonical_prob_distribution.pdf(logp)
+        if self.uncorrelated:
+            return self._uncorrelated_prob_distribution.pdf(logp)
         else:
             self.q_distr.set_parameters(self.m1, logp)
             self._set_n_q03()
