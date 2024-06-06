@@ -657,7 +657,7 @@ class CompanionFrequencyDistributionHighQ:
     some mass ``m_cp`` such that ``0.3 <= q <= 1.0`` (``q=m_cp/m1``).
 
     The PDF is a strongly ``m1``- and ``logp``-dependent piecewise
-    function of power-law, log-linear and exponential components.
+    function of power-law, linear and exponential components.
 
     All orbital periods are given in days and masses in solar masses.
 
@@ -674,8 +674,7 @@ class CompanionFrequencyDistributionHighQ:
     Methods
     -------
     companion_frequency_q03(logp)
-        Return the companion frequency at ``logp```for primary mass
-        :attr:`m1`.
+        Return the companion frequency at ``logp``for :attr:`m1`.
 
     See Also
     --------
@@ -707,9 +706,9 @@ class CompanionFrequencyDistributionHighQ:
     """
 
     A = 0.018
-    """float: Slope within:const:`DELTA_LOGP`/2 of ``logp=2.7``."""
+    """float: Slope within :const:`DELTA_LOGP`/2 of ``logp=2.7``."""
     DELTA_LOGP = 0.7
-    """float: Half-width of the range where the slope is :const:`A``."""
+    """float: Half-width of the range where the slope is :const:`A`."""
     LOGP_MIN = 0.2
     """float: Minimum allowed ``logp``."""
     LOGP_MAX = 8.0
@@ -843,72 +842,86 @@ class CompanionFrequencyDistributionHighQ:
         return f
 
 
+# TODO : Add Sana+2012 orbital period distribution
 class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
-    """"Orbital period probability distribution for a ZAMS star pair
-    with 0.1 <= q <= 1.0.
+    """Orbital period distribution for a ``0.1<=q<=1`` ZAMS star pair.
 
-    For a given primary of mass m1, compute the orbital period
-    probability density function (PDF) for a single companion with some
-    mass m_cp such that 0.1 <= q <= 1.0 (q=m_cp/m1_table). The PDF is a
-    strongly m1_table- and log10(period)-dependent piecewise function.
+    For a primary of mass ``m1``, compute the log orbital period
+    (``logp``) probability density function (PDF) for a companion with
+    some mass ``m_cp`` such that ``0.3 <= q <= 1.0`` (``q=m_cp/m1``).
 
-    Attributes
-    ----------
-    q_distr : MassRatioDistribution object
-        Mass ratio distribution for a ZAMS star pair with the same
-        primary mass m1.
-    n_q03 : float
-        Fraction of 0.3 <= q <= 1.0 star pairs with primary mass m1.
-    n_q01 : float
-        Fraction of 0.1 <= q < 0.3 star pairs with primary mass m1.
-
-    Notes
-    -----
-    The distribution is by Moe & Di Stefano (2017) [1]_. Most of the
-    observational techniques considered in that work are not able to
-    probe pairs below q=0.3, and thus the period distribution is only
-    empirically fitted to the q>0.3 region, yielding the distribution
-    from class CompanionFrequencyDistributionHighQ.
-
-    However, from the particular observations that do probe
-    0.1 <= q < 0.3 region, they are able to empirically fit the mass
-    ratio distribution in that region, in the form of the gamma_smallq
-    parameter in the MassRatioDistribution class. Thus, from the
-    integration of the mass ratio distribution it is possible to compute
-    the ratio n_q01/n_q03 between pairs above and below q=0.3.
-
-    This class calculates that ratio, and uses it as a correcting
-    factor, as done by the original authors, to turn the period
-    distribution for 0.3 <= q <= 1.0 (f_{log P; q>0.3})into a period
-    distribution for 0.1 <= q <= 1.0 (f_{log P; q>0.1}).
+    Allows for either a strongly ``m1``- and ``logp``-dependent piecewise
+    function of power-law, linear and exponential components; or a
+    uniform on ``logp`` distribution.
 
     All orbital periods are given in days and masses in solar masses.
 
+    Parameters
+    ----------
+    q_distr : :class:`MassRatioDistribution`
+        Mass ratio distribution for the same :attr:`m1`.
+    m1 : float
+        Primary mass.
+    canonical : bool
+        Whether to assume a correlated distribution or not.
+    extrapolate_canonical_distribution : bool
+        If an uncorrelated distribution is assumed, whether to
+        extrapolate it to the range of the correlated distribution.
+
+    Attributes
+    ----------
+    q_distr : :class:`MassRatioDistribution`
+        Mass ratio distribution for the same :attr:`m1`.
+    n_q03 : float
+        Fraction of `0.3 <= q <= 1.0` star pairs with :attr:`m1`.
+    n_q01 : float
+        Fraction of `0.1 <= q < 0.3` star pairs with :attr:`m1`.
+
+    Methods
+    -------
+    companion_frequency_q01(logp)
+        Return the companion frequency at ``logp`` for :attr:`m1`.
+
+    Notes
+    -----
+    The distribution is by Moe & Di Stefano (2017) [1]_ and covers the
+    0.2<=logp<=8` range. Most of the observational techniques considered
+    therein are not able to probe pairs below `q=0.3`, and thus the
+    period distribution is only empirically fitted to the `q>0.3`
+    region, yielding the distribution in
+    :class:`CompanionFrequencyDistributionHighQ`.
+
+    However, from the particular observations that do probe
+    `0.1 <= q < 0.3`, they are able to empirically fit the mass ratio
+    distribution in that region, in the form of
+    :attr:`MassRatioDistribution.gamma_smallq`. Thus, from the
+    integration of the mass ratio distribution it is possible to compute
+    the ratio :attr:`n_q01`/:attr:`n_q03` between pairs above and below
+    `q=0.3`.
+
+    This class calculates that ratio, and uses it as a correction
+    factor to obtain, from the companion frequency in
+    ``0.3 <= q <= 1.0`` (:math:`f_{\\log P; q>0.3}`), the companion
+    frequency in ``0.1 <= q <= 1.0`` (:math:`f_{\\log P; q>0.1}`).
+
+    The uncorrelated distribution is a uniform on ``logp`` probability
+    distribution between ``0.4`` and ``3``, or Öpik's law [4]_. The
+    :attr:`extrapolate_canonical_distribution` parameter allows
+    extrapolating it to the same range as that of the correlated
+    distribution.
+
     References
     ----------
-    .. [1] Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The
-        Interrelation between Period (P) and Mass-ratio (Q)
-        Distributions of Binary Stars. ApJS, 230(2), 55.
-        doi:10.3847/1538-4365/aa6fb6
-
-    See Also
-    --------
-    CompanionFrequencyDistributionHighQ : distribution from which this
-    one is computed
+    .. [3] Öpik, E. (1924). Statistical Studies of Double Stars: On the
+       Distribution of Relative Luminosities and Distances of Double
+       Stars in the Harvard Revised Photometry North of Declination
+       -31°. Publications of the Tartu Astrofizica Observatory, 25, 1.
     """
 
+    # TODO: rename canonical to correlated
+    # TODO: make m1 first parameter and q_distr second
     def __init__(self, q_distr, m1, canonical=False,
                  extrapolate_canonical_distribution=False):
-        """
-        Parameters
-        ----------
-        q_distr : MassRatioDistribution object
-            Mass ratio distribution for a ZAMS star pair with the same
-            primary mass m1_table.
-        m1 : float
-            Primary mass.
-        """
-
         super().__init__(m1)
         self.q_distr = q_distr
         self.n_q03 = None
@@ -920,36 +933,35 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
 
     @staticmethod
     def _h1(a, x1, x2):
-        """Integral of x**a between x1 and x2."""
+        """Return integral of x**a between x1 and x2."""
         if a == -1:
             return np.log(x2 / x1)
         else:
             return (x2 ** (1 + a) - x1 ** (1 + a)) / (1 + a)
 
+    # TODO: import scipy for proper type hinting
     def _get_canonical_distribution(self):
+        """Return the uncorrelated distribution."""
         if self.extrapolate_canonical_distribution:
             return uniform(loc=0.2, scale=8-0.2)
         else:
             return uniform(loc=0.4, scale=3-0.4)
 
     def _set_n_q03(self):
-        """Compute the relative number of 0.3 <= q <= 1.0 star pairs."""
+        """Compute the relative number of ``0.3<=q<=1.0`` star pairs."""
         a = self._h1(self.q_distr.gamma_largeq, 0.95, 1.00)
         b = self._h1(self.q_distr.gamma_largeq, 0.3, 0.95)
         self.n_q03 = a * (1 + self.q_distr.f_twin) + b
 
     def _set_n_q01(self):
-        """Compute the relative number of 0.1 <= q < 0.3 star pairs."""
+        """Compute the relative number of ``0.1<=q<0.3`` star pairs."""
         a = self._h1(self.q_distr.gamma_smallq, 0.1, 0.3)
         continuity_factor = 0.3 ** (self.q_distr.gamma_largeq
                                     - self.q_distr.gamma_smallq)
         self.n_q01 = self.n_q03 + continuity_factor * a
 
     def companion_frequency_q01(self, logp):
-        """Companion frequency for 0.1 <= q <= 1.0 pairs with a given
-        log10(period).
-        """
-
+        """Returns companion frequency at ``0.1<=q<=1.0``, ``logp``."""
         if self.canonical:
             return self._canonical_prob_distribution.pdf(logp)
         else:
