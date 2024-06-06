@@ -42,8 +42,8 @@ class EccentricityDistribution:
     are not allowed (``p=0``). Primaries with ``m1 < 0.8`` or
     ``m1 > 150.0`` are not allowed (p=0).
 
-    Allows for either a mass- and orbital-period dependent distribution
-    or to set all orbits to be circular.
+    Allows for either a mass- and orbital-period dependent power-law
+    distribution, or to set all orbits to be circular.
 
     All orbital periods are in days and masses in solar masses.
 
@@ -251,12 +251,22 @@ class EccentricityDistribution:
 class MassRatioDistribution:
     """Mass ratio probability distribution for a ZAMS star pair.
 
-    For a given primary of mass m1 and a companion orbit of
-    log10(period), compute the mass ratio probability density function
-    (PDF) for that orbit. The companion mass being m_cp, the mass ratio
-    is defined as q=m_cp/m1, and is limited to the interval
-    0.1 <= q <= 1.0. The PDF takes the form of a two-part power law,
-    with an excess of twin pairs at q > 0.95.
+    For a given primary of mass ``m1`` and a companion orbit of
+    log10(period) ``logp``, compute the mass ratio probability density
+    function (PDF) for that orbit. The companion mass being ``m_cp``,
+    the mass ratio is defined as ``q=m_cp/m1``, and is limited to the
+    interval ``0.1 <= q <= 1.0``.
+
+    Allows for either a mass- and orbital-dependent broken power-law
+    with a "twin" (``q > 0.95``) excess; or an uncorrelated uniform
+    distribution.
+
+    All orbital periods are in days and masses in solar masses.
+
+    Parameters
+    ----------
+    canonical : bool, default : False
+        Whether to assume a correlated distribution or not.
 
     Attributes
     ----------
@@ -269,12 +279,11 @@ class MassRatioDistribution:
     ob_llim : float
         Lower mass limit of mid B-, early B- and O-type primaries.
     gamma_largeq : float
-        Power law PDF index for 0.3 <= q <= 1.0.
+        Power law PDF index for ``0.3 <= q <= 1.0``.
     gamma_smallq : float
-        Power law PDF index for 0.1 <= q < 0.3.
+        Power law PDF index for ``0.1 <= q < 0.3``.
     f_twin : float
-        Excess fraction of twin pairs (q>0.95) in relation to a pure
-        power law.
+        Excess fraction of ``q>0.95`` pairs relative to a power-law.
     k : float
         Power law PDF normalization constant.
     logp_min : float
@@ -282,55 +291,49 @@ class MassRatioDistribution:
     logp_max : float
         Maximum allowed log10(period).
     m1_min : float
-        Minimum allowed m1_table.
+        Minimum allowed ``m1``.
     m1_max : float
-        Maximum allowed m1_table.
+        Maximum allowed ``m1``.
 
     Methods
     -------
     set_parameters(m1, logp)
-        Set the PDF parameters gamma_smallq, gamma_largeq, f_twin and k.
+        Set :attr:`gamma_smallq`, :attr:`gamma_largeq`, :attr:`f_twin`
+        and :attr:`k`.
     prob(q)
-        Return the PDF value at mass ratio q.
+        Return the PDF value at mass ratio ``q``.
 
     Warns
     -----
     UserWarning
-        If method prob(q) is run before set_parameters(m1, logp).
+        If :meth:`prob` is run before :meth:`set_parameters`.
 
     Notes
     -----
-    The distribution is by Moe & Di Stefano (2017) [1]_ with small
-    adjustments as described by OUR WORK. It takes the shape of a
-    two-part power law, with index gamma_smallq for 0.1 <= q < 0.3 and
-    gamma_largeq for 0.3 <= q <= 1.0. It also includes an excess of
-    systems with q > 0.95 (twin pairs) expressed as the twin fraction
-    f_twin, so that at q > 0.95 the PDF is (1+f_twin) * power law. As
-    this excess is only observed for shorter-period systems, there is a
-    maximum logp for which the excess twin population is present.
+    The correlated distribution is by Moe & Di Stefano (2017) [1]_ with
+    small adjustments as described by de Sá et al. (submitted) [2]_. It
+    takes the shape of a two-part power law, with index
+    :attr:`gamma_smallq` for ``0.1 <= q < 0.3`` and :attr:`gamma_largeq`
+    for ``0.3 <= q <= 1.0``. It also includes an excess of systems with
+    ``q > 0.95`` (twin pairs) expressed as the twin fraction
+    :attr:`f_twin`, so that at `q > 0.95` the PDF is
+    `(1+f_twin) * power_law`. As this excess is only observed for
+    shorter-period systems, there is a maximum ``logp`` for which the
+    excess twin population is present.
 
     Solar-type primaries are defined as having masses
-    0.8 Msun < m1 < 1.2 Msun. The midpoint of A-/late B-type primaries
-    is defined to be at m1 = 3.5 Msun. Mid B-, early B- and O-type
-    primaries are defined as having mass m1 > 6.0 Msun. The PDF is
-    defined piecewise for each the two ranges and the midpoint.
-    Interpolation gives the PDF in the two intermediary ranges: solar-A
-    (1.2 Msun <= m1 < 3.5 Msun) and A-OB (3.5 Msun < m1 <= 6 Msun).
+    ``0.8 < m1 < 1.2``. The midpoint of A-/late B-type primaries is
+    defined to be at ``m1 = 3.5``. Mid B-, early B- and O-type primaries
+    are defined as having mass ``m1 > 6.0``. The PDF is defined piecewise
+    for each the two ranges and the midpoint. Interpolation gives the
+    PDF in the two intermediary ranges: solar-A (``1.2 <= m1 < 3.5``)
+    and A-OB (``3.5 < m1 <= 6``).
 
     The minimum and maximum periods are set as in the original work,
-    with log10 values 0.2 and 8.0, respectively. The minimum m1 is set
-    to 0.8 Msun also in accordance with the original work, but the mass
-    range is extended up to 150.0 Msun. The minimum q is set to 0.1 as
-    in the original work.
-
-    All orbital periods are given in days and masses in solar masses.
-
-    References
-    ----------
-    .. [1] Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The
-        Interrelation between Period (P) and Mass-ratio (Q)
-        Distributions of Binary Stars. ApJS, 230(2), 55.
-        doi:10.3847/1538-4365/aa6fb6
+    with log10 values `0.2` and `8.0`, respectively. The minimum ``m1``
+    is set to `0.8` also in accordance with the original work, but the
+    mass range is extended up to `150.0`. The minimum ``q`` is set to
+    `0.1` as in the original work.
     """
 
     def __init__(self, canonical=False):
@@ -355,10 +358,7 @@ class MassRatioDistribution:
 
     @staticmethod
     def _get_logp_twin(m1):
-        """Maximum logp of the observed excess twin population for a
-        given m1.
-        """
-
+        """Return maximum ``logp`` of the twin excess for ``m1``."""
         if m1 <= 6.5:
             return 8.0 - m1
         else:
@@ -366,19 +366,20 @@ class MassRatioDistribution:
 
     @staticmethod
     def _get_f_twin_logp_small(m1):
-        """Twin fraction at logp < 1, for a given m1."""
+        """Return twin fraction at ``logp < 1``, for ``m1``."""
         return 0.3 - 0.15 * np.log10(m1)
 
     def _get_f_twin_logp_large(self, m1, logp):
-        """Twin fraction at logp >= 1, for a given m1."""
+        """Return twin fraction at ``logp >= 1``, for ``m1``."""
         logp_twin = self._get_logp_twin(m1)
         f_twin_logp_small = self._get_f_twin_logp_small(m1)
         f_twin_logp_large = (f_twin_logp_small
                              * (1.0 - (logp-1.0) / (logp_twin-1.0)))
         return f_twin_logp_large
 
+    # TODO: make f_twin 0 if m1 or logp is out of bounds
     def _get_f_twin(self, m1, logp):
-        """Compute the twin fraction for given m1 and logp."""
+        """Return twin fraction at ``m1``, ``logp``."""
         logp_twin = self._get_logp_twin(m1)
         if logp < 1.0:
             ftwin = self._get_f_twin_logp_small(m1)
@@ -389,8 +390,10 @@ class MassRatioDistribution:
         return ftwin
 
     def _get_gamma_largeq_solar(self, logp):
-        """Compute the power law index gamma_largeq (0.3 <= q <= 1.0)
-        for solar-type primaries.
+        """Return solar-type :attr:`gamma_largeq` at ``logp``.
+
+        Returns the power-law index at ``0.3 <= q <= 1.0`` for
+        solar-type primaries at ``logp``.
         """
 
         if logp < self.logp_min:
@@ -404,8 +407,10 @@ class MassRatioDistribution:
         return g
 
     def _get_gamma_largeq_a(self, logp):
-        """Compute the power law index gamma_largeq (0.3 <= q <= 1.0)
-        for midpoint A/early B-type primaries.
+        """Return A/B :attr:`gamma_largeq` at ``logp``.
+
+        Returns the power-law index at ``0.3 <= q <= 1.0`` for midpoint
+        A/early B-type primaries at ``logp``.
         """
 
         if logp < self.logp_min:
@@ -423,8 +428,10 @@ class MassRatioDistribution:
         return g
 
     def _get_gamma_largeq_ob(self, logp):
-        """Compute the power law index gamma_largeq (0.3 <= q <= 1.0)
-        for mid B, late B and O-type primaries.
+        """Return B/O :attr:`gamma_largeq` at ``logp``.
+
+        Returns the power-law index at ``0.3 <= q <= 1.0`` for mid B,
+        late B and O-type primaries at ``logp``.
         """
 
         if logp < self.logp_min:
@@ -442,8 +449,10 @@ class MassRatioDistribution:
         return g
 
     def _get_gamma_smallq_solar(self, logp):
-        """Compute the power law index gamma_smallq (0.1 <= q < 0.3) for
-        solar-type primaries.
+        """Return solar-type :attr:`gamma_smallq` at ``logp``.
+
+        Returns the power-law index at ``0.1 <= q < 0.3`` for solar-type
+        primaries at ``logp``.
         """
 
         if logp < self.logp_min:
@@ -455,8 +464,10 @@ class MassRatioDistribution:
         return g
 
     def _get_gamma_smallq_a(self, logp):
-        """Compute the power law index gamma_smallq (0.1 <= q < 0.3) for
-        midpoint A/early B-type primaries.
+        """Return A/B :attr:`gamma_smallq` at ``logp``.
+
+        Returns the power-law index at ``0.1 <= q < 0.3`` for midpoint
+        A/early B-type primaries at ``logp``.
         """
 
         if logp < self.logp_min:
@@ -472,8 +483,10 @@ class MassRatioDistribution:
         return g
 
     def _get_gamma_smallq_ob(self, logp):
-        """Compute the power law index gamma_smallq (0.1 <= q < 0.3) for
-        mid B, late B and O-type primaries.
+        """Return B/O :attr:`gamma_smallq` at ``logp``.
+
+        Returns the power-law index at ``0.1 <= q < 0.3`` for mid B-,
+        late B- and O-type primaries at ``logp``.
         """
 
         if logp < self.logp_min:
@@ -491,13 +504,13 @@ class MassRatioDistribution:
         return g
 
     def _get_gamma_largeq_solar_a(self, m1, logp):
-        """Compute the power law index gamma_largeq (0.3 <= q <= 1.0)
-        for primaries between solar and midpoint A types.
+        """Return solar-A/B :attr:`gamma_largeq` at ``m1``, ``logp``.
 
-        Compute the power law index gamma_largeq (0.3 <= q <= 1.0) for
-        primaries between solar and midpoint A/early B types. This is
-        done by interpolating, at the given logp, between the indexes
-        for the two types.
+        Compute the power-law index at 0.3 <= q <= 1.0 for primaries of
+        mass ``m1`` between solar and midpoint A/early B-type. This is
+        done by interpolating, at the given ``logp``, between the
+        indices from :meth:`_get_gamma_largeq_solar` and
+        :meth:`_get_gamma_largeq_a`.
         """
 
         lowmass_g = self._get_gamma_largeq_solar(logp)
@@ -507,13 +520,13 @@ class MassRatioDistribution:
         return midmass_g
 
     def _get_gamma_largeq_a_ob(self, m1, logp):
-        """Compute the power law index gamma_largeq (0.3 <= q <= 1.0)
-        for primaries between midpoint A and O/B types.
+        """Return A/B-B/O :attr:`gamma_largeq` at ``m1``, ``logp``.
 
-        Compute the power law index gamma_largeq (0.3 <= q <= 1.0) for
-        primaries between midpoint A/early B and mid B/late B/O types.
-        This is done by interpolating, at the given logp, between the
-        indexes for the two types.
+        Compute the power-law index at 0.3 <= q <= 1.0 for primaries of
+        mass ``m1`` between midpoint A/early B-type and mid B-, late B-
+        and O-type primaries. This is done by interpolating, at the
+        given ``logp``, between the indices from
+        :meth:`_get_gamma_largeq_a` and :meth:`_get_gamma_largeq_ob`.
         """
 
         lowmass_g = self._get_gamma_largeq_a(logp)
@@ -523,13 +536,13 @@ class MassRatioDistribution:
         return midmass_g
 
     def _get_gamma_smallq_solar_a(self, m1, logp):
-        """Compute the power law index gamma_smallq (0.1 <= q < 0.3) for
-        primaries between solar and midpoint A types.
+        """Return solar-A/B :attr:`gamma_smallq` at ``m1``, ``logp``.
 
-        Compute the power law index gamma_smallq (0.1 <= q < 0.3) for
-        primaries between solar and midpoint A/early B types. This is
-        done by interpolating, at the given logp, between the indexes
-        for the two types.
+        Compute the power-law index at 0.1 <= q < 0.3 for primaries of
+        mass ``m1`` between solar and midpoint A/early B-type. This is
+        done by interpolating, at the given ``logp``, between the
+        indices from :meth:`_get_gamma_smallq_solar` and
+        :meth:`_get_gamma_smallq_a`.
         """
 
         lowmass_g = self._get_gamma_smallq_solar(logp)
@@ -539,13 +552,13 @@ class MassRatioDistribution:
         return midmass_g
 
     def _get_gamma_smallq_a_ob(self, m1, logp):
-        """Compute the power law index gamma_smallq (0.1 <= q < 0.3) for
-        primaries between midpoint A and O/B types.
+        """Return A/B-B/O :attr:`gamma_smallq` at ``m1``, ``logp``.
 
-        Compute the power law index gamma_smallq (0.1 <= q < 0.3) for
-        primaries between midpoint A/early B and mid B/late B/O types.
-        This is done by interpolating, at the given logp, between the
-        indexes for the two types.
+        Compute the power-law index at 0.1 <= q < 0.3 for primaries of
+        mass ``m1`` between midpoint A/early B-type and mid B-, late B-
+        and O-type primaries. This is done by interpolating, at the
+        given ``logp``, between the indices from
+        :meth:`_get_gamma_smallq_a` and :meth:`_get_gamma_smallq_ob`.
         """
 
         lowmass_g = self._get_gamma_smallq_a(logp)
@@ -555,8 +568,12 @@ class MassRatioDistribution:
         return midmass_g
 
     def set_parameters(self, m1, logp):
-        """Set power law and twin fraction parameters according to the
-        given m1 and log10(period).
+        """Set distribution power-law parameters at ``m1``, ``logp``.
+
+        Sets :attr:`gamma_largeq`, :attr:`gamma_smallq`, :attr:`k` and
+        :attr:`f_twin`. If the distribution is set to uncorrelated, or
+        if ``m1`` and/or ``logp`` are out of bounds, all parameters are
+        set to zero.
         """
 
         if self.canonical:
@@ -587,7 +604,7 @@ class MassRatioDistribution:
         self._set_k()
 
     def _set_k(self):
-        """Set the PDF normalization constant."""
+        """Set :attr:`k` so that the PDF integrates to 1."""
         norm = quad(self.prob, self.q_min, self.q_max)[0]
         self.k /= norm
 
@@ -607,8 +624,8 @@ class MassRatioDistribution:
         Warns
         -----
         UserWarning
-            If power law parameters are not set up (set_parameters has
-            not been run yet).
+            If power law parameters are not set up
+            (:meth:`set_parameters` has not been called yet).
         """
 
         if self.gamma_largeq is None:
