@@ -323,9 +323,9 @@ class SFMR:
         Redshift at which to compute the relation.
     flattening : str
         SFMR model flattening option.
-    sfmr : class instance
-        An instance of the BoogaardSFMR, SpeagleSFMR or Tomczak SFMR 
-        class, depending on the flattening option.
+    sfmr : :class:`BoogaardSFMR`, :class:`SpeagleSFMR` or \
+    :class:`TomczakSFMR`
+        Instance of an SFMR class, depending on :attr:`flattening`.
 
     Notes
     -----
