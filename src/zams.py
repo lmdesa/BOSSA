@@ -858,10 +858,10 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
 
     Parameters
     ----------
-    q_distr : :class:`MassRatioDistribution`
-        Mass ratio distribution for the same :attr:`m1`.
     m1 : float
         Primary mass.
+    q_distr : :class:`MassRatioDistribution`
+        Mass ratio distribution for the same :attr:`m1`.
     canonical : bool
         Whether to assume a correlated distribution or not.
     extrapolate_canonical_distribution : bool
@@ -920,8 +920,7 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
 
     # TODO: rename canonical to correlated
     # TODO: make m1 first parameter and q_distr second
-    def __init__(self, q_distr, m1, canonical=False,
-                 extrapolate_canonical_distribution=False):
+    def __init__(self, m1, q_distr, canonical=False, extrapolate_canonical_distribution=False):
         super().__init__(m1)
         self.q_distr = q_distr
         self.n_q03 = None
@@ -1596,7 +1595,7 @@ class MultipleFraction:
         return nmean / (1 + a/b)
 
     def _m1_to_multfreq(self, m1):
-        freq_distr = CompanionFrequencyDistribution(self.q_distr, m1)
+        freq_distr = CompanionFrequencyDistribution(m1, self.q_distr)
         multfreq = 0
         for logp0, logp1 in zip(freq_distr.LOGP_BREAKS[:-1], freq_distr.LOGP_BREAKS[1:]):
             multfreq += quad(freq_distr.companion_frequency_q01, logp0, logp1, limit=100)[0]
