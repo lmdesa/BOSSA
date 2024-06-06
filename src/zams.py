@@ -650,94 +650,94 @@ class MassRatioDistribution:
 
 
 class CompanionFrequencyDistributionHighQ:
-    """Orbital period probability distribution for a ZAMS star pair with
-    0.3 <= q <= 1.0.
+    """Orbital period distribution for a ``0.3<=q<=1.0`` ZAMS star pair.
 
-    For a given primary of mass m1, compute the orbital period
-    probability density function (PDF) for a single companion with some
-    mass m_cp such that 0.3 <= q <= 1.0 (q=m_cp/m1). The PDF is a
-    strongly m1_table- and log10(period)-dependent piecewise function.
+    For a primary of mass ``m1``, compute the log orbital period
+    (``logp``) probability density function (PDF) for a companion with
+    some mass ``m_cp`` such that ``0.3 <= q <= 1.0`` (``q=m_cp/m1``).
+
+    The PDF is a strongly ``m1``- and ``logp``-dependent piecewise
+    function of power-law, log-linear and exponential components.
+
+    All orbital periods are given in days and masses in solar masses.
+
+    Parameters
+    ----------
+    m1 : float
+        Primary mass.
 
     Attributes
     ----------
-    f_logp1_q03
-    f_logp27_q03
-    f_logp55_q03
     m1 : float
         Primary mass.
-    _a : float
-        Slope of f_logp with logp in an interval around logp = 2.7 with
-        half-width _delta_logp.
-    _delta_logp : float
-        Half-width of the logp interval over which the slope _a is
-        defined.
-    logp_min : float
-        Minimum allowed log10(period).
-    logp_max : float
-        Maximum allowed log10(period).
-    m1_min : float
-        Minimum allowed m1_table.
-    m1_max : float
-        Maximum allowed m1_table.
 
     Methods
     -------
     companion_frequency_q03(logp)
-        For a given log10(period), compute the companion frequency for a
-        primary with the set m1_table.
+        Return the companion frequency at ``logp```for primary mass
+        :attr:`m1`.
+
+    See Also
+    --------
+    CompanionFrequencyDistribution :
+        Inherits from this class and extrapolates the distribution down
+        to ``q=0.1``. Includes an uncorrelated distribution option.
+    MultipleFraction :
+        Accounts for higher-order multiples in the companion frequency.
 
     Notes
     -----
     The distribution is by Moe & Di Stefano (2017) [1]_, with small
-    adjustments as described by OUR WORK. Although we refer to it as a
-    PDF, the distribution is rigorously defined as a frequency of
-    companions with period logp for primaries of mass m1,
+    adjustments as described by de Sá et al. (submitted) [2]_. Although
+    it is referred to as a PDF, the distribution is defined as a
+    companion frequency,
 
     .. math::
 
         f_{\log P; q>0.3} (M_1,P) := \\frac{d N_{cp, q>0.3} }{d N_1\,
          d\log P},
 
-    i.e., the number of companions, per primary with mass M1, per
-    orbital period decade, around a period P.
+    i.e., the number of companions, per primary with mass :math:`M_1`,
+    per orbital period decade, around a period :math:`P`.
 
-    The companion frequency is empirically fitted for 0.2 <= logp < 1 ,
-    logp = 2.7, logp = 5.5 and 5.5 < logp <= 8.0. For the intermediate
-    intervals [1,2.7) and (2.7,5.5), it is set to increase linearly with
-    logp.
-
-    All orbital periods are given in days and masses in solar masses.
-
-    References
-    ----------
-    .. [1] Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The
-        Interrelation between Period (P) and Mass-ratio (Q)
-        Distributions of Binary Stars. ApJS, 230(2), 55.
-        doi:10.3847/1538-4365/aa6fb6
+    The companion frequency is empirically fitted for
+    ``0.2 <= logp < 1``, ``logp = 2.7``, ``logp = 5.5`` and
+    ``5.5 < logp <= 8.0``. For the intermediate intervals, it is set to
+    increase linearly with ``logp``.
     """
+
+    A = 0.018
+    """float: Slope within:const:`DELTA_LOGP`/2 of ``logp=2.7``."""
+    DELTA_LOGP = 0.7
+    """float: Half-width of the range where the slope is :const:`A``."""
+    LOGP_MIN = 0.2
+    """float: Minimum allowed ``logp``."""
+    LOGP_MAX = 8.0
+    """float: Maximum allowed ``logp``."""
+    M1_MIN = 0.8
+    """float: Minimum allowed ``m1``."""
+    M1_MAX = 150
+    """float: Maximum allowed ``m1``."""
+    LOGP_BREAKS = [LOGP_MIN,
+                   1.0,
+                   2.7 - DELTA_LOGP,
+                   2.7 + DELTA_LOGP,
+                   5.5,
+                   LOGP_MAX]
+    """list: Distribution `logp` breaks."""
 
     def __init__(self, m1):
         self.m1 = m1
         self._f_logp1_q03 = None
         self._f_logp27_q03 = None
         self._f_logp55_q03 = None
-        self._a = 0.018
-        self._delta_logp = 0.7
-        self.logp_min = 0.2
-        self.logp_max = 8.0
-        self.m1_min = 0.8
-        self.m1_max = 150
-        self._logp_thresholds = [self.logp_min,
-                                 1.0,
-                                 2.7 - self._delta_logp,
-                                 2.7 + self._delta_logp,
-                                 5.5,
-                                 self.logp_max]
 
     @property
     def f_logp1_q03(self):
-        """Frequency of companions with 0.2 <= logp < 1 and
-        0.3 <= q <= 1.0 for primaries of mass m1.
+        """First companion frequency constant.
+
+        Frequency of companions with ``0.2 <= logp < 1`` and
+        ``0.3 <= q <= 1.0`` for primaries of mass :attr:`m1`.
         """
 
         if self._f_logp1_q03 is None:
@@ -748,8 +748,10 @@ class CompanionFrequencyDistributionHighQ:
 
     @property
     def f_logp27_q03(self):
-        """Frequency of companions with logp = 2.7 and 0.3 <= q <= 1.0
-        for primaries of mass m1.
+        """Second companion frequency constant.
+
+        Frequency of companions with ``logp = 2.7`` and
+        ``0.3 <= q <= 1.0`` for primaries of mass :attr:``m1``.
         """
 
         if self._f_logp27_q03 is None:
@@ -760,8 +762,10 @@ class CompanionFrequencyDistributionHighQ:
 
     @property
     def f_logp55_q03(self):
-        """Frequency of companions with logp = 5.5 and 0.3 <= q <= 1.0
-        for primaries of mass m1.
+        """Third companion frequency constant.
+
+        Frequency of companions with ``logp = 5.5`` and
+        ``0.3 <= q <= 1.0`` for primaries of mass :attr:`m1`.
         """
 
         if self._f_logp55_q03 is None:
@@ -771,49 +775,68 @@ class CompanionFrequencyDistributionHighQ:
         return self._f_logp55_q03
 
     def _f1(self):
-        """Companion frequency for 0.2 <= logp < 1."""
+        """Return companion frequency in the first interval.
+
+        In the ``0.2 <= logp < 1`` interval, the companion frequency is
+        constant and equal to :attr:`f_logp1_q03` in this range.
+        """
+
         return self.f_logp1_q03
 
     def _f2(self, logp):
-        """Companion frequency for 1 <= logp < 2.7 - _delta_logp."""
-        a = (logp - 1.0) / (1.7 - self._delta_logp)
-        b = self.f_logp27_q03 - self.f_logp1_q03 - self._a * self._delta_logp
+        """Return companion frequency in the second interval.
+
+        In the ``1<=logp<2.7-DELTA_LOGP`` interval, the companion
+        frequency is linear on ``logp``.
+        """
+
+        a = (logp - 1.0) / (1.7 - self.DELTA_LOGP)
+        b = self.f_logp27_q03 - self.f_logp1_q03 - self.A * self.DELTA_LOGP
         return self.f_logp1_q03 + a * b
 
     def _f3(self, logp):
-        """Companion frequency for
-        2.7 - _delta_logp <= logp < 2.7 + _delta_logp.
+        """Return companion frequency in the third interval.
+
+        In the ``2.7-``:const:`DELTA_LOGP```<=logp<2.7+``
+        :const:`DELTA_LOGP` interval, the companion frequency is
+        linear on ``logp``.
         """
 
-        return self.f_logp27_q03 + self._a * (logp - 2.7)
+        return self.f_logp27_q03 + self.A * (logp - 2.7)
 
     def _f4(self, logp):
-        """Companion frequency for 2.7 + _delta_logp <= logp < 5.5."""
-        a = (logp - 2.7 - self._delta_logp) / (2.8 - self._delta_logp)
-        b = self.f_logp55_q03 - self.f_logp27_q03 - self._a * self._delta_logp
-        return self.f_logp27_q03 + self._a * self._delta_logp + a * b
+        """Return companion frequency in the fourth interval.
+
+        In the ``2.7 +``:const:`DELTA_LOGP```<= logp < 5.5`` interval,
+        the companion frequency is linear on `logp`.
+        """
+        a = (logp - 2.7 - self.DELTA_LOGP) / (2.8 - self.DELTA_LOGP)
+        b = self.f_logp55_q03 - self.f_logp27_q03 - self.A * self.DELTA_LOGP
+        return self.f_logp27_q03 + self.A * self.DELTA_LOGP + a * b
 
     def _f5(self, logp):
-        """Companion frequency for 5.5 <= logp <= 8.0."""
+        """Companion frequency in the fifth interval.
+
+        In the ``5.5 <= logp <= 8.0`` interval, the companion frequency
+        decreases exponentially with ``logp``.
+        """
+
         exp = np.exp(-0.3 * (logp - 5.5))
         return self.f_logp55_q03 * exp
 
     def companion_frequency_q03(self, logp):
-        """Companion frequency for 0.3 <= q <= 1.0 pairs with a given
-        log10(period).
-        """
-
-        if logp < self._logp_thresholds[0]:
+        """Returns companion frequency at ``0.3<=q<=1.0``, ``logp``."""
+        if logp < self.LOGP_BREAKS[0]:
             f = 0
-        elif logp < self._logp_thresholds[1]:
+        elif logp < self.LOGP_BREAKS[1]:
             f = self._f1()
-        elif logp < self._logp_thresholds[2]:
+        elif logp < self.LOGP_BREAKS[2]:
             f = self._f2(logp)
-        elif logp < self._logp_thresholds[3]:
+        elif logp < self.LOGP_BREAKS[3]:
             f = self._f3(logp)
-        elif logp < self._logp_thresholds[4]:
+        elif logp < self.LOGP_BREAKS[4]:
             f = self._f4(logp)
-        elif logp <= self._logp_thresholds[5]:
+        elif logp <= self.LOGP_BREAKS[5]:
             f = self._f5(logp)
         else:
             f = 0
@@ -1563,7 +1586,7 @@ class MultipleFraction:
     def _m1_to_multfreq(self, m1):
         freq_distr = CompanionFrequencyDistribution(self.q_distr, m1)
         multfreq = 0
-        for logp0, logp1 in zip(freq_distr._logp_thresholds[:-1], freq_distr._logp_thresholds[1:]):
+        for logp0, logp1 in zip(freq_distr.LOGP_BREAKS[:-1], freq_distr.LOGP_BREAKS[1:]):
             multfreq += quad(freq_distr.companion_frequency_q01, logp0, logp1, limit=100)[0]
         return multfreq
 
