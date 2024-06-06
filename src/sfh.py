@@ -1261,6 +1261,7 @@ class ChruslinskaSFRD:
     SFRD_Z_CENTERS_ARRAY = np.array([FeH_to_Z(ZOH_to_FeH(zoh)) for zoh in SFRD_ZOH_CENTERS_ARRAY])
     """NDArray: SFRD grid Z bin centers."""
 
+    # TODO: remove per_redshift_met_bin option
     def __init__(self, model: str ='midmet', canon: bool = False,
                  per_redshift_met_bin: bool = False) -> None:
         self.model = model
