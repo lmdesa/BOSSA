@@ -970,6 +970,7 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
             return f01
 
 
+# TODO: add logger to MultipleFraction and replace print statements
 class MultipleFraction:
     """Multiplicity fractions as a function of primary mass.
 
@@ -1056,8 +1057,8 @@ class MultipleFraction:
 
     .. math::
 
-        f_\\mathrm{mult}(M_1) = \int_{0.2}^{0.8} d\log P\, f_{\log P; q>0.3}
-        (M_1,\log P).
+        f_\\mathrm{mult}(M_1) = \int_{0.2}^{0.8} d\log P\,
+        f_{\log P; q>0.3}(M_1,\log P).
 
     The multiplicity fraction, :math:`F_n`, is defined as the fraction
     of all primaries with a number :math:`n` of companions. These relate
@@ -1074,29 +1075,38 @@ class MultipleFraction:
     to be distributed over :math:`M_1` in the form of a Poissonian
     distribution, with a :math:`M_1`-dependent mean
     :math:`n_\\mathrm{mean}` fully determined by imposing the empirical
-    :math:`f_\\math{mult}(M_1)` as a constraint.
+    :math:`f_\\mathrm{mult}(M_1)` as a constraint.
 
     By assuming a Poissonian truncated at :attr:`nmax`, the companion
     number n is distributed as
 
     .. math::
 
-        P_n(M_1) = ( \\sum_{ n=0 }^{ n_\\mathrm{max} }
-        {n_\\mathrm{mean}}^n / n! )^{-1}  n_\\mathrm{mean}^{n} / n!,
+        P_n(M_1) = \\left( \\sum_{ n=0 }^{ n_\\mathrm{max} }
+        \\frac{n_\\mathrm{mean}^n}{n!} \\right)^{-1}
+        \\frac{n_\\mathrm{mean}^{n}}{n!},
 
-    and :math:`F_n(M1) = P_n(M1)`. Then, from the definition of
+    and :math:`F_n(M_1) = P_n(M_1)`. Then, from the definition of
     :math:`P_n` and the :math:`f_\\mathrm{mult}-F_n` relation,
     :math:`f_\\mathrm{mult}` is written as
 
     .. math::
 
         f_\\mathrm{mult}(n_\\mathrm{mean}) =
-        n_\\mathrm{mean} ( 1 + a/b )^{-1},
+       \\frac{n_\\mathrm{mean}}{1 + a/b},
+
+    with
+
+    .. math::
 
         a = {n_\\mathrm{mean}}^{n_\\mathrm{max}} n_\\mathrm{max}!,
 
+    and
+
+    .. math::
+
         b = \\sum_{ n=0 }^{ n_\\mathrm{max}-1 }
-        {n_\\mathrm{mean}}^n / n!.
+        \\frac{{n_\\mathrm{mean}}^n}{n!}.
 
     From this relation an array of
     :math:`(f_\\mathrm{mult}, n_\\mathrm{mean})` pairs is calculated,
@@ -1125,7 +1135,12 @@ class MultipleFraction:
 
     @staticmethod
     def _truncated_poisson_mdf(l, k_arr, k_max):
-        """Evaluate at k a Poissonian with mean l and truncated at k_max."""
+        """Evaluate a Poissonian distribution.
+
+        Returns the value at ``k`` of a Poissonian distribution with
+        mean ``l`` and truncated at ``k_max``.
+        """
+
         probs = np.zeros(k_arr.shape)
         for i, k in enumerate(k_arr):
             if k > k_max:
@@ -1137,25 +1152,11 @@ class MultipleFraction:
         return probs
 
     def _nmean_to_multfreq(self, nmean):
-        """Compute the multiplicity frequency from the mean companion number nmean.
+        """Return the multiplicity frequency corresponding to ``nmean``.
 
-        By assuming that the companion number n is distributed as a Poissonian with mean nmean, truncated at nmax, the
-        multiplicity frequency can be computed analitically.
-
-        Notes
-        -----
-        The multiplicity frequency is
-
-         .. math::
-
-                f_{mult} (n_{mean}) = \\frac{ n_{mean} }{ 1 + a(n_{mean}) / b(n_{mean} }},
-        where
-
-        .. math::
-
-                a(n_{mean}) = \\frac{ {n_{mean}}^{n_{max}} }{ n_{max}! },
-
-                b(n_{mean}) = \sum^{ n_{max}-1 }_{ n=0 } \\frac{ {n_{mean}}^n }{ n! }
+        By assuming that the companion number ``n`` is distributed as a
+        Poissonian with mean ``nmean``, truncated at :attr:`nmax`, the
+        multiplicity frequency can be computed analytically.
         """
 
         b = 0
@@ -1165,6 +1166,12 @@ class MultipleFraction:
         return nmean / (1 + a/b)
 
     def _m1_to_multfreq(self, m1):
+        """Return the multiplicity frequency corresponding to ``m1``.
+
+        Integrating the companion frequency at ``m1`` over orbital
+        period yields the multiplicty frequency at ``m1``.
+        """
+
         freq_distr = CompanionFrequencyDistribution(m1, self.q_distr)
         multfreq = 0
         for logp0, logp1 in zip(freq_distr.LOGP_BREAKS[:-1], freq_distr.LOGP_BREAKS[1:]):
@@ -1172,7 +1179,14 @@ class MultipleFraction:
         return multfreq
 
     def _set_m1_to_nmean(self):
-        """Compute the f_mult corresponding to each m1, convert to nmean and set up a m1 to nmean interpolator."""
+        """Setup a ``m1`` to ``nmean`` interpolator.
+
+        First computes the multiplicity frequencies for :attr:`m1_array`
+        with :meth:`_m1_to_multfreq`, then the corresponding ``nmean``
+        with :attr:`multfreq_to_nmean`. Finally, the :attr:`m1_to_nmean`
+        interpolator is set.
+        """
+
         print('Setting up M1 to companion Nmean interpolator...')
         time0 = time()
         multfreqs = [self._m1_to_multfreq(m1) for m1 in self.m1_array]
@@ -1182,12 +1196,13 @@ class MultipleFraction:
         print(f'Done setting up interpolator. Elapsed time: {time1:.4f} s.')
 
     def _set_multfreq_to_nmean(self):
-        """Compute the mult. freq. from nmean and set up a mult. freq. to nmean interpolator."""
+        """Setup multiplicity frequency to ``nmean`` interpolator."""
         nmeans = np.linspace(0, self.nmean_max, 100)
         multfreqs = np.array([self._nmean_to_multfreq(nmean) for nmean in nmeans])
         self.multfreq_to_nmean = interp1d(multfreqs, nmeans)
 
     def _set_mmax(self):
+        """Sets the """
         if self.nmax >= 5:
             self.mmax = 150.
             self.m1_array = np.logspace(np.log10(self.mmin), np.log10(self.mmax), 20)
