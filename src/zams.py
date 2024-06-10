@@ -1517,21 +1517,21 @@ class ZAMSSystemGenerator:
 
         m1group_options = list(
             (group, self.pairs_table.root[group]._v_title) for group in self.pairs_table.root._v_groups)
-        self.m1group_options = np.array([group[0] for group in m1group_options])
-        self.m1_options = np.array([np.float32(group[1]) for group in m1group_options])
-        m1sort = np.argsort(self.m1_options)
-        self.m1group_options = self.m1group_options[m1sort]
-        self.m1_options = self.m1_options[m1sort]
+        self._m1group_options = np.array([group[0] for group in m1group_options])
+        self._m1_options = np.array([np.float32(group[1]) for group in m1group_options])
+        m1sort = np.argsort(self._m1_options)
+        self._m1group_options = self._m1group_options[m1sort]
+        self._m1_options = self._m1_options[m1sort]
 
     def _get_m1(self):
         """Get the closest m1_table to m1_array, and its respective
         PyTable Group title in pairs_table.
         """
 
-        m1_closest_i, m1_closest = valley_minimum(np.abs(self.m1_options - self.m1_array),
-                                                  np.arange(0, len(self.m1_options), 1))
-        m1groupname_closest = self.m1group_options[m1_closest_i]
-        m1_closest = self.m1_options[m1_closest_i]
+        m1_closest_i, m1_closest = valley_minimum(np.abs(self._m1_options - self.m1_array),
+                                                  np.arange(0, len(self._m1_options), 1))
+        m1groupname_closest = self._m1group_options[m1_closest_i]
+        m1_closest = self._m1_options[m1_closest_i]
         m1group_closest = self.pairs_table.root[m1groupname_closest]
         return m1_closest, m1group_closest
 
