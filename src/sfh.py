@@ -1,5 +1,7 @@
 """Galaxy parameter distributions."""
 
+# TODO: add fundamental metallicity relation
+
 import warnings
 from pathlib import Path
 from typing import Any, Callable
@@ -314,8 +316,8 @@ class SFMR:
         Redshift at which to compute the relation.
     flattening : {'none', 'moderate', 'sharp'}, default: 'none'
         SFMR flattening mode.
-    scatter : {'none', 'normal', 'min', 'max'}, default : 'none'
-        Model for SFR scatter about the SFMR.
+    scatter_model : {'none', 'normal', 'min', 'max'}, default : 'none'
+        Model for SFR scatter_model about the SFMR.
 
     Attributes
     ----------
@@ -351,10 +353,11 @@ class SFMR:
     From Chruslisnka & Nelemans (2019). [4]_
     """
 
-    def __init__(self, redshift: float, flattening: str = 'none', scatter: str = 'none') -> None:
+    def __init__(self, redshift: float, flattening: str = 'none',
+                 scatter_model: str = 'none') -> None:
         self.redshift = redshift
         self.sfmr = flattening
-        self.scatter = scatter
+        self.scatter_model = scatter_model
 
     def __getattr__(self, name: str) -> Any:
         """Redirect calls to self to the chosen SFMR class instance."""
@@ -379,7 +382,7 @@ class SFMR:
 
     @property
     def scatter(self) -> Callable[[], float]:
-        """Return a value for SFR scatter around the SFMR.
+        """Return a value for SFR scatter_model around the SFMR.
 
         Depending on :attr:`flattening`, will be a normal distribution
         with mean 0 and standard deviation equal to
@@ -400,7 +403,7 @@ class SFMR:
         if scatter in scatter_models:
             self._scatter = scatter_models[scatter]
         else:
-            raise ValueError('Parameter "scatter" must be one of '
+            raise ValueError('Parameter "scatter_model" must be one of '
                              ', '.join(scatter_models.keys()))
 
 
@@ -457,7 +460,7 @@ class MZR:
         Redshift at which to compute the relation.
     model : {"KK04", "T04", "M09", "PP04"}, default: "KK04"
         Option of MZR parameter set.
-    scatter : {"none", "normal", "max", "min"}, default : "none"
+    scatter_model : {"none", "normal", "max", "min"}, default : "none"
         Model for metallicity scatter about the MZR.
 
     Attributes
