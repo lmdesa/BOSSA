@@ -1390,11 +1390,10 @@ class ZAMSSystemGenerator:
     logger : logging.Logger
         Instance logger.
 
-    Warns
-    -----
-    UserWarning
-        If a star system fails to be generated within the set mass
-        constraints.
+    See Also
+    -------
+    sampling.SimpleBinaryPopulation :
+        Implements this class to generate a binary population.
 
     Notes
     -----
@@ -1415,45 +1414,24 @@ class ZAMSSystemGenerator:
     Ultimately, orbital periods, mass ratios and eccentricities will be
     limited to the values in :attr:`pairs_table`, while both
     :attr:`m1_table` and :attr:`m1_array` are returned by
-    :meth:`sample_system`. By default, this class loads tables from
-    either :data:`constants.BINARIES_UNCORRELATED_TABLE_PATH` or
-    :data:`constants.BINARIES_CORRELATED_TABLE_PATH`. Check their
-    documentation for description on their construction.
-
-     Operationally, all n_comp periods are drawn at the start, then their
-    respective q_choice,e_choice pairs are drawn from the corresponding
-    PyTable Table logp_table within m1group, starting from the lowest
-    period. The chosen companion mass is then mcomp_choice=q_choice*m1,
-    and the closest value mcomp is found in the relevant imf_array. If
-    their relative difference dmcomp passes a tolerance test, the pair
-    is accepted. Otherwise, q and e are redrawn until a succesful pair
-    is found, or the number of tries reaches qe_max_tries.
-
-    If at any point a primary-companion pair fails to be found, the
-    whole system is discarded and an empty list and zero mass are
-    returned. Otherwise, the parameters for the inner pair and the total
-    system mass are returned, and the component masses are removed from
-    the imf_array arrays.
-
+    :meth:`sample_system`. It is expected that the table is composed of
+    root-level groups, each of which corresponds to a primary mass; and
+    that each :attr:`m1group` is composed of tables, each of which
+    corresponding to a `logp` and containing mass ratio-eccentricity
+    pairs. It is expected that all combinations of the four parameters
+    found in the table are equiprobable. By default, this class loads
+    tables from :data:`constants.BINARIES_UNCORRELATED_TABLE_PATH`.
+    Check its documentation for description on its construction.
 
     This class can be employed on its own to generate individual systems.
     Its implementation for the generation of an entire sample of
     binaries is handled by the :class:`sampling.SimpleBinaryPopulation`
     class.
 
-    References
-    ----------
-    .. [1] Salpeter, E. E. (1955). The Luminosity Function and Stellar
-        Evolution. ApJ, 121, 161. doi:10.1086/145971
-    .. [2] Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The
-        Interrelation between Period (P) and Mass-ratio (Q)
-        Distributions of Binary Stars. ApJS, 230(2), 55.
-        doi:10.3847/1538-4365/aa6fb6
+    Examples
+    --------
+    >>> systemgenerator = ZAMSSystemGenerator()
 
-    See Also
-    -------
-    sampling.SimpleBinaryPopulation :
-        Implements this class to generate a binary population.
     """
 
     def __init__(self, pairs_table_path, imf_array, qe_max_tries=1,
@@ -1603,21 +1581,34 @@ class ZAMSSystemGenerator:
 
         Notes
         -----
-        All ncomp periods are drawn at the start, then their respective
-        q_table,e_table pairs are drawn from the corresponding PyTable
-        Table logp_table within m1group, starting from the lowest
-        period. The chosen companion mass is then
-        mcomp_table=q_table*m1_table, and the closest value mcomp_array
-        is found in the relevant imf_array. If their relative difference
-        dmcomp passes a tolerance test, the pair is accepted. Otherwise,
-        q and e are redrawn until a succesful pair is found, or the
-        number of tries reaches qe_max_tries.
+        For primary masses set with :meth:`open_m1group`, the orbital
+        period logs ``logp_table`` are drawn for all ```ncomp``` binaries
+        from :attr:`m1group`. Then, starting from the innermost
+        companion and moving toward the outermost one, the corresponding
+        ``logp_table`` table is opened in :attr:`m1group` and a
+        ``q_table,e_table`` pair is drawn from it. The companion mass is
+        set to ``mcomp_table=q_table*m1_table``, and its closest match in
+        :attr:`imf_array`, ``mcomp_array``, is found. The drawn pair is
+        tested against :attr:`dmcomp_tol`, and if
 
-        If at any point a primary-companion pair fails to be found, the
-        whole system is discarded and an empty list and zero mass are
-        returned. Otherwise, the parameters for the inner pair and the
-        total system mass are returned, and the component masses are
-        removed from the imf_array arrays.
+        .. math::
+
+            \\frac{|m_\\mathrm{comp}^\\mathrm{array}-m_\\mathrm{table}|}
+            {m_\\mathrm{comp}^\\mathrm{array}} \leq
+            dm_\\mathrm{comp}^\\mathrm{tol},
+
+        the pair is accepted. If not, ``q,e`` can be drawn for up to
+        :attr:`qe_max_tries` times. If not match can be found, the draw
+        failed, and an empty parameter array is returned.
+
+        If at any point a valid pair fails to be found, the whole system
+        is discarded and an empty array is returned. Otherwise, the
+        parameters for the sampled pairs are returned, and the component
+        masses are removed from the :attr:`imf_array` and its
+        sub-arrays.
+
+        Two mass sub-arrays, :attr:`lowmass_imf_array` and
+        :attr:`highmass_imf_array`
         """
 
         if ncomp > (len(self.lowmass_imf_array)
