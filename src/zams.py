@@ -1432,8 +1432,15 @@ class ZAMSSystemGenerator:
 
     Examples
     --------
-    >>> systemgenerator = ZAMSSystemGenerator(,
-
+    >>> import numpy as np
+    >>> systemgenerator = ZAMSSystemGenerator(imf_array=np.logspace(-1, 2, 1.e6))
+    >>> systemgenerator.setup_sampler()
+    >>> m1table_indices = np.random.randint(0, systemgenerator.m1array_n, 2)
+    >>> systemgenerator.open_m1group(m1table_indices[0])
+    >>> sampled_pairs1 = systemgenerator.sample_system(ncomp=1, ncomp_max=2)
+    >>> systemgenerator.open_m1group(m1table_indices[1])
+    >>> sampled_pairs2 = systemgenerator.sample_system(ncomp=2, ncomp_max=2)
+    >>> systemgenerator.close_pairs_table()
     """
 
     def __init__(self, imf_array, pairs_table_path=BINARIES_UNCORRELATED_TABLE_PATH, m1_min=0.8,
