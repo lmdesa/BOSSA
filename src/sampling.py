@@ -172,7 +172,23 @@ class RandomSampling:
         return self.sample
 
 
-class GalaxyStellarMass:
+class GalaxyStellarMassSampling:
+    """Sample galaxy stellar masses from a GSMF.
+
+    This class performs a number- or mass-weighted sampling of galaxy
+    stellar mass from the galaxy stellar mass function (GSMF) in
+    :class:`sfh.GSMF`.
+
+    Parameters
+    ----------
+    gsmf : :class:`sfh.GSMF`
+        GSMF to sample.
+    logm_min : float
+        Log of sampling interval lower limit.
+    logm_max : float
+        Log of sampling interval upper limit.
+    n_bins : float
+        """
 
     def __init__(self, gsmf, logm_min=7, logm_max=12, n_bins=3, sampling='number'):
         self.gsmf = gsmf
@@ -447,7 +463,7 @@ class GalaxyGrid:
     def _sample_masses(self, redshift):
         """Sample galaxy stellar masses from the GSMF at a given redshift."""
         gsmf = GSMF(redshift, self.gsmf_slope_fixed)
-        sample = GalaxyStellarMass(gsmf, self.logm_min, self.logm_max, self.logm_per_redshift, self.sampling_mode)
+        sample = GalaxyStellarMassSampling(gsmf, self.logm_min, self.logm_max, self.logm_per_redshift, self.sampling_mode)
         sample.sample()
         return sample
 
