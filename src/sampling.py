@@ -190,8 +190,9 @@ class GalaxyStellarMassSampling:
         Log of sampling interval upper limit.
     size : int
         Sample size.
-    sampling : {'number', 'mass}, default : 'number'
-        Whether to sample by galaxy number or stellar mass.
+    sampling : {'number', 'mass', 'uniform'}, default : 'number'
+        Whether to sample by galaxy number, stellar mass, or with
+        uniform mass bins.
 
     Attributes
     ----------
@@ -231,6 +232,9 @@ class GalaxyStellarMassSampling:
     implements this for the ``GSMF(m)`` directly, while option
     ``sampling='number'`` does it for ``m*GSMF(m)``. In the future this
     class might be streamlined with Numpy's quantile function.
+
+    Option ``sampling='uniform'`` sets :attr:`sample_size` uniform-width
+    log mass bins.
 
     Sampling is performed for a fixed redshift (defined within
     :attr:`gsmf`). Besides the log stellar masses
