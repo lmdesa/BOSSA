@@ -1555,7 +1555,7 @@ class ZAMSSystemGenerator:
         :attr:`lowmass_imf_array` and :attr:`highmass_imf_array`, to
         speed up sampling by assuming that `m1` is always in
         :attr:`highmass_imf_array` and that
-        :math:`m_\\mathrm{comp}<m_1´. Sets the initial value of
+        :math:`m_\\mathrm{comp}<m_1`. Sets the initial value of
         :attr:`m1array_n`.
         """
 
@@ -1584,7 +1584,7 @@ class ZAMSSystemGenerator:
     def sample_system(self, ncomp: int = 1, ncomp_max: int = 1) -> NDArray:
         """Return parameters of a multiple system.
 
-        Generates a multiple system with ``ncomp```companions for
+        Generates a multiple system with ``ncomp`` companions for
         a primary set with :meth:`open_m1group`, assuming up to
         ``ncomp_max`` companions are allowed. Returns ordered inner
         binary and further pair parameters, as well as companion number
