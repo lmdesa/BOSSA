@@ -1196,7 +1196,8 @@ class MultipleFraction:
         nmeans = [self.multfreq_to_nmean(multfreq) for multfreq in multfreqs]
         self.m1_to_nmean = interp1d(self.m1_array, nmeans)
         time1 = time() - time0
-        print(f'Done setting up interpolator. Elapsed time: {time1:.4f} s.')
+        print(f'Done setting up interpolator. '
+              f'Elapsed time: {time1:.4f} s.')
 
     def _set_multfreq_to_nmean(self) -> None:
         """Setup multiplicity frequency to ``nmean`` interpolator."""
@@ -1290,7 +1291,8 @@ class MultipleFraction:
         """
 
         if self.m1_to_nmean is None:
-            warnings.warn('m1 to nmean interpolator not set up. Please run solve() first.')
+            warnings.warn('m1 to nmean interpolator not set up. '
+                          'Please run solve() first.')
             return
         return self.m1_to_nmean(m1)
 
