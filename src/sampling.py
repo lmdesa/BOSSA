@@ -196,10 +196,61 @@ class GalaxyStellarMassSampling:
     ----------
     gsmf : :class:`sfh.GSMF`
         GSMF to sample.
-    redshift : float
-        Redshift at which the GSMF is defined.
+    logm_min : float
+        Log of sampling interval lower limit.
+    logm_max : float
+        Log of sampling interval upper limit.
+    sample_size : int
+        Sample size.
+    sampling : str
+        Whether to sample by galaxy number or stellar mass.
+    bin_limits : NDArray
+        Limits of sampled mass bins.
+    grid_ndensity_array : NDArray
+        Sampled number densities.
+    grid_density_array : NDArray
+        Sampled mass densities.
+    grid_logmasses : NDArray
+        Sampled log galaxy stellar masses.
 
-        """
+    Methods
+    -------
+    sample()
+        Generate a sample of galaxy stellar masses.
+
+    See Also
+    --------
+    GalaxyGrid :
+        Implements this class to generate a grid of galaxy metallicities
+        and star-formation rates over redshift.
+
+    Notes
+    -----
+    The sampling method implemented in this class is equivalent to
+    computing :attr:`sample_size` quantiles of the GSMF and assigning
+    each one its average stellar mass. Option ``sampling='number'``
+    implements this for the ``GSMF(m)`` directly, while option
+    ``sampling='number'`` does it for ``m*GSMF(m)``. In the future this
+    class might be streamlined with Numpy's quantile function.
+
+    Sampling is performed for a fixed redshift (defined within
+    :attr:`gsmf`). Besides the log stellar masses
+    (:attr:`grid_logmasses`), this class also stores the corresponding
+    mass and number densities of galaxies of those masses at the fixed
+    redshift (:attr:`grid_density_array` and
+    :attr:`grid_ndensity_array` respectively).
+
+    Examples
+    --------
+    >>> from src.sfh import GSMF
+    >>> gsmf = GSMF(redshift=0)
+    >>> galaxy_mass_sampler = GalaxyStellarMassSampling(gsmf, size=10)
+    >>> galaxy_mass_sampler.sample()
+    >>> galaxy_mass_sampler.grid_logmasses
+    array([9.89241753, 8.99773241, 8.50334364, 8.14752827, 7.86839714,
+           7.64216579, 7.45822559, 7.30385785, 7.17084443, 7.05398244])
+
+    """
 
     def __init__(self, gsmf, logm_min=7, logm_max=12, size=3, sampling='number'):
         self.gsmf = gsmf
@@ -213,6 +264,27 @@ class GalaxyStellarMassSampling:
         self.grid_logmasses = np.empty(size, np.float64)
 
     def _ratio(self, logm_im1, logm_i, logm_ip1):
+        """Compute the ratio of the GSMF integral in a bin.
+
+        Integrate either ``GSMF(m)`` or ``m*GSMF(m)`` according to
+        :attr:`sampling`. This function is used to check whether two
+        consecutive mass bins hold the same mass/number density.
+
+        Parameters
+        ----------
+        logm_im1 : float
+            Log m_(i minus 1). Lower limit of the first bin.
+        logm_i : float
+            Log m_i. Upper limit of the first bin, lower of the second.
+        logm_ip1 : float
+            Log m_(i plus 1). Upper limit of the second bin.
+
+        Returns
+        -------
+        float
+            Ratio of the integral in the first over the second bin.
+        """
+
         if self.sampling == 'number':
             int1 = quad(lambda x: 10 ** self.gsmf.log_gsmf(x), logm_ip1, logm_i)[0]
             int2 = quad(lambda x: 10 ** self.gsmf.log_gsmf(x), logm_i, logm_im1)[0]
