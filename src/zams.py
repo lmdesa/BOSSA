@@ -1202,7 +1202,15 @@ class MultipleFraction:
         self.multfreq_to_nmean = interp1d(multfreqs, nmeans)
 
     def _set_mmax(self):
-        """Sets the """
+        """Set the maximum mass and mass array.
+
+        The maximum mass is set to either 150.0 or to the maximum mass
+        allowed by :attr:`nmean_max`, whichever is greater. The greater
+        the :attr:`nmean_max`, the more massive primaries can be allowed
+        by the multiplicity frequency constraint. :attr:`m1_array` is
+        then set for :attr:`mmax`.
+        """
+
         if self.nmax >= 5:
             self.mmax = 150.
             self.m1_array = np.logspace(np.log10(self.mmin), np.log10(self.mmax), 20)
@@ -1228,10 +1236,20 @@ class MultipleFraction:
             tries += 1
         self.mmax = min(mmax[0], self.mmax)
         self.m1_array = np.logspace(np.log10(self.mmin), np.log10(self.mmax), 20)
-        self.m1_array[-1] = self.mmax  # avoid floating point error from an implicit 10**np.log10(mmax)
+        # avoid error from an implicit 10**np.log10(mmax)
+        self.m1_array[-1] = self.mmax
 
     def solve(self):
-        """Set up companion number probability distribution."""
+        """Set up companion number probability distribution.
+
+        Sets up a series of interpolators necessary for computing the
+        companion number as a function of mean companion number and
+        primary mass. Defines :attr:`m1_array` and the corresponding
+        :attr:`nmean_array` and :attr:`binary_fraction`, and is
+        necessary for :meth:`ncomp_mean` and
+        :meth:`get_multiple_fraction`.
+        """
+
         self._set_multfreq_to_nmean()
         self._set_mmax()
         self._set_m1_to_nmean()
@@ -1250,9 +1268,7 @@ class MultipleFraction:
         self.binary_fraction = self.binary_fraction[:i + 1]
 
     def ncomp_mean(self, m1):
-        """Mean companion number for a given primary mass.
-
-        Calls the m1_to_nmean interpolator and returns the mean companion number for the given primary mass.
+        """Return mean companion number for a primary mass ``m1``.
 
         Parameters
         ----------
@@ -1267,7 +1283,7 @@ class MultipleFraction:
         Warns
         -----
         UserWarning
-            If the m1 to nmean interpolator is not set up (solve has not been run yet).
+            If :meth:`solve` has not been called yet.
         """
 
         if self.m1_to_nmean is None:
@@ -1276,7 +1292,7 @@ class MultipleFraction:
         return self.m1_to_nmean(m1)
 
     def prob(self, l, k):
-        """Companion number probability function for a mean l, evaluated at k."""
+        """Return probability of ``k`` companions given mean ``l``."""
         k_arr = np.array(k).flatten()
         prob_arr = np.zeros(k_arr.shape)
         probs = self._truncated_poisson_mdf(l, k_arr, self.nmax)
@@ -1288,19 +1304,18 @@ class MultipleFraction:
         return prob_arr
 
     def get_multiple_fraction(self, n):
-        """Compute fraction of order n multiples for a set of primary masses.
-
-        For a number of companions n, compute the respective multiplicity fraction for the primary masses in m1_array.
+        """Return fraction of order n multiples for :attr:`m1_array`.
 
         Parameters
         ----------
         n : int
-            Number of companions.
+            Companion number.
 
         Returns
         -------
-        fracs : numpy array
-            (len(m1_array),) shaped array containing the multiplicity fractions evaluated at m1_array.
+        fracs : NDArray
+            ``(len(m1_array),)``-shaped array containing the n-multiplicity
+            fractions for masses in ::meth:`m1_array`.
         """
 
         fracs = np.zeros(self.nmean_array.shape)
