@@ -401,7 +401,7 @@ class SFMR:
             self._scatter = scatter_models[scatter]
         else:
             raise ValueError('Parameter "scatter" must be one of '
-                             f'{', '.join(scatter_models.keys())}')
+                             ', '.join(scatter_models.keys()))
 
 
     @staticmethod
@@ -589,7 +589,7 @@ class MZR:
             self._scatter = scatter_models[scatter]
         else:
             raise ValueError('Parameter "scatter" must be one of '
-                             f'{', '.join(scatter_models.keys())}')
+                             ', '.join(scatter_models.keys()))
     @staticmethod
     def _dispersion(logm: float) -> float:
         """Empirical Z_OH dispersion around the MZR. Mass-dependent."""
