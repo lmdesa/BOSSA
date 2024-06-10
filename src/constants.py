@@ -50,7 +50,19 @@ HIGHMET_CANON_SFRD_DATA_PATH = Path(C20_DIR_PATH, '302w14_FOH_z_dM.dat')
 REDSHIFT_SFRD_DATA_PATH = Path(C20_DIR_PATH, 'Time_redshift_deltaT.dat')
 
 BINARIES_UNCORRELATED_TABLE_PATH = Path(DATA_PATH, 'canonical_mp_qe_table.h5')
-"""path_like: Path to the equiprobable binary parameters h5 file, generated from the uncorrelated distributions."""
+"""path_like: Path to the equiprobable binary parameters h5 file, generated from the uncorrelated distributions.
+
+The File is structured in 200 Groups, corresponding to 200
+    equiprobable m1 values drawn from a Salpeter PowerLawIMF [1]_.
+    Each Group is structure in 100 Tables, each corresponding to one of
+    100 equiprobable logp values drawn for that m1 from the
+    CompanionFrequencyDistribution class. Each Table holds 1000 lines,
+    each of which contains one of 1000 equiprobable q,e pairs, from 10
+    possible q and 10 possible e, drawn from the MassRatioDistribution
+    and EccentricityDistribution classes. The orbital parameter
+    distributions are due to Moe & Di Stefano (2017) [2]_.
+"""
+
 BINARIES_CORRELATED_TABLE_PATH = Path(DATA_PATH, 'correlated_mp_qe_table.h5')
 """path_like: Path to the equiprobable binary parameters h5 file, generated from the Moe & Di Stefano distibutions."""
 

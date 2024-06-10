@@ -9,7 +9,7 @@ import tables as tb
 
 import sys
 sys.path.append('..')
-from src.constants import Z_SUN, BINARIES_CORRELATED_TABLE_PATH, BINARIES_CANONICAL_TABLE_PATH, ZSUN_GRID_DIR
+from src.constants import Z_SUN, BINARIES_CORRELATED_TABLE_PATH, BINARIES_UNCORRELATED_TABLE_PATH, ZSUN_GRID_DIR
 
 np.set_printoptions(precision=4)
 ZSUN_GRID_DIR.mkdir(parents=True, exist_ok=True)
@@ -126,7 +126,7 @@ if __name__ == '__main__':
             print('Please reply with Y or N.')
             pass
     if canonical:
-        binaries_table_path = BINARIES_CANONICAL_TABLE_PATH
+        binaries_table_path = BINARIES_UNCORRELATED_TABLE_PATH
     else:
         binaries_table_path = BINARIES_CORRELATED_TABLE_PATH
 

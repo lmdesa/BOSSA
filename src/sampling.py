@@ -28,7 +28,7 @@ from src.imf import EmbeddedCluster, Star, IGIMF
 from src.sfh import MZR, SFMR, Corrections, GSMF
 from src.zams import ZAMSSystemGenerator, MultipleFraction
 from src.utils import interpolate, ZOH_from_FeH, ZOH_to_FeH, create_logger, format_time
-from src.constants import Z_SUN, DATA_PATH, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINARIES_CANONICAL_TABLE_PATH,\
+from src.constants import Z_SUN, DATA_PATH, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINARIES_UNCORRELATED_TABLE_PATH,\
     COMPAS_12XX_PROC_OUTPUT_DIR_PATH, COMPAS_21XX_PROC_OUTPUT_DIR_PATH, COMPAS_12XX_GRIDS_PATH, COMPAS_21XX_GRIDS_PATH,\
     IGIMF_ZAMS_DIR_PATH, COMPACT_OBJ_DIR_PATH, GALAXYGRID_DIR_PATH, PHYSICAL_CORE_COUNT, TOTAL_PHYSICAL_MEMORY
 
@@ -1220,7 +1220,7 @@ class SimpleBinaryPopulation:
         if self.correlated_orbital_parameters:
             pairs_table_path = BINARIES_CORRELATED_TABLE_PATH
         else:
-            pairs_table_path = BINARIES_CANONICAL_TABLE_PATH
+            pairs_table_path = BINARIES_UNCORRELATED_TABLE_PATH
         return pairs_table_path
 
     @cached_property

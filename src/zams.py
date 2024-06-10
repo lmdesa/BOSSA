@@ -984,6 +984,8 @@ class MultipleFraction:
     companions, or compute a binary fraction by assuming all
     non-isolated stars are in binaries.
 
+    All masses are in solar masses.
+
      Parameters
     ----------
     mmin : float
@@ -1331,56 +1333,62 @@ class MultipleFraction:
         return fracs
 
 
+# TODO: import tables for proper File, Group, etc. typing
 class ZAMSSystemGenerator:
-    """Sample ZAMS multiple systems of arbitrary order, given a primary
-    mass m1, while keeping track of available m1.
+    """Generate ZAMS multiples from a shared mass pool.
 
-    For a primary companion of mass 150 Msun >= m1 >= 0.8 Msun, draws an
-    arbitrary number n_comp of zero-age main sequence (ZAMS) companions
-    0.08 Msun <= mcomp <= 150 Msun, identified by the period, mass ratio
-    and eccentricity of their orbit. Receives an array of allowed masses
-    imf_array from which all component masses must be drawn within a set
-    tolerance, without repetition. This allows for the user to pass an
-    array of masses that follow an arbitrary initial mass function
-    (PowerLawIMF) that the sample should reproduce.
+    Receives an array of pre-sampled initial masses :attr:`imf_array`
+    from which all masses (primary and of companions) are drawn without
+    repetition. Builds zero-age main sequence (ZAMS) multiples by
+    randomly pulling a primary mass from the pool, drawing a companion
+    number; then for each companion drawing its mass from a mass ratio
+    distribution, and looking for the closest match in
+    :attr:`imf_array`, which is accepted if the relative difference
+    between masses is at most :attr:`dmcomp_tol`. Orbital period and
+    eccentricity are drawn from their respective distributions. Allows
+    the user to pull one system at a time until the mass pool is
+    exhausted or becomes unable to produce valid mass pairings. The mass
+    pool allows the sample to follow an arbitrary initial mass function
+    (IMF).
+
+    All orbital periods are in days and masses in solar masses.
 
     Attributes
     ----------
-    pairs_table_path : path_like object
-        Path to the h5 file containing equiprobable (m1,logp,q,e) sets
-        according to the distributions in this class.
-    imf_array : numpy array
-        Array of masses from which all component masses will be initially
-        drawn.
+    pairs_table_path : path_like
+        Path to a HDF5 file containing equiprobable (m1,logp,q,e) sets
+        according to the desired orbital parameter distributions.
+    imf_array : NDArray
+        Mass pool for sampling primary and companion masses.
     qe_max_tries : int
-        Number of attempts to draw a valid q,e pair for a chosen m1,logp
-        before m1 is redrawn.
+        Maximum number of attempts at drawing a valid ``q,e`` pair for
+        a given ``m1,logp``, before ``m1`` is redrawn.
     dmcomp_tol : float
-        Maximum fractional difference between a drawn mass and the
-        closest mass in imf_array for it to be accepted.
-    pairs_table : PyTables File
-        Table loaded from the file in pairs_table_path, from which all
-        star pairs are taken.
-    lowmass_imf_array : numpy array
-        Subarray of imf_array with < 0.8 Msun masses.
+        Maximum accepted difference between a companion mass drawn from
+        a `q`-distribution and the closest value in :attr:`imf_array`,
+        relative to the latter.
+    pairs_table : tables.File
+        Table loaded from :attr:`pairs_table_path`
+    lowmass_imf_array : NDArray
+        Subarray of :attr:`imf_array` with ``m<0.8``.
     highmass_imf_array : numpy array
-        Subarray of imf_array with >= 0.8 Msun masses.
+        Subarray of :attr:`imf_array` with ``m>=0.8``..
     m1array_n : int
-        Number of remaining masses in highmass_imf_array.
+        Live length of :attr:`highmass_imf_array`.
     m1array_i : int
-        Index of the primary mass currently drawn from
-        highmass_imf_array.
+        Index of the last ``m1`` drawn from :attr:`highmass_imf_array`.
     m1_array : float32
-        Current primary mass drawn from highmass_imf_array.
+        Last ``m1`` drawn from :attr:`highmass_imf_array`.
     m1_table : float32
-        Closest mass to m1choice found in pairs_table.
+        Closest match to :attr:`m1_array` in :attr:`pairs_table`.
     dm1 : float
-        Difference bewtween m1 and m1choice relative to m1choice.
-    m1group : PyTables Group
-        Table of equiprobable companion orbits for m1choice, identified
-        by a set (logp,q,e).
-    logger : logging Logger
-        Class logger.
+        Difference between :attr:`m1_table` and :attr:`m1_array`
+        relative to the latter.
+    m1group : tables.Group
+        Table of equiprobable companions for :attr:`m1_table`,
+        identified by a set ``(logp,q,e)``.
+    logger : logging.Logger
+        Instance logger.
 
     Warns
     -----
@@ -1390,28 +1398,29 @@ class ZAMSSystemGenerator:
 
     Notes
     -----
-    This class was built with current population synthesis codes in
-    mind, which do not evolve triples or higher-order multiples. While
-    these higher-order systems cannot be directly evolved, they must be
-    accounted for at any rate when computing the star-forming mass
-    represented by an evolved population, which is important for
-    generalizing results, such as when computing a volumetric merger
-    rate from the single population merger rate.
+    This class allow for sampling multiples of arbitrary order, but it
+    assumes that table :attr:`pairs_table` was built based on
+    distributions appropriate for the desired degree of multiplicity.
+    All companion masses are always removed from :attr:`imf_array` upon
+    a successful draw.
 
-    A choice can be made to still evolve the inner pair as an isolated
-    binary anyway, while only accounting for the outer components with
-    their masses, and ignoring any effects they may have on the inner
-    pair's evolution. This avoids an underestimation of merger rates,
-    for example, especially for more massive systems, but introduces
-    obvious uncertainties with regard to evolution.
+    Within triples or higher-order multiples, all orbital periods are
+    drawn simultaneously, i.e., the orbital periods of individual
+    companions are not treated as independent quantities. Orbital
+    parameters are ordered in order of closest farthest companion in
+    the output of :meth:`sample_system`, to allow evolving only the
+    inner binary. Note that this shifts the binary orbital period
+    distribution to lower periods, as discussed in de Sá et al. [2]_.
 
-    Currently the sample_system method always returns the inner pair.
-    The user can then choose to evolve it as an isolated binary or not,
-    based on the actual number of companions it represents, but not base
-    on the orbital period of the outer companions. This option may be
-    implemented in the future.
+    Ultimately, orbital periods, mass ratios and eccentricities will be
+    limited to the values in :attr:`pairs_table`, while both
+    :attr:`m1_table` and :attr:`m1_array` are returned by
+    :meth:`sample_system`. By default, this class loads tables from
+    either :data:`constants.BINARIES_UNCORRELATED_TABLE_PATH` or
+    :data:`constants.BINARIES_CORRELATED_TABLE_PATH`. Check their
+    documentation for description on their construction.
 
-    Operationally, all n_comp periods are drawn at the start, then their
+     Operationally, all n_comp periods are drawn at the start, then their
     respective q_choice,e_choice pairs are drawn from the corresponding
     PyTable Table logp_table within m1group, starting from the lowest
     period. The chosen companion mass is then mcomp_choice=q_choice*m1,
@@ -1426,22 +1435,11 @@ class ZAMSSystemGenerator:
     system mass are returned, and the component masses are removed from
     the imf_array arrays.
 
-    Ultimately, all (m1,logp,q,e) parameter sets are taken from the
-    pairs_table h5 file, meant to be opened with the PyTables package.
-    The File is structured in 200 Groups, corresponding to 200
-    equiprobable m1 values drawn from a Salpeter PowerLawIMF [1]_.
-    Each Group is structure in 100 Tables, each corresponding to one of
-    100 equiprobable logp values drawn for that m1 from the
-    CompanionFrequencyDistribution class. Each Table holds 1000 lines,
-    each of which contains one of 1000 equiprobable q,e pairs, from 10
-    possible q and 10 possible e, drawn from the MassRatioDistribution
-    and EccentricityDistribution classes. The orbital parameter
-    distributions are due to Moe & Di Stefano (2017) [2]_.
 
     This class can be employed on its own to generate individual systems.
     Its implementation for the generation of an entire sample of
-    binaries is handled by the SimpleBinaryPopulation class in the
-    sampling module.
+    binaries is handled by the :class:`sampling.SimpleBinaryPopulation`
+    class.
 
     References
     ----------
@@ -1454,8 +1452,8 @@ class ZAMSSystemGenerator:
 
     See Also
     -------
-    sampling.SimpleBinaryPopulation : implement this class to generate a
-    full binary population sample.
+    sampling.SimpleBinaryPopulation :
+        Implements this class to generate a binary population.
     """
 
     def __init__(self, pairs_table_path, imf_array, qe_max_tries=1,
