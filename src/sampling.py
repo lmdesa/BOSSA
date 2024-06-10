@@ -202,14 +202,12 @@ class GalaxyStellarMassSampling:
         Log of sampling interval upper limit.
     sample_size : int
         Sample size.
-    sampling : str
-        Whether to sample by galaxy number or stellar mass.
     bin_limits : NDArray
         Limits of sampled mass bins.
     grid_ndensity_array : NDArray
-        Sampled number densities.
+        Number density within each mass bin.
     grid_density_array : NDArray
-        Sampled mass densities.
+        Mass density within each mass bin.
     grid_logmasses : NDArray
         Sampled log galaxy stellar masses.
 
@@ -235,10 +233,10 @@ class GalaxyStellarMassSampling:
 
     Sampling is performed for a fixed redshift (defined within
     :attr:`gsmf`). Besides the log stellar masses
-    (:attr:`grid_logmasses`), this class also stores the corresponding
-    mass and number densities of galaxies of those masses at the fixed
-    redshift (:attr:`grid_density_array` and
-    :attr:`grid_ndensity_array` respectively).
+    (:attr:`grid_logmasses`), this class also stores the total mass and
+    number densities contained by each mass bin
+    (:attr:`grid_density_array` and :attr:`grid_ndensity_array`
+    respectively).
 
     Examples
     --------
@@ -265,6 +263,7 @@ class GalaxyStellarMassSampling:
 
     @property
     def sampling(self):
+        """str: Whether to sample by galaxy number or stellar mass."""
         return self._sampling
 
     @sampling.setter
@@ -273,6 +272,8 @@ class GalaxyStellarMassSampling:
             self._sampling = 'number'
         elif sampling == 'mass':
             self._sampling = 'mass'
+        elif sampling == 'uniform':
+            self._sampling = 'uniform'
         else:
             raise ValueError('Parameter "sampling" must be one of '
                              '"number", "mass".')
@@ -283,6 +284,8 @@ class GalaxyStellarMassSampling:
         Integrate either ``GSMF(m)`` or ``m*GSMF(m)`` according to
         :attr:`sampling`. This function is used to check whether two
         consecutive mass bins hold the same mass/number density.
+
+        Not called for uniform sampling.
 
         Parameters
         ----------
@@ -308,21 +311,50 @@ class GalaxyStellarMassSampling:
         return int1 / int2
 
     def _constraint(self, vec):
+        """Returns a vector to be minimized during sampling.
+
+        Vector containing the (ratios - 1) between the integrals within
+        successive mass bins. The integrals are computed by
+        :meth:`_ratio`. The number of bins is fixed to
+        :attr:`sample_size`, but their limits can be shifted around
+        until they become the :attr:`sample_size`-quantiles of the GSMF,
+        i.e., until `bin_density_ratios` becomes null. This is done by
+        :meth:`sample`.
+
+        Not called for uniform sampling.
+
+        Parameters
+        ----------
+        vec : NDArray
+            Boundaries of the mass bins, except for the extremes, i.e.,
+            first lower boundary and last upper boundary.
+
+        Returns
+        -------
+        bin_density_ratios : NDArray
+            (Ratios - 1) of the number or mass integral between
+            successive bins.
+        """
+
+        # Add extremes to bin limits.
         bin_limits = np.concatenate(([self.logm_max], vec, [self.logm_min]))
         bin_density_ratios = np.empty(self.sample_size - 1, np.float64)
         for i, logm_i in enumerate(bin_limits[1:-1]):
-            logm_im1 = bin_limits[i]
-            logm_ip1 = bin_limits[i + 2]
+            logm_im1 = bin_limits[i]  # m_(i minus 1)
+            logm_ip1 = bin_limits[i + 2]  # m_(i plus 1)
+            # The first two conditions stops bins from "crossing over".
             if logm_i > self.logm_max or logm_ip1 > self.logm_max:
                 bin_density_ratios[i] = 1000
             elif logm_i < self.logm_min or logm_ip1 < self.logm_min:
                 bin_density_ratios[i] = 1000
+            # Only if there is no crossover is the actual ratio taken.
             else:
                 r = self._ratio(logm_im1, logm_i, logm_ip1)
                 bin_density_ratios[i] = r - 1
         return bin_density_ratios
 
     def _set_grid_density(self):
+        """Integrates within each bin for mass and number densities."""
         for i, (m2, m1) in enumerate(zip(self.bin_limits[:-1], self.bin_limits[1:])):
             ndens = quad(lambda x: 10 ** self.gsmf.log_gsmf(x), m1, m2)[0]
             dens = quad(lambda x: 10 ** x * 10 ** self.gsmf.log_gsmf(x), m1, m2)[0]
@@ -330,16 +362,29 @@ class GalaxyStellarMassSampling:
             self.grid_density_array[i] = dens
 
     def sample(self):
+        """Sample galaxy stellar masses from the GSMF.
+
+        Generates the galaxy stellar mass samples according to
+        :attr:`sampling` and stores it in :attr:`grid_logmasses`. Number
+        and mass densities of galaxies in each bin are also computed
+        and stored in :attr:`grid_density_array` and
+        :attr:`grid_ndensity_array`, respectively.
+        """
+
+        # No minimization problem if bins are uniform.
         if self.sampling == 'uniform':
             self.bin_limits = np.linspace(self.logm_max, self.logm_min, self.sample_size + 1)
         else:
+            # Use uniform bins as initial guesses.
+            # A number-weighted sample is always weighted towards lower
+            # masses relative to a mass-weighted one because less
+            # massive galaxies are much more common.
             if self.sampling == 'number':
                 initial_guess = np.linspace(9, self.logm_min, self.sample_size + 1)[1:-1]
             elif self.sampling == 'mass':
                 initial_guess = np.linspace(11, 9, self.sample_size + 1)[1:-1]
-            else:
-                warnings.warn(f'Sampling option {self.sampling} not recognized.')
-                return
+            # Minimize (ratio-1) bin integral vector.
+            # See the _constraint docstring.
             solution = fsolve(self._constraint, initial_guess, maxfev=(initial_guess.shape[0] + 1) * 1000)
             self.bin_limits = np.concatenate(([self.logm_max], solution, [self.logm_min]))
         self._set_grid_density()
