@@ -1397,8 +1397,7 @@ class SimpleBinaryPopulation:
 
         # The MultipleFraction class provides the probability distribution of the number of companions as a function of
         # primary mass.
-        multiple_fractions = MultipleFraction(mmin=self.m_min,
-                                              mmax=self.m_max,
+        multiple_fractions = MultipleFraction(mmin=self.m_min, mmax=self.m_max,
                                               nmax=self.max_comp_number,
                                               only_binaries=self.only_binaries)
         multiple_fractions.solve()

@@ -12,6 +12,7 @@ from pathlib import Path
 import numpy as np
 import tables as tb
 import scipy
+from numpy._typing import NDArray
 from scipy.integrate import quad
 from scipy.interpolate import interp1d
 from scipy.stats import poisson, uniform
@@ -1120,7 +1121,8 @@ class MultipleFraction:
     interpolator is then built.
     """
 
-    def __init__(self, mmin=0.8, mmax=150, nmax=3, nmean_max=11, only_binaries=False):
+    def __init__(self, mmin: float = 0.8, mmax : float  = 150., nmax : int = 3,
+                 nmean_max: int = 11, only_binaries: bool = False):
         self.q_distr = MassRatioDistribution()
         self.mmin = mmin
         self.mmax = mmax
@@ -1134,7 +1136,8 @@ class MultipleFraction:
         self.only_binaries = only_binaries
 
     @staticmethod
-    def _truncated_poisson_mdf(l, k_arr, k_max):
+    def _truncated_poisson_mdf(l: float, k_arr: int | NDArray[int] | list[int], k_max: int
+                               ) -> NDArray[float]:
         """Evaluate a Poissonian distribution.
 
         Returns the value at ``k`` of a Poissonian distribution with
@@ -1151,7 +1154,7 @@ class MultipleFraction:
                 probs[i] = distr.pmf(k) / norm
         return probs
 
-    def _nmean_to_multfreq(self, nmean):
+    def _nmean_to_multfreq(self, nmean: float) -> float:
         """Return the multiplicity frequency corresponding to ``nmean``.
 
         By assuming that the companion number ``n`` is distributed as a
@@ -1165,7 +1168,7 @@ class MultipleFraction:
         a = nmean ** self.nmax / np.math.factorial(self.nmax)
         return nmean / (1 + a/b)
 
-    def _m1_to_multfreq(self, m1):
+    def _m1_to_multfreq(self, m1: float) -> float:
         """Return the multiplicity frequency corresponding to ``m1``.
 
         Integrating the companion frequency at ``m1`` over orbital
@@ -1178,7 +1181,7 @@ class MultipleFraction:
             multfreq += quad(freq_distr.companion_frequency_q01, logp0, logp1, limit=100)[0]
         return multfreq
 
-    def _set_m1_to_nmean(self):
+    def _set_m1_to_nmean(self) -> None:
         """Setup a ``m1`` to ``nmean`` interpolator.
 
         First computes the multiplicity frequencies for :attr:`m1_array`
@@ -1195,13 +1198,13 @@ class MultipleFraction:
         time1 = time() - time0
         print(f'Done setting up interpolator. Elapsed time: {time1:.4f} s.')
 
-    def _set_multfreq_to_nmean(self):
+    def _set_multfreq_to_nmean(self) -> None:
         """Setup multiplicity frequency to ``nmean`` interpolator."""
         nmeans = np.linspace(0, self.nmean_max, 100)
         multfreqs = np.array([self._nmean_to_multfreq(nmean) for nmean in nmeans])
         self.multfreq_to_nmean = interp1d(multfreqs, nmeans)
 
-    def _set_mmax(self):
+    def _set_mmax(self) -> None:
         """Set the maximum mass and mass array.
 
         The maximum mass is set to either 150.0 or to the maximum mass
@@ -1239,7 +1242,7 @@ class MultipleFraction:
         # avoid error from an implicit 10**np.log10(mmax)
         self.m1_array[-1] = self.mmax
 
-    def solve(self):
+    def solve(self) -> None:
         """Set up companion number probability distribution.
 
         Sets up a series of interpolators necessary for computing the
@@ -1267,7 +1270,7 @@ class MultipleFraction:
         self.nmean_array = self.nmean_array[:i + 1]
         self.binary_fraction = self.binary_fraction[:i + 1]
 
-    def ncomp_mean(self, m1):
+    def ncomp_mean(self, m1: float) -> float:
         """Return mean companion number for a primary mass ``m1``.
 
         Parameters
@@ -1291,7 +1294,7 @@ class MultipleFraction:
             return
         return self.m1_to_nmean(m1)
 
-    def prob(self, l, k):
+    def prob(self, l: float, k: int | NDArray[int] | list[int]) -> NDArray[float]:
         """Return probability of ``k`` companions given mean ``l``."""
         k_arr = np.array(k).flatten()
         prob_arr = np.zeros(k_arr.shape)
@@ -1303,7 +1306,7 @@ class MultipleFraction:
             prob_arr = probs
         return prob_arr
 
-    def get_multiple_fraction(self, n):
+    def get_multiple_fraction(self, n: int) -> NDArray[float]:
         """Return fraction of order n multiples for :attr:`m1_array`.
 
         Parameters
