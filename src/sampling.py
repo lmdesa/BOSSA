@@ -187,20 +187,20 @@ class GalaxyStellarMassSampling:
         Log of sampling interval lower limit.
     logm_max : float
         Log of sampling interval upper limit.
-    n_bins : float
+    size : float
         """
 
-    def __init__(self, gsmf, logm_min=7, logm_max=12, n_bins=3, sampling='number'):
+    def __init__(self, gsmf, logm_min=7, logm_max=12, size=3, sampling='number'):
         self.gsmf = gsmf
         self.redshift = gsmf.redshift
         self.logm_min = logm_min
         self.logm_max = logm_max
-        self.n_bins = n_bins
+        self.sample_size = size
         self.sampling = sampling
-        self.bin_limits = np.empty(n_bins + 1, np.float64)
-        self.grid_ndensity_array = np.empty(n_bins, np.float64)
-        self.grid_density_array = np.empty(n_bins, np.float64)
-        self.grid_logmasses = np.empty(n_bins, np.float64)
+        self.bin_limits = np.empty(size + 1, np.float64)
+        self.grid_ndensity_array = np.empty(size, np.float64)
+        self.grid_density_array = np.empty(size, np.float64)
+        self.grid_logmasses = np.empty(size, np.float64)
 
     def _ratio(self, logm_im1, logm_i, logm_ip1):
         if self.sampling == 'number':
@@ -213,7 +213,7 @@ class GalaxyStellarMassSampling:
 
     def _constraint(self, vec):
         bin_limits = np.concatenate(([self.logm_max], vec, [self.logm_min]))
-        bin_density_ratios = np.empty(self.n_bins - 1, np.float64)
+        bin_density_ratios = np.empty(self.sample_size - 1, np.float64)
         for i, logm_i in enumerate(bin_limits[1:-1]):
             logm_im1 = bin_limits[i]
             logm_ip1 = bin_limits[i + 2]
@@ -235,12 +235,12 @@ class GalaxyStellarMassSampling:
 
     def sample(self):
         if self.sampling == 'uniform':
-            self.bin_limits = np.linspace(self.logm_max, self.logm_min, self.n_bins + 1)
+            self.bin_limits = np.linspace(self.logm_max, self.logm_min, self.sample_size + 1)
         else:
             if self.sampling == 'number':
-                initial_guess = np.linspace(9, self.logm_min, self.n_bins + 1)[1:-1]
+                initial_guess = np.linspace(9, self.logm_min, self.sample_size + 1)[1:-1]
             elif self.sampling == 'mass':
-                initial_guess = np.linspace(11, 9, self.n_bins + 1)[1:-1]
+                initial_guess = np.linspace(11, 9, self.sample_size + 1)[1:-1]
             else:
                 warnings.warn(f'Sampling option {self.sampling} not recognized.')
                 return
@@ -463,7 +463,8 @@ class GalaxyGrid:
     def _sample_masses(self, redshift):
         """Sample galaxy stellar masses from the GSMF at a given redshift."""
         gsmf = GSMF(redshift, self.gsmf_slope_fixed)
-        sample = GalaxyStellarMassSampling(gsmf, self.logm_min, self.logm_max, self.logm_per_redshift, self.sampling_mode)
+        sample = GalaxyStellarMassSampling(gsmf, self.logm_min, self.logm_max,
+                                           self.logm_per_redshift, self.sampling_mode)
         sample.sample()
         return sample
 
