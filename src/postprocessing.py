@@ -599,7 +599,7 @@ class COMPASOutputTrimmer:
 class LogPFinder:
 
     def __init__(self):
-        self.zams = ZAMSSystemGenerator(BINARIES_CORRELATED_TABLE_PATH, np.linspace(0.1, 150, 100))
+        self.zams = ZAMSSystemGenerator(np.linspace(0.1, 150, 100), BINARIES_CORRELATED_TABLE_PATH)
         self.zams.setup_sampler()
         self.m1group = None
         self.logp_options = None

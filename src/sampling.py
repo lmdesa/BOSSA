@@ -1386,8 +1386,8 @@ class SimpleBinaryPopulation:
         # The ZAMSSystemGenerator class samples the parameters of individual binaries, with the masses being taken from
         # imf_array. The innermost pair is returned in the case of higher order multiples, but all companion masses are
         # removed from imf_array and taken into account in the total system mass.
-        systemgenerator = ZAMSSystemGenerator(pairs_table_path=self.pairs_table_path,
-                                              imf_array=self.sampling_pool,
+        systemgenerator = ZAMSSystemGenerator(imf_array=self.sampling_pool,
+                                              pairs_table_path=self.pairs_table_path,
                                               qe_max_tries=self.qe_max_tries, dmcomp_tol=0.05,
                                               parent_logger=self.logger)
         self.logger.info(f'Started ZAMSSystemGenerator with binaries_table_path={self.pairs_table_path},' \

@@ -21,7 +21,7 @@ from scipy.optimize import fmin
 import sys
 sys.path.append('..')
 from src.utils import create_logger, valley_minimum
-from src.constants import LOG_PATH
+from src.constants import LOG_PATH, BINARIES_UNCORRELATED_TABLE_PATH
 
 
 def gen_seed(logp, q, e):
@@ -1432,12 +1432,12 @@ class ZAMSSystemGenerator:
 
     Examples
     --------
-    >>> systemgenerator = ZAMSSystemGenerator()
+    >>> systemgenerator = ZAMSSystemGenerator(,
 
     """
 
-    def __init__(self, pairs_table_path, imf_array, m1_min=0.8, qe_max_tries=1,
-                 dmcomp_tol=0.05, parent_logger=None):
+    def __init__(self, imf_array, pairs_table_path=BINARIES_UNCORRELATED_TABLE_PATH, m1_min=0.8,
+                 qe_max_tries=1, dmcomp_tol=0.05, parent_logger=None):
         """
         Parameters
         ----------
