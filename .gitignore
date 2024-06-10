@@ -5,3 +5,5 @@ __pycache__/
 .idea/inspectionProfiles/profiles_settings.xml
 .idea/codeStyles/codeStyleConfig.xml
 docs/
+logs/
+
