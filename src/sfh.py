@@ -271,8 +271,8 @@ class TomczakSFMR:
     def break_corr(self) -> float:
         """float: Correction to match the SFMR models at the break."""
         if self._break_shift is None:
-            self._break_shift = (self.lowmass_sfmr._sfr(self._logm_break)
-                                 - self._sfr(self._logm_break, yshift=0))
+            self._break_shift = (self.lowmass_sfmr._sfr(self.logm_break)
+                                 - self._sfr(self.logm_break, yshift=0))
         return self._break_shift
 
     @staticmethod
@@ -290,7 +290,7 @@ class TomczakSFMR:
 
     def _sfr(self, logm: float, yshift: float | None = None) -> float:
         """Compute the SFR for a given log10 galactic stellar mass."""
-        if logm < self._logm_break:
+        if logm < self.logm_break:
             return self.lowmass_sfmr._sfr(logm)
         else:
             if yshift is None:
