@@ -5,7 +5,6 @@
 import gc
 import logging
 import warnings
-import pickle
 from time import time
 from datetime import datetime
 from pathlib import Path
@@ -14,7 +13,6 @@ from astropy.cosmology import WMAP9 as cosmo
 
 import numpy as np
 import pandas as pd
-from numba import jit
 from scipy.stats import norm
 from scipy.integrate import quad
 from scipy.optimize import fsolve, fmin
@@ -24,11 +22,11 @@ import inquirer
 
 import sys
 sys.path.append('..')
-from src.imf import EmbeddedCluster, Star, IGIMF
+from src.imf import Star, IGIMF
 from src.sfh import MZR, SFMR, Corrections, GSMF
 from src.zams import ZAMSSystemGenerator, MultipleFraction
-from src.utils import interpolate, ZOH_from_FeH, ZOH_to_FeH, create_logger, format_time
-from src.constants import Z_SUN, DATA_PATH, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINARIES_UNCORRELATED_TABLE_PATH,\
+from src.utils import interpolate,  ZOH_to_FeH, create_logger, format_time
+from src.constants import Z_SUN, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINARIES_UNCORRELATED_TABLE_PATH,\
     COMPAS_12XX_PROC_OUTPUT_DIR_PATH, COMPAS_21XX_PROC_OUTPUT_DIR_PATH, COMPAS_12XX_GRIDS_PATH, COMPAS_21XX_GRIDS_PATH,\
     IGIMF_ZAMS_DIR_PATH, COMPACT_OBJ_DIR_PATH, GALAXYGRID_DIR_PATH, PHYSICAL_CORE_COUNT, TOTAL_PHYSICAL_MEMORY
 
