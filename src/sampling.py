@@ -109,36 +109,27 @@ class RandomSampling:
         """Compute the IMF for interpolation.
 
         Computes the IMF at :attr:`discretization_points` mass values
-        and sets up an IMF interpolator.
+        for the interpolator.
         """
 
         self.discrete_imf = np.empty((0,), np.float64)
-        # discretization_masses = np.empty((0,), np.float64)
         for m in self.discretization_masses:
             imf = self.imf.imf(m)
-            # if imf >= 0:
             self.discrete_imf = np.append(self.discrete_imf, imf)
-            # discretization_masses = np.append(discretization_masses, m)
-
-    # self._discretization_masses = discretization_masses
 
     def _get_probabilities(self, sampling_masses):
-        """Compute probability of a star forming within a mass interval for each mass in sampling_masses.
-
-        By treating the PowerLawIMF as a probability density function, the PowerLawIMF at each mass M corresponds to the probability of
-        a star forming with mass between M and M+dM. This functions computes that probability for each mass in an array
-        sampling_masses and appends it to an array sampling_probs, which is normalized to 1. The normalized
-        sampling_probs then works as a probability distribution for random sampling over sampling_masses.
+        """Return probabilities at ``sampling_masses``.
 
         Parameters
         ----------
-        sampling_masses : numpy array
+        sampling_masses : NDArray
             Array of masses for which to compute the probability.
 
         Returns
         -------
-        sampling_probs : numpy array
-            Normalized array of probabilities corresponding to the masses in sampling_masses.
+        sampling_probs : NDArray
+            Array of probabilities corresponding to sampling_masses.
+            Sums to 1.
         """
 
         ipY = self.discrete_imf.reshape((1, self.discretization_masses.shape[0]))
@@ -146,35 +137,35 @@ class RandomSampling:
         sampling_probs = interpolate(ipX, ipY, sampling_masses)[0]
         sampling_probs /= sampling_probs.sum()
         for i, prob in enumerate(sampling_probs):
+            # Near the truncation masses, where the IMF sharply drops to
+            # zero, the interpolator may yield negative values, which we
+            # account for here.
             if prob < 0:
                 sampling_probs[i] = 0
         sampling_probs /= sampling_probs.sum()
         return sampling_probs
 
     def get_sample(self, m_min, m_max, n):
-        """Sample the PowerLawIMF for n masses between m_min and m_max.
+        """Return a sample of size ``n`` from ``m_min`` to ``m_max``.
 
-        First generates an array sampling_masses of n log-uniform masses between m_min and m_max, for which
-        probabilities are then computed by get_probabilities(). Random sampling of n mass values is performed using
-        numpy over sampling_masses with probabilities as weights.
+        Returns a sample of size ``n`` between ``mmin`` and ``m_max``
+        and stores it as :attr:`sample`.
 
         Parameters
         ----------
         m_min : float
-            Minimum of the mass sampling interval.
+            Sampling interval lower limit.
         m_max : float
-            Maximum of the mass sampling interval.
+            Sampling interval upper limit.
         n : int
-            Number of mass values to sample.
+            Sample size.
 
         Returns
         -------
-        sample : numpy array
-            Array containing the sampled masses.
+        sample : NDArray
+            ``(n,)``-shaped array containing the sample.
         """
 
-        n = int(n)
-        # sampling_masses = np.logspace(np.log10(m_min), np.log10(m_max), 10*n)
         sampling_masses = np.linspace(m_min, m_max, 10 * n)
         probabilities = self._get_probabilities(sampling_masses)
         self.sample = np.sort(np.random.choice(sampling_masses, p=probabilities, size=n))
