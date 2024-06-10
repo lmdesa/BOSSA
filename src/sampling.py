@@ -35,11 +35,11 @@ from src.constants import Z_SUN, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINAR
 
 
 IMFLike = Union[imf.Star, imf.EmbeddedCluster, imf.IGIMF]
-"""typing.Union: Union of child classes of :class:`imf.PowerLawIMF`."""
+"""Classes from :mod:`imf` with an ``imf(m)`` method."""
 
 
 def powerlaw(x, k, a):
-    """Power law with norm k and index a, evaluated at x."""
+    """Return power-law with norm ``k`` and index ``a`` at ``x``."""
     return k * x ** a
 
 
@@ -50,16 +50,23 @@ class RandomSampling:
     numerical integral, as with :class:`imf.IGIMF`, by setting up an
     interpolator to compute probabilities.
 
+    Parameters
+    ----------
+    imf : :const:`IMFLike`
+        Instance of an IMF class with an ``imf(m)`` method.
+    discretization_points : int
+        Number of masses on which to compute the IMF.
+
     Attributes
     ----------
     imf : IMFLike
         Instance of an IMF class with an ``imf(m)`` method.
     m_trunc_min : float
-        Lower truncation mass, taken as the IMF lower limit.
+        Lower truncation mass.
     m_trunc_max : float
-        Upper truncation the same, can be >= ``m_max``.
+        Upper truncation mass.
     sample : NDArray
-        The mass values resulting from the last random sampling.
+        Last drawn sample.
 
     Methods
     -------
@@ -70,15 +77,6 @@ class RandomSampling:
     """
 
     def __init__(self, imf, discretization_points=100):
-        """
-        Parameters
-        ----------
-        imf : IMFLike
-            Instance of an IMF class with an ``imf(m)`` method.
-        discretization_points : int
-            Number of masses on which to compute the IMF.
-        """
-
         self.imf = imf
         self.m_trunc_min = imf.m_trunc_min
         self.m_trunc_max = imf.m_trunc_max
@@ -90,6 +88,7 @@ class RandomSampling:
     # TODO: set discretization_masses with np.logspace
     @property
     def discretization_masses(self):
+        """NDArray: Masses on which to compute the IMF."""
         if self._discretization_masses is None:
             size = self._discretization_points // 5
             self._discretization_masses = np.concatenate((
@@ -107,11 +106,10 @@ class RandomSampling:
         return self._discretization_masses
 
     def compute_imf(self):
-        """Compute the PowerLawIMF at each value in discretization_masses and append it to discrete_imf.
+        """Compute the IMF for interpolation.
 
-        Computes the PowerLawIMF at each value in discretization_masses and appends it to discrete_imf. Before appending, checks
-        for negative values, which appear for values close to the limits of the PowerLawIMF itself, and only appends the PowerLawIMF if
-        it is non-negative.
+        Computes the IMF at :attr:`discretization_points` mass values
+        and sets up an IMF interpolator.
         """
 
         self.discrete_imf = np.empty((0,), np.float64)
