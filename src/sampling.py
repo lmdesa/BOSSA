@@ -15,6 +15,7 @@ from astropy.cosmology import WMAP9 as cosmo
 
 import numpy as np
 import pandas as pd
+from numpy._typing import NDArray, ArrayLike
 from scipy.stats import norm
 from scipy.integrate import quad
 from scipy.optimize import fsolve, fmin
@@ -28,7 +29,7 @@ import src.imf as imf
 from src.imf import Star, IGIMF
 from src.sfh import MZR, SFMR, Corrections, GSMF
 from src.zams import ZAMSSystemGenerator, MultipleFraction
-from src.utils import interpolate,  ZOH_to_FeH, create_logger, format_time
+from src.utils import interpolate, ZOH_to_FeH, create_logger, format_time, Length
 from src.constants import Z_SUN, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINARIES_UNCORRELATED_TABLE_PATH,\
     COMPAS_12XX_PROC_OUTPUT_DIR_PATH, COMPAS_21XX_PROC_OUTPUT_DIR_PATH, COMPAS_12XX_GRIDS_PATH, COMPAS_21XX_GRIDS_PATH,\
     IGIMF_ZAMS_DIR_PATH, COMPACT_OBJ_DIR_PATH, GALAXYGRID_DIR_PATH, PHYSICAL_CORE_COUNT, TOTAL_PHYSICAL_MEMORY
@@ -76,7 +77,7 @@ class RandomSampling:
         Sample ``n`` masses between ``m_min`` and ``m_max``.
     """
 
-    def __init__(self, imf, discretization_points=100):
+    def __init__(self, imf: IMFLike, discretization_points:int = 100) -> None:
         self.imf = imf
         self.m_trunc_min = imf.m_trunc_min
         self.m_trunc_max = imf.m_trunc_max
@@ -87,7 +88,7 @@ class RandomSampling:
 
     # TODO: set discretization_masses with np.logspace
     @property
-    def discretization_masses(self):
+    def discretization_masses(self) -> NDArray[float]:
         """NDArray: Masses on which to compute the IMF."""
         if self._discretization_masses is None:
             size = self._discretization_points // 5
@@ -100,12 +101,11 @@ class RandomSampling:
                 np.linspace(10, 100, 1 + size)[1:],
                 np.linspace(100,
                             self.m_trunc_max,
-                            1 + int(size * (np.log10(self.m_trunc_max) - 2))
-                            )[1:]
+                            1 + int(size * (np.log10(self.m_trunc_max) - 2)))[1:]
             ))
         return self._discretization_masses
 
-    def compute_imf(self):
+    def compute_imf(self) -> None:
         """Compute the IMF for interpolation.
 
         Computes the IMF at :attr:`discretization_points` mass values
@@ -117,7 +117,7 @@ class RandomSampling:
             imf = self.imf.imf(m)
             self.discrete_imf = np.append(self.discrete_imf, imf)
 
-    def _get_probabilities(self, sampling_masses):
+    def _get_probabilities(self, sampling_masses: ArrayLike) -> ArrayLike:
         """Return probabilities at ``sampling_masses``.
 
         Parameters
@@ -135,17 +135,17 @@ class RandomSampling:
         ipY = self.discrete_imf.reshape((1, self.discretization_masses.shape[0]))
         ipX = self.discretization_masses.reshape((1, self.discretization_masses.shape[0]))
         sampling_probs = interpolate(ipX, ipY, sampling_masses)[0]
-        sampling_probs /= sampling_probs.sum()
+
+        # Near the truncation masses, where the IMF sharply drops to
+        # zero, the interpolator may yield negative values, which we
+        # account for here.
         for i, prob in enumerate(sampling_probs):
-            # Near the truncation masses, where the IMF sharply drops to
-            # zero, the interpolator may yield negative values, which we
-            # account for here.
             if prob < 0:
                 sampling_probs[i] = 0
         sampling_probs /= sampling_probs.sum()
         return sampling_probs
 
-    def get_sample(self, m_min, m_max, n):
+    def get_sample(self, m_min: float, m_max: float, n: int) -> NDArray[float]:
         """Return a sample of size ``n`` from ``m_min`` to ``m_max``.
 
         Returns a sample of size ``n`` between ``mmin`` and ``m_max``
