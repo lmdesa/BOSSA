@@ -1784,6 +1784,6 @@ class ZAMSSystemGenerator:
                 return sampled_pairs
 
         else:
-            #self.logger.debug('Failed to build a valid system within the'
-            #                   ' allowed number of attempts. Discarding...')
-            return np.empty(0) #, 0
+            self.logger.debug('Failed to build a valid system.')
+            warnings.warn('Failed to build a valid system.')
+            return np.empty(0)
