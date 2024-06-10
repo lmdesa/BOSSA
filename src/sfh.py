@@ -342,7 +342,13 @@ class SFMR:
     DISPERSION = 0.3  # dex
     """float: Empirical SFR dispersion around the SFMR.
     
-    From Chruslisnka & Nelemans (2019).
+    From Chruslisnka & Nelemans (2019). [4]_
+    """
+
+    INTERNAL_DISPERION = 0.14  # dex
+    """float: Galaxy internal Z_OH dispersion.
+    
+    From Chruslisnka & Nelemans (2019). [4]_
     """
 
     def __init__(self, redshift: float, flattening: str = 'none', scatter: str = 'none') -> None:
@@ -410,16 +416,18 @@ class SFMR:
         equal to :const:`DISPERSION`.
         """
 
-        scatter = norm(0, self.DISPERSION).rvs()
+        sfmr_scatter = norm(0, self.DISPERSION).rvs()
+        internal_scatter = norm(0, self.INTERNAL_DISPERION).rvs()
+        scatter = sfmr_scatter + internal_scatter
         return scatter
 
     def _min_scatter(self) -> float:
         """Return -:const:`DISPERSION` scatter."""
-        return -self.DISPERSION
+        return -(self.DISPERSION + self.INTERNAL_DISPERION)
 
     def _max_scatter(self) -> float:
         """Return :const:`DISPERSION` scatter."""
-        return self.DISPERSION
+        return self.DISPERSION + self.INTERNAL_DISPERION
 
     @float_or_arr_input
     def sfr(self, logm: ArrayLike) -> ArrayLike:
