@@ -1353,14 +1353,15 @@ class ZAMSSystemGenerator:
 
     All orbital periods are in days and masses in solar masses.
 
-     Parameters
+    Parameters
     ----------
-    pairs_table_path : path_like
-        Path to a HDF5 file containing equiprobable (m1,logp,q,e) sets
-        according to the desired orbital parameter distributions.
     imf_array : numpy array
         Array from which to sample primary and companion masses.
-    m1_min : float
+    pairs_table_path : path_like, \
+    default : :data:`constants.BINARIES_UNCORRELATED_TABLE_PATH`
+        Path to a HDF5 file containing equiprobable (m1,logp,q,e) sets
+        according to the desired orbital parameter distributions.
+    m1_min : float, default : 0.8
         Minimum primary mass.
     qe_max_tries : int, default : 1
         Maximum number of attempts at drawing a valid ``q,e`` pair for
@@ -1411,6 +1412,13 @@ class ZAMSSystemGenerator:
         identified by a set ``(logp,q,e)``.
     logger : logging.Logger
         Instance logger.
+
+    Methods
+    -------
+    setup_sampler()
+        Set up attributes for the sampler.
+    open_m1group(index)
+        Set the primary mass and open the corresponding group.
 
     See Also
     -------
@@ -1511,8 +1519,12 @@ class ZAMSSystemGenerator:
         self.m1_array = self.highmass_imf_array[index]
 
     def _set_m1_options(self):
-        """Load list of m1_table options and their respective PyTable
-        Group titles from pairs_table.
+        """Load mass options from :attr:`pairs_table`.
+
+        The primary mass corresponding to each group in
+        :attr:`pairs_table` is expected to be the group's title. Loads
+        the mass values into :attr:`_m1_options`, and the corresponding
+        groups themselves into :attr:`_m1group_options`.
         """
 
         m1group_options = list(
@@ -1524,10 +1536,7 @@ class ZAMSSystemGenerator:
         self._m1_options = self._m1_options[m1sort]
 
     def _get_m1(self):
-        """Get the closest m1_table to m1_array, and its respective
-        PyTable Group title in pairs_table.
-        """
-
+        """Returns table mass and group closest to :attr:`m1_array`."""
         m1_closest_i, m1_closest = valley_minimum(np.abs(self._m1_options - self.m1_array),
                                                   np.arange(0, len(self._m1_options), 1))
         m1groupname_closest = self._m1group_options[m1_closest_i]
@@ -1536,13 +1545,14 @@ class ZAMSSystemGenerator:
         return m1_closest, m1group_closest
 
     def setup_sampler(self):
-        """Set up the lowmass and highmass _imf_array attributes,
-        initial m1array_n and load pairs_table.
+        """Set up attributes for the sampler.
 
-        Two mass sub-arrays, :attr:`lowmass_imf_array` and
-        :attr:`highmass_imf_array` are implemented to speed up sampling
-        by assuming that `m1` is always in :attr:`highmass_imf_array`
-        and that :math:`m_\\mathrm{comp}<m_1´.
+        Loads data from :attr:`table_path`. Sets two mass sub-arrays,
+        :attr:`lowmass_imf_array` and :attr:`highmass_imf_array`, to
+        speed up sampling by assuming that `m1` is always in
+        :attr:`highmass_imf_array` and that
+        :math:`m_\\mathrm{comp}<m_1´. Sets the initial value of
+        :attr:`m1array_n`.
         """
 
         self.lowmass_imf_array = self.imf_array[self.imf_array < self.m1_min]
@@ -1552,52 +1562,49 @@ class ZAMSSystemGenerator:
         self._set_m1_options()
 
     def close_pairs_table(self):
-        """Close the pairs_table file."""
+        """Close the :attr:`pairs_table` file."""
         self.pairs_table.close()
 
-    def open_m1group(self, m1choice_i):
-        """Load the PyTables Group object closest to m1_table
-        corresponding to a m1array_i into the m1group attribute.
+    def open_m1group(self, index):
+        """Set the primary mass and open the corresponding group.
+
+        Sets :attr:`m1_array` to the the element of
+        :attr:`highmass_imf_array` at ``index`` and sets
+        :attr:`m1_table`, :attr:`m1group` and :attr:`dm1`.
         """
 
-        self._set_m1array(m1choice_i)
+        self._set_m1array(index)
         self.m1_table, self.m1group = self._get_m1()
         self.dm1 = np.abs(self.m1_table - self.m1_array) / self.m1_array
 
     def sample_system(self, ncomp=1, ncomp_max=1):
-        """Sample pairs m1_table, mcomp_array pairs building a multiple
-        system with ncomp >= 0 companions.
+        """Return parameters of a multiple system.
 
-        This class is meant to return only the innermost pair or inner
-        binary to the user, while keeping track of the total system
-        mass, whatever its order, in a manner that is consistent with
-        the user-given masses (imf_array) and the orbital parameter
-        distributions in this module. Thus all ncomp primary-companion
-        pairs are generated and have their masses accounted for, but
-        only the orbital parameters of the innermost pair are stored.
+        Generates a multiple system with ``ncomp```companions for
+        a primary set with :meth:`open_m1group`, assuming up to
+        ``ncomp_max`` companions are allowed. Returns ordered inner
+        binary and further pair parameters, as well as companion number
+        and total system mass.
+
+        ``ncomp_max`` is used for proper output formatting only.
 
         Parameters
         ----------
         ncomp : int, default : 1
-            Number of companions to the primary. Can be 0, signaling an
-            isolated star.
+            Number of companions to the primary. Can be 0 (isolated).
         ncomp_max : int, default : 1
-            Maximum number of companions in the overall sample, possibly
-            greater than that for the system being sampled.
+            Maximum number of companions in the underlying population.
 
         Returns
         -------
-        inner_pair : numpy array
-            Array of parameters of the innermost pair in the system.
-        system_mass : float
-            Total mass of the system, including the innermost pair as
-            well as outer companions.
+        sample_pairs : NDArray
+            ``(12+4*ncomp_max,)``-shaped array of 12 inner binary
+            parameters and 4 parameters per further companion.
 
         Warns
         -----
         UserWarning
-            If a star system fails to be generated within the set mass
-            constraints.
+            If the system fails to be generated.
 
         Notes
         -----
@@ -1618,7 +1625,7 @@ class ZAMSSystemGenerator:
             dm_\\mathrm{comp}^\\mathrm{tol},
 
         the pair is accepted. If not, ``q,e`` can be drawn for up to
-        :attr:`qe_max_tries` times. If not match can be found, the draw
+        :attr:`qe_max_tries` times. If no match can be found, the draw
         failed, and an empty parameter array is returned.
 
         If at any point a valid pair fails to be found, the whole system
@@ -1626,28 +1633,47 @@ class ZAMSSystemGenerator:
         parameters for the sampled pairs are returned, and the component
         masses are removed from the :attr:`imf_array` and its
         sub-arrays.
+
+        The 12 first output columns are  [Table primary mass,
+        Array primary mass, Relative m1 difference,
+        Table secondary mass, Array secondary mass,
+        Relative m2 difference, Mass ratio from table masses,
+        Mass ratio from array masses, log10(orbital period),
+        Eccentricity, Companion number, Total system mass].
+
+        Each further companion appends 4 more columns to the output.
+        They are [Table companion mass, Array companion mass,
+        log10(orbital period), Eccentricity].
         """
 
+        # Check if there are enough masses available.
         if ncomp > (len(self.lowmass_imf_array)
                     + len(self.highmass_imf_array[:self.m1array_i])):
             return np.empty(0)
 
-        # system mass starts with the primary mass
+        # System mass starts with the primary mass.
         system_mass = self.m1_table
+
+        # System parameters to be returned are NOT CUSTOMIZABLE at the
+        # moment. A specific length and order for the arrays below
+        # is assumed here and in the sampling module.
         outer_pairs = np.zeros(4*(ncomp_max-1), np.float32)
         sampled_pairs = np.zeros(12, np.float32)
-        # draw all companion periods
+
+        # Draw orbital periods for all companions.
         logp_i_list = sorted([str(i) for i in np.random.randint(0,
                                                                 100,
                                                                 ncomp)])
-        # periods are drawn as indexes to the Tables within the m1group
-        # Group
+        # Orbital periods are drawn as indices to the tables within
+        # m1group.
 
-        lowmcomp_i_list = []  # mass index of < m1_min Msun companions
-        highmcomp_i_list = []  # mass index of >= m1_min Msun companions
-        # defaults to a success for isolated stars, i.e., ncomp=0
+        lowmcomp_i_list = []  # mass index of < m1_min companions
+        highmcomp_i_list = []  # mass index of >= m1_min companions
+
+        # Defaults to a success for isolated stars, i.e., ncomp=0.
         success = True
-        # start sampling from the innermost pair
+
+        # Start sampling from the innermost pair
         for order, logp_i in list(enumerate(logp_i_list))[::-1]:
             # open the drawn Table by its index
             logp_table = self.m1group[logp_i]
@@ -1730,20 +1756,26 @@ class ZAMSSystemGenerator:
                     else:
                         highmcomp_i_list.append(mcomp_i)
                     # Save relevant parameters for the innermost pair.
+                    # The parameters of inner_pair and sampled_pair
+                    # are NOT CUSTOMIZABLE (for now). Editing their
+                    # definitions requires appropriately updating the
+                    # column definitions in
+                    # sampling.SimpleBinaryPopulation and is not
+                    # recommended.
                     if order == 0:
                         inner_pair = np.array([
-                            self.m1_table,  # closest table m to m1_array
-                            self.m1_array,  # m1_table drawn from imf_array
-                            self.dm1, # relative difference between m1s
-                            mcomp_table, # mcomp drawn from pairs_table
-                            mcomp_array, # array m closest to mcomp_table
-                            dmcomp,  # relative difference between mcomps
-                            q_table, # mass ratio between table ms
-                            mcomp_array/self.m1_array, # q between array ms
+                            self.m1_table,  # closest to m1_array
+                            self.m1_array,  # from imf_array
+                            self.dm1,  # relative difference between m1
+                            mcomp_table,  # mcomp drawn from pairs_table
+                            mcomp_array,  # closest to mcomp_table
+                            dmcomp,  # relative difference between mcomp
+                            q_table,  # mass ratio between table ms
+                            mcomp_array/self.m1_array,
                             logp,  # log10(orbital period)
-                            e_table, # eccentricity drawn from pairs_table
-                            ncomp, # number of companions
-                            system_mass # total system mass w/ all companions
+                            e_table,  # eccentricity from table
+                            ncomp,  # number of companions
+                            system_mass  # primary + all companions
                         ])
                         sampled_pairs = inner_pair
                     else:
@@ -1752,15 +1784,19 @@ class ZAMSSystemGenerator:
                                          logp,
                                          e_table])
                         outer_pairs[4*(order-1):4*order] = pair
-                    # automatically concludes the loop if successful
+                    # Automatically concludes the loop if successful.
                     try_number = self.qe_max_tries
                 else:
                     try_number += 1
             if not success:
                 break
+        # If ncomp=0 (isolated star), this loop is skipped and
+        # sampled_pairs remains an array of zeros. This is caught and
+        # handled below by checking if system mass is zero.
 
         # Once a system has been built successfully,
-        # we remove all component masses from the imf_array.
+        # All component masses are removed from imf_array and its
+        # sub-arrays before returning the parameters.
         if success:
             self.lowmass_imf_array = np.delete(self.lowmass_imf_array,
                                                lowmcomp_i_list)
@@ -1771,11 +1807,23 @@ class ZAMSSystemGenerator:
                 self.highmass_imf_array = np.delete(self.highmass_imf_array,
                                                     highmcomp_i_list)
             except IndexError:
-                self.logger.warning('WE ARE OUT OF BOUNDS')
-                self.logger.warning(self.highmass_imf_array.shape,
-                                    self.highmass_imf_array)
-                self.logger.warning(highmcomp_i_list)
-                self.logger.warning(self.m1array_i)
+                # This was here to catch an old error that so far seems
+                # to be fixed. Will be removed after further testing.
+                self.logger.warning(
+                    'Out of bounds! highmass_imf_array shape is '
+                    f'{self.highmass_imf_array.shape} and the array is '
+                    f'{self.highmass_imf_array}. Removed index '
+                    f'{self.m1array_i}, then attempted to remove indices '
+                    f'{highmcomp_i_list}.'
+                )
+                # Uncomment to catch warning if it occurs.
+                #warnings.warn(
+                #    'Out of bounds! highmass_imf_array shape is '
+                #    f'{self.highmass_imf_array.shape} and the array is '
+                #    f'{self.highmass_imf_array}. Removed index '
+                #    f'{self.m1array_i}, then attempted to remove indices '
+                #    f'{highmcomp_i_list}.'
+                #)
                 sampled_pairs = np.empty(0)
             else:
                 self.m1array_n -= 1 + len(highmcomp_i_list)
