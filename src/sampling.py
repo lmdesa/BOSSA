@@ -187,12 +187,22 @@ class GalaxyStellarMassSampling:
         Log of sampling interval lower limit.
     logm_max : float
         Log of sampling interval upper limit.
-    size : float
+    size : int
+        Sample size.
+    sampling : {'number', 'mass}, default : 'number'
+        Whether to sample by galaxy number or stellar mass.
+
+    Attributes
+    ----------
+    gsmf : :class:`sfh.GSMF`
+        GSMF to sample.
+    redshift : float
+        Redshift at which the GSMF is defined.
+
         """
 
     def __init__(self, gsmf, logm_min=7, logm_max=12, size=3, sampling='number'):
         self.gsmf = gsmf
-        self.redshift = gsmf.redshift
         self.logm_min = logm_min
         self.logm_max = logm_max
         self.sample_size = size
