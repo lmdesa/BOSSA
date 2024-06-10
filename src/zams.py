@@ -5,11 +5,14 @@
 
 import logging
 import warnings
+from os import PathLike
 from time import time
 from datetime import datetime
 from pathlib import Path
+from typing import Annotated
 
 import numpy as np
+import tables
 import tables as tb
 import scipy
 from numpy._typing import NDArray
@@ -20,7 +23,7 @@ from scipy.optimize import fmin
 
 import sys
 sys.path.append('..')
-from src.utils import create_logger, valley_minimum
+from src.utils import create_logger, valley_minimum, Length
 from src.constants import LOG_PATH, BINARIES_UNCORRELATED_TABLE_PATH
 
 
@@ -1471,8 +1474,10 @@ class ZAMSSystemGenerator:
     >>> systemgenerator.close_pairs_table()
     """
 
-    def __init__(self, imf_array, pairs_table_path=BINARIES_UNCORRELATED_TABLE_PATH, m1_min=0.8,
-                 qe_max_tries=1, dmcomp_tol=0.05, parent_logger=None):
+    def __init__(self, imf_array: NDArray,
+                 pairs_table_path: str | PathLike = BINARIES_UNCORRELATED_TABLE_PATH,
+                 m1_min: float = 0.8, qe_max_tries: int = 1, dmcomp_tol: float = 0.05,
+                 parent_logger: logging.Logger | None = None) -> None:
         self.pairs_table_path = pairs_table_path
         self.imf_array = imf_array
         self.m1_min = m1_min
@@ -1489,7 +1494,7 @@ class ZAMSSystemGenerator:
         self.m1group = None
         self.logger = self._get_logger(parent_logger)
 
-    def _get_logger(self, parent_logger):
+    def _get_logger(self, parent_logger: logging.Logger | None) -> logging.Logger:
         """Create and return a class logger.
 
         Will be a child of ``parent_logger`` if provided.
@@ -1503,13 +1508,12 @@ class ZAMSSystemGenerator:
             log_path.parent.mkdir(parents=True, exist_ok=True)
             logger = create_logger(name=loggername, fpath=log_path)
         else:
-            loggername = '.'.join([parent_logger.name,
-                                   self.__class__.__name__])
+            loggername = '.'.join([parent_logger.name, self.__class__.__name__])
             logger = logging.getLogger(name=loggername)
             logger.setLevel(logging.DEBUG)
         return logger
 
-    def _set_m1array(self, index):
+    def _set_m1array(self, index: int) -> None:
         """Set :attr:`m1array_i` and :attr:`m1_array`.
 
         `index` should be less than :attr:`m1array_n`.
@@ -1518,7 +1522,7 @@ class ZAMSSystemGenerator:
         self.m1array_i = index
         self.m1_array = self.highmass_imf_array[index]
 
-    def _set_m1_options(self):
+    def _set_m1_options(self) -> None:
         """Load mass options from :attr:`pairs_table`.
 
         The primary mass corresponding to each group in
@@ -1527,15 +1531,15 @@ class ZAMSSystemGenerator:
         groups themselves into :attr:`_m1group_options`.
         """
 
-        m1group_options = list(
-            (group, self.pairs_table.root[group]._v_title) for group in self.pairs_table.root._v_groups)
+        m1group_options = list((group, self.pairs_table.root[group]._v_title)
+                               for group in self.pairs_table.root._v_groups)
         self._m1group_options = np.array([group[0] for group in m1group_options])
         self._m1_options = np.array([np.float32(group[1]) for group in m1group_options])
         m1sort = np.argsort(self._m1_options)
         self._m1group_options = self._m1group_options[m1sort]
         self._m1_options = self._m1_options[m1sort]
 
-    def _get_m1(self):
+    def _get_m1(self) -> tuple[float, tables.Group]:
         """Returns table mass and group closest to :attr:`m1_array`."""
         m1_closest_i, m1_closest = valley_minimum(np.abs(self._m1_options - self.m1_array),
                                                   np.arange(0, len(self._m1_options), 1))
@@ -1544,7 +1548,7 @@ class ZAMSSystemGenerator:
         m1group_closest = self.pairs_table.root[m1groupname_closest]
         return m1_closest, m1group_closest
 
-    def setup_sampler(self):
+    def setup_sampler(self) -> None:
         """Set up attributes for the sampler.
 
         Loads data from :attr:`table_path`. Sets two mass sub-arrays,
@@ -1561,11 +1565,11 @@ class ZAMSSystemGenerator:
         self.pairs_table = tb.open_file(self.pairs_table_path, 'r')
         self._set_m1_options()
 
-    def close_pairs_table(self):
+    def close_pairs_table(self) -> None:
         """Close the :attr:`pairs_table` file."""
         self.pairs_table.close()
 
-    def open_m1group(self, index):
+    def open_m1group(self, index: float) -> None:
         """Set the primary mass and open the corresponding group.
 
         Sets :attr:`m1_array` to the the element of
@@ -1577,7 +1581,7 @@ class ZAMSSystemGenerator:
         self.m1_table, self.m1group = self._get_m1()
         self.dm1 = np.abs(self.m1_table - self.m1_array) / self.m1_array
 
-    def sample_system(self, ncomp=1, ncomp_max=1):
+    def sample_system(self, ncomp: int = 1, ncomp_max: int = 1) -> NDArray:
         """Return parameters of a multiple system.
 
         Generates a multiple system with ``ncomp```companions for
@@ -1647,8 +1651,7 @@ class ZAMSSystemGenerator:
         """
 
         # Check if there are enough masses available.
-        if ncomp > (len(self.lowmass_imf_array)
-                    + len(self.highmass_imf_array[:self.m1array_i])):
+        if ncomp > len(self.lowmass_imf_array) + len(self.highmass_imf_array[:self.m1array_i]):
             return np.empty(0)
 
         # System mass starts with the primary mass.
@@ -1660,12 +1663,9 @@ class ZAMSSystemGenerator:
         outer_pairs = np.zeros(4*(ncomp_max-1), np.float32)
         sampled_pairs = np.zeros(12, np.float32)
 
-        # Draw orbital periods for all companions.
-        logp_i_list = sorted([str(i) for i in np.random.randint(0,
-                                                                100,
-                                                                ncomp)])
-        # Orbital periods are drawn as indices to the tables within
-        # m1group.
+        # Draw orbital periods for all companions as indices to the
+        # tables in m1group.
+        logp_i_list = sorted([str(i) for i in np.random.randint(0, 100, ncomp)])
 
         lowmcomp_i_list = []  # mass index of < m1_min companions
         highmcomp_i_list = []  # mass index of >= m1_min companions
@@ -1689,7 +1689,8 @@ class ZAMSSystemGenerator:
                 e_table = logp_table[qe_i]['e'][0]
                 mcomp_table = q_table * self.m1_table
 
-                # Check from which imf_array mcomp_array must be taken.
+                # Check from which imf_array subarray mcomp_array
+                # should be taken.
                 low_mcomp = False
                 if mcomp_table < self.m1_min:
                     low_mcomp = True
@@ -1698,46 +1699,44 @@ class ZAMSSystemGenerator:
                 # relevant imf_array.
                 # Checks in place to avoid mass repetition.
                 if low_mcomp:
-                    if (len(self.lowmass_imf_array)
-                            - len(lowmcomp_i_list) < 1):
-                        # no <= m1_min mcomp available
+                    # Check for mcomp such that mcomp <= m1_min.
+                    if len(self.lowmass_imf_array) - len(lowmcomp_i_list) < 1:
+                        # Force an option that will fail the tolerance
+                        # test.
                         mcomp_array = 0.9 * mcomp_table / (self.dmcomp_tol + 1)
                     else:
-                        # find closest m
-                        mcomp_i = np.searchsorted(self.lowmass_imf_array,
-                                                  mcomp_table,
-                                                  side='left')
-                        # avoid out-of-bounds index
+                        # Find closest mcomp in the array.
+                        mcomp_i = np.searchsorted(self.lowmass_imf_array, mcomp_table, side='left')
+                        # Avoid out-of-bounds index due to searchsorted
+                        # logic.
                         if mcomp_i == self.lowmass_imf_array.shape[0]:
                             mcomp_i -= 1
-                        # avoid repetition
+                        # If repeated, get index of next closest option.
                         if mcomp_i in lowmcomp_i_list:
                             mcomp_i -= 1
                         mcomp_array = self.lowmass_imf_array[mcomp_i]
                 else:
-                    if (len(self.highmass_imf_array[:self.m1array_i])
-                            - len(highmcomp_i_list) < 1):
-                        # no >= m1_min mcomp available
+                    # Check for mcomp such that mcomp <= m1.
+                    if (len(self.highmass_imf_array[:self.m1array_i]) - len(highmcomp_i_list) < 1):
+                        # Force an option that will fail the tolerance
+                        # test.
                         mcomp_array = 0.9 * mcomp_table / (self.dmcomp_tol + 1)
                     else:
-                        # Because m1array is slightly different from
-                        # m1table, sometimes a q equal to or close to 1
-                        # will result in mcomp_table <= m1table but
-                        # m1array, which violates our definition of q.
-                        # The closest valid mcomp_array is thus the
-                        # closest value in the mass array to mcomp_table
-                        # below m1array.
-                        mcomp_i = np.searchsorted(
-                            self.highmass_imf_array[:self.m1array_i],
-                            mcomp_table,
-                            side='left'
-                        )
-                        # avoid out-of-bounds index
-                        if (mcomp_i ==
-                                self.highmass_imf_array[:self.m1array_i]
-                                        .shape[0]):
+                        # Because m1_array is slightly different from
+                        # m1_table, sometimes a q equal to or close to 1
+                        # will result in mcomp_table <= m1_table but not
+                        # m1_array, violating the definition of q. To
+                        # avoid this, the search for mcomp_array is
+                        # restricted beforehand to masses below
+                        # m1_array.
+                        mcomp_i = np.searchsorted(self.highmass_imf_array[:self.m1array_i],
+                                                  mcomp_table,
+                                                  side='left')
+                        # Avoid out-of-bounds index due to searchsorted
+                        # logic.
+                        if mcomp_i == self.highmass_imf_array[:self.m1array_i].shape[0]:
                             mcomp_i -= 1
-                        # avoid repetition
+                        # If repeated, get index of next closest option.
                         while mcomp_i in highmcomp_i_list:
                             mcomp_i -= 1
                         mcomp_array = self.highmass_imf_array[mcomp_i]
@@ -1798,14 +1797,11 @@ class ZAMSSystemGenerator:
         # All component masses are removed from imf_array and its
         # sub-arrays before returning the parameters.
         if success:
-            self.lowmass_imf_array = np.delete(self.lowmass_imf_array,
-                                               lowmcomp_i_list)
-            self.highmass_imf_array = np.delete(self.highmass_imf_array,
-                                                self.m1array_i)
+            self.lowmass_imf_array = np.delete(self.lowmass_imf_array, lowmcomp_i_list)
+            self.highmass_imf_array = np.delete(self.highmass_imf_array, self.m1array_i)
 
             try:
-                self.highmass_imf_array = np.delete(self.highmass_imf_array,
-                                                    highmcomp_i_list)
+                self.highmass_imf_array = np.delete(self.highmass_imf_array, highmcomp_i_list)
             except IndexError:
                 # This was here to catch an old error that so far seems
                 # to be fixed. Will be removed after further testing.
