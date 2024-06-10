@@ -263,6 +263,20 @@ class GalaxyStellarMassSampling:
         self.grid_density_array = np.empty(size, np.float64)
         self.grid_logmasses = np.empty(size, np.float64)
 
+    @property
+    def sampling(self):
+        return self._sampling
+
+    @sampling.setter
+    def sampling(self, sampling):
+        if sampling == 'number':
+            self._sampling = 'number'
+        elif sampling == 'mass':
+            self._sampling = 'mass'
+        else:
+            raise ValueError('Parameter "sampling" must be one of '
+                             '"number", "mass".')
+
     def _ratio(self, logm_im1, logm_i, logm_ip1):
         """Compute the ratio of the GSMF integral in a bin.
 
