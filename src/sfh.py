@@ -323,11 +323,6 @@ class SFMR:
     ----------
     redshift : float
         Redshift at which to compute the relation.
-    flattening : str
-        SFMR model flattening option.
-    sfmr : :class:`BoogaardSFMR`, :class:`SpeagleSFMR` or \
-    :class:`TomczakSFMR`
-        Instance of an SFMR class, depending on :attr:`flattening`.
 
     Notes
     -----
@@ -357,7 +352,7 @@ class SFMR:
                  scatter_model: str = 'none') -> None:
         self.redshift = redshift
         self.sfmr = flattening
-        self.scatter_model = scatter_model
+        self.scatter = scatter_model
 
     def __getattr__(self, name: str) -> Any:
         """Redirect calls to self to the chosen SFMR class instance."""
@@ -382,7 +377,7 @@ class SFMR:
 
     @property
     def scatter(self) -> Callable[[], float]:
-        """Return a value for SFR scatter_model around the SFMR.
+        """Return a value for SFR scatter around the SFMR.
 
         Depending on :attr:`flattening`, will be a normal distribution
         with mean 0 and standard deviation equal to
