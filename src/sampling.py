@@ -1388,8 +1388,7 @@ class SimpleBinaryPopulation:
         # removed from imf_array and taken into account in the total system mass.
         systemgenerator = ZAMSSystemGenerator(pairs_table_path=self.pairs_table_path,
                                               imf_array=self.sampling_pool,
-                                              qe_max_tries=self.qe_max_tries,
-                                              dmcomp_tol=0.05,
+                                              qe_max_tries=self.qe_max_tries, dmcomp_tol=0.05,
                                               parent_logger=self.logger)
         self.logger.info(f'Started ZAMSSystemGenerator with binaries_table_path={self.pairs_table_path},' \
                           f'eq_max_tries = {self.qe_max_tries} and dm2tol = {0.05}.')

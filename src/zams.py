@@ -1360,6 +1360,8 @@ class ZAMSSystemGenerator:
         according to the desired orbital parameter distributions.
     imf_array : NDArray
         Mass pool for sampling primary and companion masses.
+    m1_min : float
+        Mass at which to break :attr:`imf_array` during sampling.
     qe_max_tries : int
         Maximum number of attempts at drawing a valid ``q,e`` pair for
         a given ``m1,logp``, before ``m1`` is redrawn.
@@ -1370,9 +1372,9 @@ class ZAMSSystemGenerator:
     pairs_table : tables.File
         Table loaded from :attr:`pairs_table_path`
     lowmass_imf_array : NDArray
-        Subarray of :attr:`imf_array` with ``m<0.8``.
+        Subarray of :attr:`imf_array` below :attr:`m1_min`.
     highmass_imf_array : numpy array
-        Subarray of :attr:`imf_array` with ``m>=0.8``..
+        Subarray of :attr:`imf_array` above :attr:`m1_min`.
     m1array_n : int
         Live length of :attr:`highmass_imf_array`.
     m1array_i : int
@@ -1434,11 +1436,12 @@ class ZAMSSystemGenerator:
 
     """
 
-    def __init__(self, pairs_table_path, imf_array, qe_max_tries=1,
+    def __init__(self, pairs_table_path, imf_array, m1_min=0.8, qe_max_tries=1,
                  dmcomp_tol=0.05, parent_logger=None):
         """
         Parameters
         ----------
+        m1_min
         pairs_table_path : path_like object
             Path to the h5 containing equiprobable (m1_table,logp,q,e)
             sets from the distributions in this class.
@@ -1458,6 +1461,7 @@ class ZAMSSystemGenerator:
 
         self.pairs_table_path = pairs_table_path
         self.imf_array = imf_array
+        self.m1_min = m1_min
         self.qe_max_tries = qe_max_tries
         self.dmcomp_tol = dmcomp_tol
         self.pairs_table = None
@@ -1523,10 +1527,15 @@ class ZAMSSystemGenerator:
     def setup_sampler(self):
         """Set up the lowmass and highmass _imf_array attributes,
         initial m1array_n and load pairs_table.
+
+        Two mass sub-arrays, :attr:`lowmass_imf_array` and
+        :attr:`highmass_imf_array` are implemented to speed up sampling
+        by assuming that `m1` is always in :attr:`highmass_imf_array`
+        and that :math:`m_\\mathrm{comp}<m_1´.
         """
 
-        self.lowmass_imf_array = self.imf_array[self.imf_array < 0.8]
-        self.highmass_imf_array = self.imf_array[self.imf_array >= 0.8]
+        self.lowmass_imf_array = self.imf_array[self.imf_array < self.m1_min]
+        self.highmass_imf_array = self.imf_array[self.imf_array >= self.m1_min]
         self.m1array_n = self.highmass_imf_array.shape[0]
         self.pairs_table = tb.open_file(self.pairs_table_path, 'r')
         self._set_m1_options()
@@ -1606,9 +1615,6 @@ class ZAMSSystemGenerator:
         parameters for the sampled pairs are returned, and the component
         masses are removed from the :attr:`imf_array` and its
         sub-arrays.
-
-        Two mass sub-arrays, :attr:`lowmass_imf_array` and
-        :attr:`highmass_imf_array`
         """
 
         if ncomp > (len(self.lowmass_imf_array)
@@ -1626,8 +1632,8 @@ class ZAMSSystemGenerator:
         # periods are drawn as indexes to the Tables within the m1group
         # Group
 
-        lowmcomp_i_list = []  # mass index of < 0.8 Msun companions
-        highmcomp_i_list = []  # mass index of >= 0.8 Msun companions
+        lowmcomp_i_list = []  # mass index of < m1_min Msun companions
+        highmcomp_i_list = []  # mass index of >= m1_min Msun companions
         # defaults to a success for isolated stars, i.e., ncomp=0
         success = True
         # start sampling from the innermost pair
@@ -1648,7 +1654,7 @@ class ZAMSSystemGenerator:
 
                 # Check from which imf_array mcomp_array must be taken.
                 low_mcomp = False
-                if mcomp_table < 0.8:
+                if mcomp_table < self.m1_min:
                     low_mcomp = True
 
                 # Look for the mass closest to mcomp_array in the
@@ -1657,7 +1663,7 @@ class ZAMSSystemGenerator:
                 if low_mcomp:
                     if (len(self.lowmass_imf_array)
                             - len(lowmcomp_i_list) < 1):
-                        # no <= 0.8 mcomp available
+                        # no <= m1_min mcomp available
                         mcomp_array = 0.9 * mcomp_table / (self.dmcomp_tol + 1)
                     else:
                         # find closest m
@@ -1674,7 +1680,7 @@ class ZAMSSystemGenerator:
                 else:
                     if (len(self.highmass_imf_array[:self.m1array_i])
                             - len(highmcomp_i_list) < 1):
-                        # no >= 0.8 mcomp available
+                        # no >= m1_min mcomp available
                         mcomp_array = 0.9 * mcomp_table / (self.dmcomp_tol + 1)
                     else:
                         # Because m1array is slightly different from
