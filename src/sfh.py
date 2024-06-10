@@ -16,7 +16,7 @@ from src.constants import (
     LN10, Z_SUN, T04_MZR_params_list, M09_MZR_params_list, KK04_MZR_params_list,
     PP04_MZR_params_list, REDSHIFT_SFRD_DATA_PATH, LOWMET_SFRD_PATH, MIDMET_SFRD_DATA_PATH,
     HIGHMET_SFRD_DATA_PATH, LOWMET_CANON_SFRD_PATH, MIDMET_CANON_SFRD_DATA_PATH,
-    HIGHMET_CANON_SFRD_DATA_PATH, CHR19_GSMF
+    HIGHMET_CANON_SFRD_DATA_PATH, CHR19_GSMF, C20_CORRECTIONS_PATH
 )
 from src.utils import ZOH_to_FeH, FeH_to_Z, interpolate, float_or_arr_input
 
@@ -1057,8 +1057,6 @@ class Corrections:
 
     Attributes
     ----------
-    data_path : pathlib Path
-        Path to the precalculated correction grid file.
     metallicity : NDArray
         Array of metallicities at which to compute the corrections.
     sfr_kroupa : NDArray
@@ -1098,8 +1096,6 @@ class Corrections:
     """
 
     def __init__(self, metallicity: float, sfr: float) -> None:
-        self.data_path = Path('..', 'Data', 'C20_Results',
-                              'IGIMF3_SFR_corrections_extended.dat')
         self.metallicity = metallicity
         self.sfr_kroupa = sfr
         self.corrections = np.empty((0, self.sfr_kroupa.shape[0]), np.float64)
@@ -1109,7 +1105,7 @@ class Corrections:
 
     def load_data(self) -> None:
         """Load original correction data."""
-        data = np.loadtxt(self.data_path, unpack=True).T
+        data = np.loadtxt(C20_CORRECTIONS_PATH, unpack=True).T
         feh_metallicity_array = np.empty((0, 1), np.float64)
         sfr_kroupa_array = []
         sfr_correction_array = []

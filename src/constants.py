@@ -41,6 +41,13 @@ ZSUN_GRID_DIR = Path(DATA_PATH, 'zsun_gridfiles')
 SCHECHTER_PARAMS_PATH = Path(DATA_PATH, 'schechter_params.pkl')
 C20_DIR_PATH = Path(DATA_PATH, 'C20_Results', 'SFRD_Z_z_data')
 """path_like: Path to the folder containing the SFRD grids by Chruslinska et al. (2020)."""
+C20_CORRECTIONS_PATH = Path(DATA_PATH, 'C20_Results', 'IGIMF3_SFR_corrections_extended.dat')
+"""path_like: Path to the SFRD variant IMF corretions.
+
+Originally from Chruslinska et al. (2020). Extended grid kindly provided
+by Martyna Chruslinska.
+"""
+
 LOWMET_SFRD_PATH = Path(C20_DIR_PATH, '204w14vIMF3aeh_FOH_z_dM.dat')
 MIDMET_SFRD_DATA_PATH = Path(C20_DIR_PATH, '103w14vIMF3aeh_FOH_z_dM.dat')
 HIGHMET_SFRD_DATA_PATH = Path(C20_DIR_PATH, '302w14vIMF3aeh_FOH_z_dM.dat')
