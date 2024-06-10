@@ -1353,15 +1353,35 @@ class ZAMSSystemGenerator:
 
     All orbital periods are in days and masses in solar masses.
 
+     Parameters
+    ----------
+    pairs_table_path : path_like
+        Path to a HDF5 file containing equiprobable (m1,logp,q,e) sets
+        according to the desired orbital parameter distributions.
+    imf_array : numpy array
+        Array from which to sample primary and companion masses.
+    m1_min : float
+        Minimum primary mass.
+    qe_max_tries : int, default : 1
+        Maximum number of attempts at drawing a valid ``q,e`` pair for
+        a given ``m1,logp``, before ``m1`` is redrawn.
+    dmcomp_tol : float, default : 0.05
+        Maximum accepted difference between a companion mass drawn from
+        a `q`-distribution and the closest value in :attr:`imf_array`,
+        relative to the latter.
+    parent_logger : logging Logger, default : None
+        Logger of the class or module from which this class was
+        instantiated.
+
     Attributes
     ----------
     pairs_table_path : path_like
         Path to a HDF5 file containing equiprobable (m1,logp,q,e) sets
         according to the desired orbital parameter distributions.
     imf_array : NDArray
-        Mass pool for sampling primary and companion masses.
+        Array from which to sample primary and companion masses.
     m1_min : float
-        Mass at which to break :attr:`imf_array` during sampling.
+        Minimum primary mass.
     qe_max_tries : int
         Maximum number of attempts at drawing a valid ``q,e`` pair for
         a given ``m1,logp``, before ``m1`` is redrawn.
@@ -1445,27 +1465,6 @@ class ZAMSSystemGenerator:
 
     def __init__(self, imf_array, pairs_table_path=BINARIES_UNCORRELATED_TABLE_PATH, m1_min=0.8,
                  qe_max_tries=1, dmcomp_tol=0.05, parent_logger=None):
-        """
-        Parameters
-        ----------
-        m1_min
-        pairs_table_path : path_like object
-            Path to the h5 containing equiprobable (m1_table,logp,q,e)
-            sets from the distributions in this class.
-        imf_array : numpy array
-            Array of masses from which all component masses will be
-            initially drawn.
-        qe_max_tries : int, default : 1
-            Number of attempts to draw a valid q,e pair for a chosen
-            m1_table,logp before m1_table is redrawn.
-        dmcomp_tol : float, default : 0.05
-            Maximum fractional difference between a drawn mass and the
-            closest mass in imf_array for it to be accepted.
-        parent_logger : logging Logger, default : None
-            Logger of the class or module from which this class was
-            instantiated.
-        """
-
         self.pairs_table_path = pairs_table_path
         self.imf_array = imf_array
         self.m1_min = m1_min
