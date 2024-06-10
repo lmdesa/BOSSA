@@ -84,9 +84,10 @@ class RandomSampling:
         self.m_trunc_max = imf.m_trunc_max
         self._discretization_points = discretization_points
         self._discretization_masses = None
-        self._discrete_imf = None
+        self.discrete_imf = None
         self.sample = None
 
+    # TODO: set discretization_masses with np.logspace
     @property
     def discretization_masses(self):
         if self._discretization_masses is None:
@@ -105,19 +106,19 @@ class RandomSampling:
         return self._discretization_masses
 
     def compute_imf(self):
-        """Compute the PowerLawIMF at each value in discretization_masses and append it to _discrete_imf.
+        """Compute the PowerLawIMF at each value in discretization_masses and append it to discrete_imf.
 
-        Computes the PowerLawIMF at each value in discretization_masses and appends it to _discrete_imf. Before appending, checks
+        Computes the PowerLawIMF at each value in discretization_masses and appends it to discrete_imf. Before appending, checks
         for negative values, which appear for values close to the limits of the PowerLawIMF itself, and only appends the PowerLawIMF if
         it is non-negative.
         """
 
-        self._discrete_imf = np.empty((0,), np.float64)
+        self.discrete_imf = np.empty((0,), np.float64)
         # discretization_masses = np.empty((0,), np.float64)
         for m in self.discretization_masses:
             imf = self.imf.imf(m)
             # if imf >= 0:
-            self._discrete_imf = np.append(self._discrete_imf, imf)
+            self.discrete_imf = np.append(self.discrete_imf, imf)
             # discretization_masses = np.append(discretization_masses, m)
 
     # self._discretization_masses = discretization_masses
@@ -141,7 +142,7 @@ class RandomSampling:
             Normalized array of probabilities corresponding to the masses in sampling_masses.
         """
 
-        ipY = self._discrete_imf.reshape((1, self.discretization_masses.shape[0]))
+        ipY = self.discrete_imf.reshape((1, self.discretization_masses.shape[0]))
         ipX = self.discretization_masses.reshape((1, self.discretization_masses.shape[0]))
         sampling_probs = interpolate(ipX, ipY, sampling_masses)[0]
         sampling_probs /= sampling_probs.sum()
@@ -934,7 +935,7 @@ class SimpleBinaryPopulation:
         randomsampler.compute_imf()
         randomsample = randomsampler.get_sample(m_min, m_max, samplesize).astype(np.float32)
         imf_mass_arr = randomsampler.discretization_masses
-        imf_arr = randomsampler._discrete_imf
+        imf_arr = randomsampler.discrete_imf
 
         time1 = time() - time0
         self.logger.debug(f'PowerLawIMF random sampling completed in {time1:.6f} s.')
