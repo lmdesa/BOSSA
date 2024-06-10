@@ -9,6 +9,8 @@ from time import time
 from datetime import datetime
 from pathlib import Path
 from functools import cached_property
+from typing import Union
+
 from astropy.cosmology import WMAP9 as cosmo
 
 import numpy as np
@@ -22,6 +24,7 @@ import inquirer
 
 import sys
 sys.path.append('..')
+import src.imf as imf
 from src.imf import Star, IGIMF
 from src.sfh import MZR, SFMR, Corrections, GSMF
 from src.zams import ZAMSSystemGenerator, MultipleFraction
@@ -31,48 +34,47 @@ from src.constants import Z_SUN, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINAR
     IGIMF_ZAMS_DIR_PATH, COMPACT_OBJ_DIR_PATH, GALAXYGRID_DIR_PATH, PHYSICAL_CORE_COUNT, TOTAL_PHYSICAL_MEMORY
 
 
+IMFLike = Union[imf.Star, imf.EmbeddedCluster, imf.IGIMF]
+"""typing.Union: Union of child classes of :class:`imf.PowerLawIMF`."""
+
+
 def powerlaw(x, k, a):
     """Power law with norm k and index a, evaluated at x."""
     return k * x ** a
 
 
 class RandomSampling:
-    """Sample an arbitrary PowerLawIMF by pure random sampling.
+    """Randomly sample an arbitrary IMF.
 
-    This class performs pure, unrestrained, sampling of an PowerLawIMF. The sampling is not constrained by a total sample mass,
-    thus it cannot represent a physical group of stars; instead, only a number of objects is specified.
+    This class is meant to speed up the sampling of an IMF defined as a
+    numerical integral, as with :class:`imf.IGIMF`, by setting up an
+    interpolator to compute probabilities.
 
     Attributes
     ----------
-    imf : EmbeddedCluster or Star object
-        Instance of an PowerLawIMF class that holds the imf itself as well as relevant physical information.
+    imf : IMFLike
+        Instance of an IMF class with an ``imf(m)`` method.
     m_trunc_min : float
-        Minimum possible mass for the objects being sampled.
+        Lower truncation mass, taken as the IMF lower limit.
     m_trunc_max : float
-        Maximum possible mass for the objects being sampled.
-    discretization_points : float
-        Number of mass values for which to calculate PowerLawIMF values to be used for interpolation.
-    discretization_masses : numpy array
-        Mass values for which to calculate the PowerLawIMF values to be used for interpolation.
-    discrete_imf : numpy array
-        PowerLawIMF values calculated at each value of discretization_masses, to be used for interpolation.
-    sample : numpy array
+        Upper truncation the same, can be >= ``m_max``.
+    sample : NDArray
         The mass values resulting from the last random sampling.
 
     Methods
     -------
-    compute_imf() :
-        Compute the PowerLawIMF at each value in discretization_masses and append it to discrete_imf.
-    get_sample(m_min, m_max, n) :
-        Samples the PowerLawIMF for n masses between m_min and m_max.
+    compute_imf()
+        Compute the IMF for interpolation.
+    get_sample(m_min, m_max, n)
+        Sample ``n`` masses between ``m_min`` and ``m_max``.
     """
 
     def __init__(self, imf, discretization_points=20):
         """
         Parameters
         ----------
-        imf : PowerLawIMF or IGIMF object
-            Instance of an PowerLawIMF class that holds the imf itself as well as relevant physical information.
+        imf : IMFLike
+            Instance of an IMF class with an ``imf(m)`` method.
         discretization_points : int
             Number of mass values per mass decade on which the PowerLawIMF will be computed for interpolation.
         """
@@ -82,7 +84,7 @@ class RandomSampling:
         self.m_trunc_max = imf.m_trunc_max
         self._discretization_points = discretization_points
         self._discretization_masses = None
-        self.discrete_imf = None
+        self._discrete_imf = None
         self.sample = None
 
     @property
@@ -103,19 +105,19 @@ class RandomSampling:
         return self._discretization_masses
 
     def compute_imf(self):
-        """Compute the PowerLawIMF at each value in discretization_masses and append it to discrete_imf.
+        """Compute the PowerLawIMF at each value in discretization_masses and append it to _discrete_imf.
 
-        Computes the PowerLawIMF at each value in discretization_masses and appends it to discrete_imf. Before appending, checks
+        Computes the PowerLawIMF at each value in discretization_masses and appends it to _discrete_imf. Before appending, checks
         for negative values, which appear for values close to the limits of the PowerLawIMF itself, and only appends the PowerLawIMF if
         it is non-negative.
         """
 
-        self.discrete_imf = np.empty((0,), np.float64)
+        self._discrete_imf = np.empty((0,), np.float64)
         # discretization_masses = np.empty((0,), np.float64)
         for m in self.discretization_masses:
             imf = self.imf.imf(m)
             # if imf >= 0:
-            self.discrete_imf = np.append(self.discrete_imf, imf)
+            self._discrete_imf = np.append(self._discrete_imf, imf)
             # discretization_masses = np.append(discretization_masses, m)
 
     # self._discretization_masses = discretization_masses
@@ -139,7 +141,7 @@ class RandomSampling:
             Normalized array of probabilities corresponding to the masses in sampling_masses.
         """
 
-        ipY = self.discrete_imf.reshape((1, self.discretization_masses.shape[0]))
+        ipY = self._discrete_imf.reshape((1, self.discretization_masses.shape[0]))
         ipX = self.discretization_masses.reshape((1, self.discretization_masses.shape[0]))
         sampling_probs = interpolate(ipX, ipY, sampling_masses)[0]
         sampling_probs /= sampling_probs.sum()
@@ -177,6 +179,7 @@ class RandomSampling:
         probabilities = self._get_probabilities(sampling_masses)
         self.sample = np.sort(np.random.choice(sampling_masses, p=probabilities, size=n))
         return self.sample
+
 
 class GalaxyStellarMass:
 
@@ -931,7 +934,7 @@ class SimpleBinaryPopulation:
         randomsampler.compute_imf()
         randomsample = randomsampler.get_sample(m_min, m_max, samplesize).astype(np.float32)
         imf_mass_arr = randomsampler.discretization_masses
-        imf_arr = randomsampler.discrete_imf
+        imf_arr = randomsampler._discrete_imf
 
         time1 = time() - time0
         self.logger.debug(f'PowerLawIMF random sampling completed in {time1:.6f} s.')
