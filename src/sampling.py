@@ -69,14 +69,14 @@ class RandomSampling:
         Sample ``n`` masses between ``m_min`` and ``m_max``.
     """
 
-    def __init__(self, imf, discretization_points=20):
+    def __init__(self, imf, discretization_points=100):
         """
         Parameters
         ----------
         imf : IMFLike
             Instance of an IMF class with an ``imf(m)`` method.
         discretization_points : int
-            Number of mass values per mass decade on which the PowerLawIMF will be computed for interpolation.
+            Number of masses on which to compute the IMF.
         """
 
         self.imf = imf
@@ -91,16 +91,17 @@ class RandomSampling:
     @property
     def discretization_masses(self):
         if self._discretization_masses is None:
+            size = self._discretization_points // 5
             self._discretization_masses = np.concatenate((
                 np.linspace(self.m_trunc_min + 0.01,
                             0.1,
-                            1 + int(self._discretization_points * (-1 - np.log10(self.m_trunc_min)))),
-                np.linspace(0.1, 1, 1 + self._discretization_points)[1:],
-                np.linspace(1, 10, 1 + self._discretization_points)[1:],
-                np.linspace(10, 100, 1 + self._discretization_points)[1:],
+                            1 + int(size * (-1 - np.log10(self.m_trunc_min)))),
+                np.linspace(0.1, 1, 1 + size)[1:],
+                np.linspace(1, 10, 1 + size)[1:],
+                np.linspace(10, 100, 1 + size)[1:],
                 np.linspace(100,
                             self.m_trunc_max,
-                            1 + int(self._discretization_points * (np.log10(self.m_trunc_max) - 2))
+                            1 + int(size * (np.log10(self.m_trunc_max) - 2))
                             )[1:]
             ))
         return self._discretization_masses
