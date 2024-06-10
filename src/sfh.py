@@ -239,7 +239,7 @@ class TomczakSFMR:
         self._s0 = None  # property
         self._logm_to = None  # property
         self._logm_break = None  # property
-        self._break_shift = None  # property
+        self._break_corr = None  # property
 
     @property
     def s0(self) -> float:
@@ -270,10 +270,10 @@ class TomczakSFMR:
     @property
     def break_corr(self) -> float:
         """float: Correction to match the SFMR models at the break."""
-        if self._break_shift is None:
-            self._break_shift = (self.lowmass_sfmr._sfr(self.logm_break)
-                                 - self._sfr(self.logm_break, yshift=0))
-        return self._break_shift
+        if self._break_corr is None:
+            self._break_corr = (self.lowmass_sfmr._sfr(self.logm_break)
+                                - self._sfr(self.logm_break, yshift=0))
+        return self._break_corr
 
     @staticmethod
     def _logm_to_func(redshift: float) -> float:
@@ -294,7 +294,7 @@ class TomczakSFMR:
             return self.lowmass_sfmr._sfr(logm)
         else:
             if yshift is None:
-                yshift = self._break_shift
+                yshift = self.break_corr
             exp10 = 10 ** (-self.GAMMA * (logm - self.logm_to))
             return self.s0 - np.log10(1 + exp10) + yshift
 
