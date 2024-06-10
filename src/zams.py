@@ -1464,7 +1464,7 @@ class ZAMSSystemGenerator:
     Examples
     --------
     >>> import numpy as np
-    >>> systemgenerator = ZAMSSystemGenerator(imf_array=np.logspace(-1, 2, 1.e6))
+    >>> systemgenerator = ZAMSSystemGenerator(imf_array=np.logspace(-1, 2, int(1e6)))
     >>> systemgenerator.setup_sampler()
     >>> m1table_indices = np.random.randint(0, systemgenerator.m1array_n, 2)
     >>> systemgenerator.open_m1group(m1table_indices[0])
