@@ -1547,7 +1547,7 @@ class ZAMSSystemGenerator:
         self.pairs_table = tb.open_file(self.pairs_table_path, 'r')
         self._set_m1_options()
 
-    def close_binaries_table(self):
+    def close_pairs_table(self):
         """Close the pairs_table file."""
         self.pairs_table.close()
 

@@ -1495,7 +1495,7 @@ class SimpleBinaryPopulation:
         gc.collect()  # make sure memory is freed
         total_time = time() - start_time
         self.logger.info(f'Sampling loop completed in {total_time:.6f} s.')
-        systemgenerator.close_binaries_table()
+        systemgenerator.close_pairs_table()
         time1 = time() - time0
         self.logger.info(f'Sampling completed in {time1:.6f} s with {len(self.sample)} binaries.')
         return self.sample #, self.sample_mass
