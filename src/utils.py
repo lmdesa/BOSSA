@@ -3,6 +3,7 @@
 
 import logging
 import logging.config
+from math import ceil
 from dataclasses import dataclass
 from functools import wraps
 from typing import Any, Callable, Annotated
@@ -272,11 +273,11 @@ def step(array, index_array, midpoint_i):
     else:
         sub_arr = array[midpoint_i:]
         sub_indarr = index_array[midpoint_i:]
-    midpoint_i = np.ceil(len(sub_arr) / 2)
+    midpoint_i = ceil(len(sub_arr) / 2)
     return sub_arr, sub_indarr, midpoint_i
 
 def valley_minimum(array, index_array):
-    midpoint_i = np.ceil(len(array)/2)
+    midpoint_i = ceil(len(array)/2)
     sub_arr = array
     while len(sub_arr) > 1:
         sub_arr, index_array, midpoint_i = step(sub_arr, index_array, midpoint_i)
