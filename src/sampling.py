@@ -26,6 +26,7 @@ import inquirer
 import sys
 sys.path.append('..')
 import src.imf as imf
+import src.sfh as sfh
 from src.imf import Star, IGIMF
 from src.sfh import MZR, SFMR, Corrections, GSMF
 from src.zams import ZAMSSystemGenerator, MultipleFraction
@@ -242,7 +243,7 @@ class GalaxyStellarMassSampling:
     --------
     >>> from src.sfh import GSMF
     >>> gsmf = GSMF(redshift=0)
-    >>> galaxy_mass_sampler = GalaxyStellarMassSampling(gsmf, size=10)
+    >>> galaxy_mass_sampler = GalaxyStellarMassSampling(gsmf,size=10)
     >>> galaxy_mass_sampler.sample()
     >>> galaxy_mass_sampler.grid_logmasses
     array([9.89241753, 8.99773241, 8.50334364, 8.14752827, 7.86839714,
@@ -250,7 +251,8 @@ class GalaxyStellarMassSampling:
 
     """
 
-    def __init__(self, gsmf, logm_min=7, logm_max=12, size=3, sampling='number'):
+    def __init__(self, gsmf: sfh.GSMF, logm_min: float = 7., logm_max: float = 12., size : int = 3,
+                 sampling: str = 'number') -> None:
         self.gsmf = gsmf
         self.logm_min = logm_min
         self.logm_max = logm_max
@@ -262,12 +264,12 @@ class GalaxyStellarMassSampling:
         self.grid_logmasses = np.empty(size, np.float64)
 
     @property
-    def sampling(self):
+    def sampling(self) -> str:
         """str: Whether to sample by galaxy number or stellar mass."""
         return self._sampling
 
     @sampling.setter
-    def sampling(self, sampling):
+    def sampling(self, sampling: str) -> None:
         if sampling == 'number':
             self._sampling = 'number'
         elif sampling == 'mass':
@@ -278,7 +280,7 @@ class GalaxyStellarMassSampling:
             raise ValueError('Parameter "sampling" must be one of '
                              '"number", "mass".')
 
-    def _ratio(self, logm_im1, logm_i, logm_ip1):
+    def _ratio(self, logm_im1: int, logm_i :int, logm_ip1: int) -> float:
         """Compute the ratio of the GSMF integral in a bin.
 
         Integrate either ``GSMF(m)`` or ``m*GSMF(m)`` according to
@@ -310,7 +312,7 @@ class GalaxyStellarMassSampling:
             int2 = quad(lambda x: 10 ** x * 10 ** self.gsmf.log_gsmf(x), logm_i, logm_im1)[0]
         return int1 / int2
 
-    def _constraint(self, vec):
+    def _constraint(self, vec: NDArray[float]) -> NDArray[float]:
         """Returns a vector to be minimized during sampling.
 
         Vector containing the (ratios - 1) between the integrals within
@@ -353,7 +355,7 @@ class GalaxyStellarMassSampling:
                 bin_density_ratios[i] = r - 1
         return bin_density_ratios
 
-    def _set_grid_density(self):
+    def _set_grid_density(self) -> None:
         """Integrates within each bin for mass and number densities."""
         for i, (m2, m1) in enumerate(zip(self.bin_limits[:-1], self.bin_limits[1:])):
             ndens = quad(lambda x: 10 ** self.gsmf.log_gsmf(x), m1, m2)[0]
@@ -361,7 +363,7 @@ class GalaxyStellarMassSampling:
             self.grid_ndensity_array[i] = ndens
             self.grid_density_array[i] = dens
 
-    def sample(self):
+    def sample(self) -> None:
         """Sample galaxy stellar masses from the GSMF.
 
         Generates the galaxy stellar mass samples according to
@@ -385,7 +387,9 @@ class GalaxyStellarMassSampling:
                 initial_guess = np.linspace(11, 9, self.sample_size + 1)[1:-1]
             # Minimize (ratio-1) bin integral vector.
             # See the _constraint docstring.
-            solution = fsolve(self._constraint, initial_guess, maxfev=(initial_guess.shape[0] + 1) * 1000)
+            solution = fsolve(self._constraint,
+                              initial_guess,
+                              maxfev=(initial_guess.shape[0] + 1) * 1000)
             self.bin_limits = np.concatenate(([self.logm_max], solution, [self.logm_min]))
         self._set_grid_density()
         for i, (m2, m1) in enumerate(zip(self.bin_limits[:-1], self.bin_limits[1:])):
