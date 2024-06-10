@@ -1482,8 +1482,9 @@ class ZAMSSystemGenerator:
         self.logger = self._get_logger(parent_logger)
 
     def _get_logger(self, parent_logger):
-        """Create and return a class logger, as a child of a parent
-        logger if provided.
+        """Create and return a class logger.
+
+        Will be a child of ``parent_logger`` if provided.
         """
 
         if parent_logger is None:
@@ -1500,10 +1501,14 @@ class ZAMSSystemGenerator:
             logger.setLevel(logging.DEBUG)
         return logger
 
-    def _set_m1choice(self, m1choice_i):
-        """Set m1array_i and m1_array from a given index."""
-        self.m1array_i = m1choice_i
-        self.m1_array = self.highmass_imf_array[m1choice_i]
+    def _set_m1array(self, index):
+        """Set :attr:`m1array_i` and :attr:`m1_array`.
+
+        `index` should be less than :attr:`m1array_n`.
+        """
+
+        self.m1array_i = index
+        self.m1_array = self.highmass_imf_array[index]
 
     def _set_m1_options(self):
         """Load list of m1_table options and their respective PyTable
@@ -1555,7 +1560,7 @@ class ZAMSSystemGenerator:
         corresponding to a m1array_i into the m1group attribute.
         """
 
-        self._set_m1choice(m1choice_i)
+        self._set_m1array(m1choice_i)
         self.m1_table, self.m1group = self._get_m1()
         self.dm1 = np.abs(self.m1_table - self.m1_array) / self.m1_array
 
