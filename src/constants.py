@@ -49,7 +49,7 @@ MIDMET_CANON_SFRD_DATA_PATH = Path(C20_DIR_PATH, '103w14_FOH_z_dM.dat')
 HIGHMET_CANON_SFRD_DATA_PATH = Path(C20_DIR_PATH, '302w14_FOH_z_dM.dat')
 REDSHIFT_SFRD_DATA_PATH = Path(C20_DIR_PATH, 'Time_redshift_deltaT.dat')
 
-BINARIES_CANONICAL_TABLE_PATH = Path(DATA_PATH, 'canonical_mp_qe_table.h5')
+BINARIES_UNCORRELATED_TABLE_PATH = Path(DATA_PATH, 'canonical_mp_qe_table.h5')
 """path_like: Path to the equiprobable binary parameters h5 file, generated from the uncorrelated distributions."""
 BINARIES_CORRELATED_TABLE_PATH = Path(DATA_PATH, 'correlated_mp_qe_table.h5')
 """path_like: Path to the equiprobable binary parameters h5 file, generated from the Moe & Di Stefano distibutions."""
