@@ -470,7 +470,7 @@ class GalaxyGrid:
 
     def __init__(self, n_redshift, redshift_min=0, redshift_max=10, force_boundary_redshift=True, logm_per_redshift=3,
                  logm_min=6, logm_max=12, mzr_model='KK04', sfmr_flattening='none', gsmf_slope_fixed=True,
-                 sampling_mode='mass', include_scatter=False, apply_igimf_corrections=True, random_state=None):
+                 sampling_mode='mass', scatter_model='none', apply_igimf_corrections=True, random_state=None):
         """
         Parameters
         ----------
@@ -494,7 +494,7 @@ class GalaxyGrid:
             Whether to use the fixed (True) or the varying (False) low-mass slope model.
         sampling_mode : {'mass', 'number'}, default : 'mass'
             Whether sampled galaxies should represent mass bins of equal number or mass density.
-        include_scatter : bool
+        scatter_model : bool
             Whether to include scatter in the galaxy empirical relations.
         random_state : int
             Random number generator seed.
@@ -522,7 +522,7 @@ class GalaxyGrid:
 
         # Sampling settings
         self.sampling_mode = sampling_mode
-        self.include_scatter = include_scatter
+        self.scatter_model = scatter_model
         self.random_state = random_state
         self.apply_igimf_corrections = apply_igimf_corrections
 
@@ -627,7 +627,7 @@ class GalaxyGrid:
 
     def _mzr_scattered(self, mean_zoh, logm):
         """MZR with Gaussian scatter about the best-fit relation."""
-        if self.include_scatter:
+        if self.scatter:
             sigma0 = self._mzr_scatter(logm)
             sigma_zoh = 0.14
         else:
@@ -642,7 +642,7 @@ class GalaxyGrid:
 
     def _sfmr_scattered(self, mean_sfr, logm):
         """SFMR with Gaussian scatter about the best-fit relation."""
-        if self.include_scatter:
+        if self.scatter:
             sigma = self._sfmr_scatter(logm)
         else:
             sigma = 0
@@ -659,29 +659,31 @@ class GalaxyGrid:
         mass_sample = self.galaxy_sample.grid_logmasses
 
         gsmf = GSMF(redshift)
-        sfmr = SFMR(redshift, flattening=self.sfmr_flattening)
-        mzr = MZR(redshift, self.mzr_model)
+        sfmr = SFMR(redshift, flattening=self.sfmr_flattening, scatter_model=self.scatter_model)
+        mzr = MZR(redshift, self.mzr_model, scatter_model=self.scatter_model)
         mzr.set_params()
 
         log_gsmfs = np.array([[np.float64(gsmf.log_gsmf(logm)) for logm in mass_sample]])
 
         bin_zohs = np.array([[mzr.zoh(logm) for logm in galaxy_bins]])
 
-        mean_zohs = [mzr.zoh(logm) for logm in mass_sample]
-        mean_sfrs = [sfmr.sfr(logm) for logm in mass_sample]
+        #mean_zohs = [mzr.zoh(logm) for logm in mass_sample]
+        zohs = np.array([[mzr.zoh(logm) for logm in mass_sample]])
+        #mean_sfrs = [sfmr.sfr(logm) for logm in mass_sample]
+        sfrs = np.array([[sfmr.sfr(logm) for logm in mass_sample]])
 
-        zohs = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, mass_sample)]])
+        #zohs = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, mass_sample)]])
         fehs = np.array([[ZOH_to_FeH(zoh) for zoh in zohs.flatten()]])
 
-        if self.include_scatter:
-            zoh_rel_devs = [self._mzr_scatter(logm) / (zoh - mean_zoh) for logm, zoh, mean_zoh in
-                            zip(mass_sample, zohs.flatten(), mean_zohs)]
-            sfr_rel_devs = [self._sfmr_scatter(logm) / relative_dev for logm, relative_dev in
-                            zip(mass_sample, zoh_rel_devs)]
-        else:
-            sfr_rel_devs = [0 for logm in mass_sample]
+        #if self.scatter:
+        #    zoh_rel_devs = [self._mzr_scatter(logm) / (zoh - mean_zoh) for logm, zoh, mean_zoh in
+        #                    zip(mass_sample, zohs.flatten(), mean_zohs)]
+        #    sfr_rel_devs = [self._sfmr_scatter(logm) / relative_dev for logm, relative_dev in
+        #                    zip(mass_sample, zoh_rel_devs)]
+        #else:
+        #    sfr_rel_devs = [0 for logm in mass_sample]
 
-        sfrs = np.array([[mean_sfr + sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
+        #sfrs = np.array([[mean_sfr + sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
 
         feh_mask = np.ones(fehs.shape)
         if self.apply_igimf_corrections:
