@@ -455,10 +455,6 @@ class GalaxyGrid:
 
     Attributes
     ----------
-    save_path
-    mzr_model
-    sfmr_flattening
-    sampling_mode
     n_redshift : int
         Number of redshift values in the grid.
     redshift_min : float
@@ -481,10 +477,10 @@ class GalaxyGrid:
         Redshift sample defining the grid.
     gsmf_slope_fixed : bool
         Whether the GSMF low-mass slope should be fixed or not.
-    apply_igimf_corrections : bool
-        Whether to correct the SFR for :class:`imf.IGIMF`.
     random_state : int
         Random number generator seed.
+    apply_igimf_corrections : bool
+        Whether to correct the SFR for :class:`imf.IGIMF`.
     zoh_bin_array : NDArray
         Edges of Z_OH bins represented by :attr:`zoh_array`.
     zoh_array : NDArray
@@ -515,11 +511,12 @@ class GalaxyGrid:
     Methods
     -------
     sample_redshift()
-        Sample n_redshift redshift between min_redshift and max_redshift according to the mass distribution (GSMF).
+        Sample :attr:`n_redshift` redshift between :attr:`min_redshift`
+        and :attr:`max_redshift` according to the GSMF.
     get_grid()
-        Generate the n_redshift X logm_per_redshift galaxy grid.
+        Generate the galaxy grid.
     save_grid()
-        Save grid to disk.
+        Save galaxy grid to disk.
 
 
     """
