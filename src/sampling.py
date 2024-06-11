@@ -403,13 +403,55 @@ class GalaxyStellarMassSampling:
 
 
 class GalaxyGrid:
-    """Generate a grid of galaxies over redshift based on empirical distributions.
+    """Generate a grid of galaxy properties over redshift.
 
-    A galaxy is here defined by a set of four parameters: redshift, stellar mass, metallicity and star formation rate
-    (SFR). These are distributed according to the redshift-dependent empirical relations implemented in the sfr module:
-    the galaxy stellar mass function (GSMF); the mass-(gas) metallicity relation (MZR); and the star formation-mass
-    relation (SFMR). For a given redshift, GSMF sets the number density distribution over stellar mass; while the MZR
-    and SFMR give the metallicity and SFR, respectively, as functions of stellar mass.
+    This class uses the galaxy stellar mass function (GSMF), star
+    formation-mass relation (SFMR) and mass-metallicity relation (MZR)
+    models from the :mod:`sfh` module to sample the space of galaxy
+    parameters (stellar mass, redshift, star formation rate and
+    metallicity).
+
+    A set of :attr:`n_redshift` redshifts is sampled first, and only
+    then are the other three parameters sampled,
+    :attr:`logm_per_redshift` sets per redshift. Unless
+    :attr:`scatter_model`  is set to `normal`, the redshift plus any one
+    parameter fully determines the others.
+
+    Mass is given in solar masses, star formation rate in solar masses
+    per year, and the metallicity is [Fe/H].
+
+    Parameters
+    ----------
+    n_redshift : int
+        Number of redshift to sample.
+    redshift_min : float, default : 0.
+        Minimum redshift to sample.
+    redshift_max : float, default : 10.
+        Maximum redshift to sample.
+    force_boundary_redshift : bool, default : True,
+        Whether to manually add ``redshift_min`` and
+        ``redshift_max`` to the sample.
+    logm_per_redshift : int, default : 3
+        Number of masses to sample per redshift.
+    logm_min : float, default : 7
+        Minimum log10(mass) to sample.
+    logm_max : float, default : 12
+        Maximum log10(mass) to sample.
+    mzr_model : {'KK04', 'T04', 'M09', 'PP04'}, default: 'KK04'
+        Option of MZR model.
+    sfmr_flattening : {'none', 'moderate', 'sharp'}, default: 'none'
+        SFMR model flattening option.
+    gsmf_slope_fixed : bool, default: True
+        Whether to use the fixed (True) or the varying (False)
+        GSMF low-mass slope model.
+    sampling_mode : {'mass', 'number', 'uniform'}, default : 'mass'
+        Method for sampling masse from the GSMF.
+    scatter_model : str, default : 'none'
+        Scatter model to use in the SFMR and MZR.
+    apply_igimf_corrections : bool, default : True,
+        Whether to correct the SFR for :class:`imf.IGIMF`.
+    random_state : int
+        Random number generator seed.
 
     Attributes
     ----------
@@ -423,38 +465,52 @@ class GalaxyGrid:
         Minimum redshift to sample.
     redshift_max : float
         Maximum redshift to sample.
+    force_boundary_redshift : bool
+        Whether to forcefully add redshifts :attr:`redshift_min` and
+        :attr:`redshift_min` to the sample, thus making its size
+        ``(n_redshift+2)*``:attr:`logm_per_redshift`.
     logm_per_redshift : int
         Number of galactic stellar masses to sample per redshift.
     logm_min : float
-        Minimum log10(galactic stelar mass) to sample.
+        Minimum log10(mass) to sample.
     logm_max : float
-        Maximum log10(galactic stelar mass) to sample.
-    sample_redshift_quantiles : float
-        Quantiles of the star-forming mass over redshift distributions represented by the redshift sample.
-    sample_redshift_array : float
+        Maximum log10(mass) to sample.
+    sample_redshift_bins : NDArray
+        Limits of the bins represented by :attr:`sample_redshift_array`.
+    sample_redshift_array : NDArray
         Redshift sample defining the grid.
     gsmf_slope_fixed : bool
-        Whether the GSMF low-mass should be fixed or not.
-    zoh_bin_array : numpy array
-        Edges of Z_O/H bins represented by sample at each redshift.
-    zoh_array : numpy array
-        Z_O/H values sampled at each redshift.
-    ndensity_array : numpy array
+        Whether the GSMF low-mass slope should be fixed or not.
+    apply_igimf_corrections : bool
+        Whether to correct the SFR for :class:`imf.IGIMF`.
+    random_state : int
+        Random number generator seed.
+    zoh_bin_array : NDArray
+        Edges of Z_OH bins represented by :attr:`zoh_array`.
+    zoh_array : NDArray
+        Z_OH values sampled at each redshift.
+    ndensity_array : NDArray
         Number density of galaxies represented by each grid point.
-    density_array : numpy array
+    density_array : NDArray
         Stellar mass density of galaxies represented by each grid point.
     mass_list : list
-        List of n_redshift arrays, containing the galaxy stellar masses sampled at each redshift.
+        List of :attr:`n_redshift` arrays, containing the galaxy stellar
+        masses sampled at each redshift.
     log_gsmf_list : list
-        List of n_redshift arrays, containing the log10(gsmf) values (galaxy number density) sampled at each redshift.
+        List of :attr:`n_redshift` arrays, containing the log10(gsmf)
+        values (galaxy number density) sampled at each redshift.
     zoh_list : list
-        List of n_redshift arrays, containing the Z_O/H values sampled at each redshift.
+        List of :attr:`n_redshift` arrays, containing the Z_OH values
+        sampled at each redshift.
     feh_list : list
-        List of n_redshift arrays, containing the [Fe/H] values sampled at each redshift.
+        List of :attr:`n_redshift`, containing the [Fe/H] values
+        sampled at each redshift.
     sfr_list : list
-        List of n_redshift arrays, containing the SFR values sampled at each redshift.
+        List of :attr:`n_redshift` arrays, containing the SFR values
+        sampled at each redshift.
     grid_array : numpy_array
-        Shape (n_redshift, logm_per_redshift, 6) array containing the full grid.
+        Shape ``(n_redshift, logm_per_redshift, 6)`` array containing
+        the full grid.
 
     Methods
     -------
@@ -471,35 +527,6 @@ class GalaxyGrid:
     def __init__(self, n_redshift, redshift_min=0, redshift_max=10, force_boundary_redshift=True, logm_per_redshift=3,
                  logm_min=6, logm_max=12, mzr_model='KK04', sfmr_flattening='none', gsmf_slope_fixed=True,
                  sampling_mode='mass', scatter_model='none', apply_igimf_corrections=True, random_state=None):
-        """
-        Parameters
-        ----------
-        n_redshift : int
-            Number of redshift values in the grid.
-        redshift_min : float, default : 0
-            Minimum redshift to sample.
-        redshift_max : float, default : 10
-            Maximum redshift to sample.
-        logm_per_redshift : int, default : 3
-            Number of galactic stellar masses to sample per redshift.
-        logm_min : float, default : 7
-            Minimum log10(galactic stelar mass) to sample.
-        logm_max : float, default : 12
-            Maximum log10(galactic stelar mass) to sample.
-        mzr_model : {'KK04', 'T04', 'M09', 'PP04'}, default: 'KK04'
-            Option of MZR parameter set.
-        sfmr_flattening : {'none', 'moderate', 'sharp'}, default: 'none'
-            SFMR model flattening option.
-        gsmf_slope_fixed : bool, default: True
-            Whether to use the fixed (True) or the varying (False) low-mass slope model.
-        sampling_mode : {'mass', 'number'}, default : 'mass'
-            Whether sampled galaxies should represent mass bins of equal number or mass density.
-        scatter_model : bool
-            Whether to include scatter in the galaxy empirical relations.
-        random_state : int
-            Random number generator seed.
-        """
-
         # Redshift settings
         self.n_redshift = n_redshift
         self.redshift_min = redshift_min
@@ -512,7 +539,7 @@ class GalaxyGrid:
         self.logm_max = logm_max
 
         # Redshift sampling storage
-        self.sample_redshift_quantiles = None
+        self.sample_redshift_bins = None
         self.sample_redshift_array = self._get_sample_redshift_array()
 
         # Physical models
@@ -582,10 +609,22 @@ class GalaxyGrid:
 
     @sampling_mode.setter
     def sampling_mode(self, mode):
-        models = ['mass', 'number', 'uniform']
-        if mode not in models:
-            raise ValueError(f'sampling mode must be one of {models}.')
+        modes = ['mass', 'number', 'uniform']
+        if mode not in modes:
+            raise ValueError(f'sampling mode must be one of {modes}.')
         self._sampling_mode = mode
+
+    @property
+    def scatter_model(self):
+        """Scattering model choice for the SFMR and the MZR."""
+        return self._scatter_model
+
+    @scatter_model.setter
+    def scatter_model(self, model):
+        models = ['none', 'normal', 'min', 'max']
+        if model not in models:
+            raise ValueError(f'sampling mode must be one of {models}.')
+        self._scatter_model = model
 
     @property
     def save_path(self):
@@ -746,9 +785,9 @@ class GalaxyGrid:
         # With probabilities calculated, we can generate a representative sample from which we find n_redshift
         # uniform quantiles. Repetition is not an issue because only the quantiles are of interest.
         redshift_choices = np.random.choice(redshift_pool, p=redshift_probs, size=int(1e4*self.n_redshift))
-        self.sample_redshift_quantiles = np.quantile(redshift_choices, np.linspace(0, 1, self.n_redshift+1))
-        self.sample_redshift_quantiles[0] = self.redshift_min  # correct for the granularity of the sampling
-        self.sample_redshift_quantiles[-1] = self.redshift_max
+        self.sample_redshift_bins = np.quantile(redshift_choices, np.linspace(0, 1, self.n_redshift + 1))
+        self.sample_redshift_bins[0] = self.redshift_min  # correct for the granularity of the sampling
+        self.sample_redshift_bins[-1] = self.redshift_max
 
         # Finding uniform quantiles tells us which regions of the redshift range should be equally represented in order
         # to reproduce the GSMF as well as possible. The quantiles themselves are represented by the mass-averaged
@@ -758,7 +797,7 @@ class GalaxyGrid:
             self.sample_redshift_array[0] = self.redshift_min
             self.sample_redshift_array[-1] = self.redshift_max
             redshift_i += 1
-        for quantile0, quantile1 in zip(self.sample_redshift_quantiles[:-1], self.sample_redshift_quantiles[1:]):
+        for quantile0, quantile1 in zip(self.sample_redshift_bins[:-1], self.sample_redshift_bins[1:]):
             redshift_pool, redshift_probs = self._discrete_redshift_probs(quantile0, quantile1, 100)
             massaverage_redshift = np.average(redshift_pool, weights=redshift_probs)
             self.sample_redshift_array[redshift_i] = massaverage_redshift
@@ -766,9 +805,9 @@ class GalaxyGrid:
 
         min_redshift_bin_upper_edge = (self.sample_redshift_array[0] + self.sample_redshift_array[1]) / 2
         max_redshift_bin_lower_edge = (self.sample_redshift_array[-1] + self.sample_redshift_array[-2]) / 2
-        self.sample_redshift_quantiles = np.sort(np.concatenate(([min_redshift_bin_upper_edge],
-                                                                 self.sample_redshift_quantiles,
-                                                                 [max_redshift_bin_lower_edge])))
+        self.sample_redshift_bins = np.sort(np.concatenate(([min_redshift_bin_upper_edge],
+                                                            self.sample_redshift_bins,
+                                                            [max_redshift_bin_lower_edge])))
 
     def get_grid(self):
         mass_array = np.empty((0, self.logm_per_redshift), np.float64)
