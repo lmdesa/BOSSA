@@ -554,7 +554,6 @@ class GalaxyGrid:
         self.apply_igimf_corrections = apply_igimf_corrections
 
         # Logm sampling storage
-        self.galaxy_sample = None
         self.zoh_bin_array = np.empty((0, self.logm_per_redshift + 1), np.float64)
         self.zoh_array = np.empty((0, self.logm_per_redshift), np.float64)
         self.ndensity_array = np.empty((0, self.logm_per_redshift), np.float64)
@@ -689,13 +688,13 @@ class GalaxyGrid:
         return sfr_w_scatter
 
     def _sample_galaxies(self, redshift):
-        self.galaxy_sample = self._sample_masses(redshift)
-        galaxy_bins = self.galaxy_sample.bin_limits
+        galaxy_sample = self._sample_masses(redshift)
+        galaxy_bins = galaxy_sample.bin_limits
 
-        galaxy_ndensities = self.galaxy_sample.grid_ndensity_array.reshape(1, self.logm_per_redshift)
-        galaxy_densities = self.galaxy_sample.grid_density_array.reshape(1, self.logm_per_redshift)
+        galaxy_ndensities = galaxy_sample.grid_ndensity_array.reshape(1, self.logm_per_redshift)
+        galaxy_densities = galaxy_sample.grid_density_array.reshape(1, self.logm_per_redshift)
 
-        mass_sample = self.galaxy_sample.grid_logmasses
+        mass_sample = galaxy_sample.grid_logmasses
 
         gsmf = GSMF(redshift)
         sfmr = SFMR(redshift, flattening=self.sfmr_flattening, scatter_model=self.scatter_model)
