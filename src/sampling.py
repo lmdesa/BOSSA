@@ -721,7 +721,7 @@ class GalaxyGrid:
         #mean_zohs = [mzr.zoh(logm) for logm in mass_sample]
         zohs = np.array([[mzr.zoh(logm) for logm in mass_sample]])
         #mean_sfrs = [sfmr.sfr(logm) for logm in mass_sample]
-        sfrs = np.array([[sfmr.logsfr(logm) for logm in mass_sample]])
+        log_sfrs = np.array([[sfmr.logsfr(logm) for logm in mass_sample]])
 
         #zohs = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, mass_sample)]])
         fehs = np.array([[ZOH_to_FeH(zoh) for zoh in zohs.flatten()]])
@@ -734,7 +734,7 @@ class GalaxyGrid:
         #else:
         #    sfr_rel_devs = [0 for logm in mass_sample]
 
-        #sfrs = np.array([[mean_sfr + sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
+        #log_sfrs = np.array([[mean_sfr + sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
 
         feh_mask = np.ones(fehs.shape)
         if self.apply_igimf_corrections:
@@ -743,14 +743,14 @@ class GalaxyGrid:
                     feh_mask[0, i] = 0
             feh_mask = feh_mask.astype(bool)
 
-        sfr_mask = np.ones(sfrs.shape)
+        sfr_mask = np.ones(log_sfrs.shape)
         if self.apply_igimf_corrections:
-            for i, sfr in enumerate(sfrs.flatten()):
+            for i, sfr in enumerate(log_sfrs.flatten()):
                 if np.abs(sfr) > 3.3:
                     sfr_mask[0, i] = 0
             sfr_mask = sfr_mask.astype(bool)
 
-        return galaxy_ndensities, galaxy_densities, mass_sample, log_gsmfs, zohs, bin_zohs, fehs, feh_mask, sfrs, \
+        return galaxy_ndensities, galaxy_densities, mass_sample, log_gsmfs, zohs, bin_zohs, fehs, feh_mask, log_sfrs, \
                sfr_mask
 
     def _correct_sample(self, mass_array, log_gsmf_array, zoh_array, feh_array, sfr_array, mask_array):
@@ -839,7 +839,15 @@ class GalaxyGrid:
         galaxy stellar masses from :class:`sfh.GSMF`. Star-formation
         rate and metallicity are assigned through :class:`sfh.SFMR` and
         :class:`sfh.MZR`, respectively.
+
+        If :attr:`apply_igimf_corrections` is ``True``, then the
+        corrections to the IMF by Chruslinska et al. (2020) for the IMF
+        from Jerabkova et al. (2018) are applied. Note that the grid of
+        corrections goes from -5 to 1.3 in [Fe/H], and from -3.3 to 3.3
+        in log(SFR). Points outside of this region are removed from the
+        grid if corrections are on.
         """
+        
         mass_array = np.empty((0, self.logm_per_redshift), np.float64)
         log_gsmf_array = np.empty((0, self.logm_per_redshift), np.float64)
         feh_array = np.empty((0, self.logm_per_redshift), np.float64)
