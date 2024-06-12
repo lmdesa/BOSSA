@@ -781,23 +781,10 @@ class GalaxyGrid:
 
         zoh_bins = np.array([[mzr.zoh(logm) for logm in logm_bins]])
 
-        #mean_zohs = [mzr.zoh(logm) for logm in logm_array]
         zoh_array = np.array([[mzr.zoh(logm) for logm in logm_array]])
-        #mean_sfrs = [sfmr.sfr(logm) for logm in logm_array]
         log_sfr_array = np.array([[sfmr.logsfr(logm) for logm in logm_array]])
 
-        #zoh_array = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, logm_array)]])
         feh_array = np.array([[ZOH_to_FeH(zoh) for zoh in zoh_array.flatten()]])
-
-        #if self.scatter:
-        #    zoh_rel_devs = [self._mzr_scatter(logm) / (zoh - mean_zoh) for logm, zoh, mean_zoh in
-        #                    zip(logm_array, zoh_array.flatten(), mean_zohs)]
-        #    sfr_rel_devs = [self._sfmr_scatter(logm) / relative_dev for logm, relative_dev in
-        #                    zip(logm_array, zoh_rel_devs)]
-        #else:
-        #    sfr_rel_devs = [0 for logm in logm_array]
-
-        #log_sfr_array = np.array([[mean_sfr + sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
 
         feh_mask = np.ones(feh_array.shape)
         if self.apply_igimf_corrections:
