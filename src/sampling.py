@@ -721,7 +721,7 @@ class GalaxyGrid:
         #mean_zohs = [mzr.zoh(logm) for logm in mass_sample]
         zohs = np.array([[mzr.zoh(logm) for logm in mass_sample]])
         #mean_sfrs = [sfmr.sfr(logm) for logm in mass_sample]
-        sfrs = np.array([[sfmr.sfr(logm) for logm in mass_sample]])
+        sfrs = np.array([[sfmr.logsfr(logm) for logm in mass_sample]])
 
         #zohs = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, mass_sample)]])
         fehs = np.array([[ZOH_to_FeH(zoh) for zoh in zohs.flatten()]])

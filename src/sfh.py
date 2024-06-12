@@ -96,7 +96,7 @@ class BoogaardSFMR:
                 self._c = 1
         return self._c
 
-    def _sfr(self, logm: float) -> float:
+    def _logsfr(self, logm: float) -> float:
         """Compute the SFR for a log galactic stellar mass `logm`."""
         return self.A * logm + self.b
 
@@ -179,13 +179,13 @@ class SpeagleSFMR:
     def b(self) -> float:
         """float: Log-linear SFR(m) intercept. Redshift-dependent."""
         if self._b is None:
-            self._b = self.lowmass_sfmr._sfr(self.LOGM_BREAK) - self.a * 9.7
+            self._b = self.lowmass_sfmr._logsfr(self.LOGM_BREAK) - self.a * 9.7
         return self._b
 
-    def _sfr(self, logm: float) -> float:
+    def _logsfr(self, logm: float) -> float:
         """Compute the SFR for a given log10galactic stellar mass."""
         if logm < self.LOGM_BREAK:
-            return self.lowmass_sfmr._sfr(logm)
+            return self.lowmass_sfmr._logsfr(logm)
         else:
             return self.a * logm + self.b
 
@@ -273,7 +273,7 @@ class TomczakSFMR:
     def break_corr(self) -> float:
         """float: Correction to match the SFMR models at the break."""
         if self._break_corr is None:
-            self._break_corr = (self.lowmass_sfmr._sfr(self.logm_break)
+            self._break_corr = (self.lowmass_sfmr._logsfr(self.logm_break)
                                 - self._sfr(self.logm_break, yshift=0))
         return self._break_corr
 
@@ -290,10 +290,10 @@ class TomczakSFMR:
         dx = x - self.logm_to
         return np.abs(self.lowmass_sfmr.A * (1 + 10 ** (self.GAMMA * dx)) - self.GAMMA)
 
-    def _sfr(self, logm: float, yshift: float | None = None) -> float:
+    def _logsfr(self, logm: float, yshift: float | None = None) -> float:
         """Compute the SFR for a given log10 galactic stellar mass."""
         if logm < self.logm_break:
-            return self.lowmass_sfmr._sfr(logm)
+            return self.lowmass_sfmr._logsfr(logm)
         else:
             if yshift is None:
                 yshift = self.break_corr
@@ -428,7 +428,7 @@ class SFMR:
         return self.DISPERSION + self.INTERNAL_DISPERION
 
     @float_or_arr_input
-    def sfr(self, logm: ArrayLike) -> ArrayLike:
+    def logsfr(self, logm: ArrayLike) -> ArrayLike:
         """Compute the SFR for a galaxy stellar mass log."""
         sfr = self._sfr(logm)
         sfr += self.scatter()
