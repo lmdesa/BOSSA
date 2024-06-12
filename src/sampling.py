@@ -729,23 +729,39 @@ class GalaxyGrid:
         Returns
         -------
         ndensity_array : NDArray
-            Galaxy number density within the mass bin represented by
+            ``(len(logm_per_redshift),)``-shaped array containing the
+            galaxy number density within the mass bin represented by
             each galaxy.
         density_array : NDArray
-            Galaxy stellar mass density within the mass bin  represented
+            ``(len(logm_per_redshift),)``-shaped array containing the
+            galaxy stellar mass density within the mass bin  represented
             by each galaxy.
         logm_array : NDArray
-            Stellar mass of
-        * its mass,
-        * the GSMF at that mass,
-        * its Z_OH,
-        * the limits of the Z_OH bin it represents,
-        * its [Fe/H],
-        * a boolean mask for :meth:`_correct_sample`, which is an array
-          of ones if :attr:`apply_igimf_corrections` is ``False``,
-        * its log(sfr),
-        * a boolean mask for :meth:`_correct_sample`, which is an array
-          of ones if :attr:`apply_igimf_corrections` is ``False``.
+            ``(len(logm_per_redshift),)``-shaped array containing the
+            log stellar mass of each galaxy.
+        log_gsmf_array : NDArray
+            ``(len(logm_per_redshift),)``-shaped array containing the
+            log GSMF evaluated along ``logm_array``.
+        zoh_array : NDArray
+            ``(len(logm_per_redshift),)``-shaped array containing the
+            Z_OH of each galaxy.
+        zoh_bins : NDArray
+            ``(len(logm_per_redshift)+1,)``-shaped array containing the
+            limits of the Z_OH bins represented by each galaxy.
+        feh_array : NDArray
+            ``(len(logm_per_redshift),)``-shaped array containing the
+            [Fe/H] of each galaxy.
+        feh_mask : NDArray
+            ``(len(logm_per_redshift),)``-shaped array acting as a
+            boolean mask for values of ``feh_array`` within the bounds
+            of :class:`sfh.Corrections`.
+        log_sfr_array ; NDArray
+            ``(len(logm_per_redshift),)``-shaped array containing the
+            log SFR of each galaxy.
+        sfr_mask : NDArray
+            ``(len(logm_per_redshift),)``-shaped array acting as a
+            boolean mask for values of ``sfr_array`` within the bounds
+            of :class:`sfh.Corrections`.
         """
 
         sample = self._sample_masses(redshift)
@@ -768,7 +784,7 @@ class GalaxyGrid:
         #mean_zohs = [mzr.zoh(logm) for logm in logm_array]
         zoh_array = np.array([[mzr.zoh(logm) for logm in logm_array]])
         #mean_sfrs = [sfmr.sfr(logm) for logm in logm_array]
-        log_sfrs = np.array([[sfmr.logsfr(logm) for logm in logm_array]])
+        log_sfr_array = np.array([[sfmr.logsfr(logm) for logm in logm_array]])
 
         #zoh_array = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, logm_array)]])
         feh_array = np.array([[ZOH_to_FeH(zoh) for zoh in zoh_array.flatten()]])
@@ -781,7 +797,7 @@ class GalaxyGrid:
         #else:
         #    sfr_rel_devs = [0 for logm in logm_array]
 
-        #log_sfrs = np.array([[mean_sfr + sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
+        #log_sfr_array = np.array([[mean_sfr + sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
 
         feh_mask = np.ones(feh_array.shape)
         if self.apply_igimf_corrections:
@@ -790,14 +806,14 @@ class GalaxyGrid:
                     feh_mask[0, i] = 0
             feh_mask = feh_mask.astype(bool)
 
-        sfr_mask = np.ones(log_sfrs.shape)
+        sfr_mask = np.ones(log_sfr_array.shape)
         if self.apply_igimf_corrections:
-            for i, sfr in enumerate(log_sfrs.flatten()):
+            for i, sfr in enumerate(log_sfr_array.flatten()):
                 if np.abs(sfr) > 3.3:
                     sfr_mask[0, i] = 0
             sfr_mask = sfr_mask.astype(bool)
 
-        return ndensity_array, density_array, logm_array, log_gsmf_array, zoh_array, zoh_bins, feh_array, feh_mask, log_sfrs, \
+        return ndensity_array, density_array, logm_array, log_gsmf_array, zoh_array, zoh_bins, feh_array, feh_mask, log_sfr_array, \
                sfr_mask
 
     def _correct_sample(self, mass_array, log_gsmf_array, zoh_array, feh_array, sfr_array, mask_array):
