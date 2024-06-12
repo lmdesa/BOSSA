@@ -584,6 +584,7 @@ class GalaxyGrid:
             np.random.seed(self.random_state)
 
     def _get_sample_redshift_array(self):
+        """Return initial uniform redshift array."""
         if self.force_boundary_redshift:
             return np.linspace(self.redshift_min, self.redshift_max, self.n_redshift+2)
         else:
@@ -647,7 +648,15 @@ class GalaxyGrid:
         return self._save_path
 
     def _discrete_redshift_probs(self, min_z, max_z, size):
-        """Generate a discrete set of probabilities for size redshifts between min_z and max_z from the GSMF."""
+        """Return probabilities for a uniform redshift pool.
+
+        Generates and returns a ``pool`` of evenly-space ``size```
+        redshifts between ``min_z`` and ``max_z``. Computes and returns
+        their probabilities (``probs``) from the number of galaxies at
+        that redshift, found by integrating ``m*GSMF(m)`` over the
+        entire mass span at each redshift.
+        """
+
         bin_edges = np.linspace(min_z, max_z, size + 1)
         pool = np.zeros(size)
         probs = np.zeros(size)
@@ -661,7 +670,12 @@ class GalaxyGrid:
         return pool, probs
 
     def _sample_masses(self, redshift):
-        """Sample galaxy stellar masses from the GSMF at a given redshift."""
+        """Sample masses from the GSMF at ``redshift``.
+
+        Returns a :class:`sfh.GSMF` object which holds the sampled
+        masses and respective densities as attributes.
+        """
+
         gsmf = GSMF(redshift, self.gsmf_slope_fixed)
         sample = GalaxyStellarMassSampling(gsmf, self.logm_min, self.logm_max,
                                            self.logm_per_redshift, self.sampling_mode)
@@ -701,44 +715,77 @@ class GalaxyGrid:
         return sfr_w_scatter
 
     def _sample_galaxies(self, redshift):
-        galaxy_sample = self._sample_masses(redshift)
-        galaxy_bins = galaxy_sample.bin_limits
+        """Return a sample of galaxies properties at ``redshift``.
 
-        galaxy_ndensities = galaxy_sample.grid_ndensity_array.reshape(1, self.logm_per_redshift)
-        galaxy_densities = galaxy_sample.grid_density_array.reshape(1, self.logm_per_redshift)
+        Samples a number :attr:`logm_per_redshift` of galaxies at
+        ``redshift`` from the GSMF, SFMR and MZR. Returns a tuple of
+        ``(len(logm_per_redshift),)``-shaped arrays.
 
-        mass_sample = galaxy_sample.grid_logmasses
+        Parameters
+        ----------
+        redshift : float
+            Redshift. Defines the GSMF, MZR and SFMR.
+
+        Returns
+        -------
+        ndensity_array : NDArray
+            Galaxy number density within the mass bin represented by
+            each galaxy.
+        density_array : NDArray
+            Galaxy stellar mass density within the mass bin  represented
+            by each galaxy.
+        logm_array : NDArray
+            Stellar mass of
+        * its mass,
+        * the GSMF at that mass,
+        * its Z_OH,
+        * the limits of the Z_OH bin it represents,
+        * its [Fe/H],
+        * a boolean mask for :meth:`_correct_sample`, which is an array
+          of ones if :attr:`apply_igimf_corrections` is ``False``,
+        * its log(sfr),
+        * a boolean mask for :meth:`_correct_sample`, which is an array
+          of ones if :attr:`apply_igimf_corrections` is ``False``.
+        """
+
+        sample = self._sample_masses(redshift)
+        logm_bins = sample.bin_limits
+
+        ndensity_array = sample.grid_ndensity_array.reshape(1, self.logm_per_redshift)
+        density_array = sample.grid_density_array.reshape(1, self.logm_per_redshift)
+
+        logm_array = sample.grid_logmasses
 
         gsmf = GSMF(redshift)
         sfmr = SFMR(redshift, flattening=self.sfmr_flattening, scatter_model=self.scatter_model)
         mzr = MZR(redshift, self.mzr_model, scatter_model=self.scatter_model)
         mzr.set_params()
 
-        log_gsmfs = np.array([[np.float64(gsmf.log_gsmf(logm)) for logm in mass_sample]])
+        log_gsmf_array = np.array([[np.float64(gsmf.log_gsmf(logm)) for logm in logm_array]])
 
-        bin_zohs = np.array([[mzr.zoh(logm) for logm in galaxy_bins]])
+        zoh_bins = np.array([[mzr.zoh(logm) for logm in logm_bins]])
 
-        #mean_zohs = [mzr.zoh(logm) for logm in mass_sample]
-        zohs = np.array([[mzr.zoh(logm) for logm in mass_sample]])
-        #mean_sfrs = [sfmr.sfr(logm) for logm in mass_sample]
-        log_sfrs = np.array([[sfmr.logsfr(logm) for logm in mass_sample]])
+        #mean_zohs = [mzr.zoh(logm) for logm in logm_array]
+        zoh_array = np.array([[mzr.zoh(logm) for logm in logm_array]])
+        #mean_sfrs = [sfmr.sfr(logm) for logm in logm_array]
+        log_sfrs = np.array([[sfmr.logsfr(logm) for logm in logm_array]])
 
-        #zohs = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, mass_sample)]])
-        fehs = np.array([[ZOH_to_FeH(zoh) for zoh in zohs.flatten()]])
+        #zoh_array = np.array([[self._mzr_scattered(mean_zoh, logm) for mean_zoh, logm in zip(mean_zohs, logm_array)]])
+        feh_array = np.array([[ZOH_to_FeH(zoh) for zoh in zoh_array.flatten()]])
 
         #if self.scatter:
         #    zoh_rel_devs = [self._mzr_scatter(logm) / (zoh - mean_zoh) for logm, zoh, mean_zoh in
-        #                    zip(mass_sample, zohs.flatten(), mean_zohs)]
+        #                    zip(logm_array, zoh_array.flatten(), mean_zohs)]
         #    sfr_rel_devs = [self._sfmr_scatter(logm) / relative_dev for logm, relative_dev in
-        #                    zip(mass_sample, zoh_rel_devs)]
+        #                    zip(logm_array, zoh_rel_devs)]
         #else:
-        #    sfr_rel_devs = [0 for logm in mass_sample]
+        #    sfr_rel_devs = [0 for logm in logm_array]
 
         #log_sfrs = np.array([[mean_sfr + sfr_dev for mean_sfr, sfr_dev in zip(mean_sfrs, sfr_rel_devs)]])
 
-        feh_mask = np.ones(fehs.shape)
+        feh_mask = np.ones(feh_array.shape)
         if self.apply_igimf_corrections:
-            for i, feh in enumerate(fehs.flatten()):
+            for i, feh in enumerate(feh_array.flatten()):
                 if feh > 1.3 or feh < -5:
                     feh_mask[0, i] = 0
             feh_mask = feh_mask.astype(bool)
@@ -750,10 +797,20 @@ class GalaxyGrid:
                     sfr_mask[0, i] = 0
             sfr_mask = sfr_mask.astype(bool)
 
-        return galaxy_ndensities, galaxy_densities, mass_sample, log_gsmfs, zohs, bin_zohs, fehs, feh_mask, log_sfrs, \
+        return ndensity_array, density_array, logm_array, log_gsmf_array, zoh_array, zoh_bins, feh_array, feh_mask, log_sfrs, \
                sfr_mask
 
     def _correct_sample(self, mass_array, log_gsmf_array, zoh_array, feh_array, sfr_array, mask_array):
+        """Applies SFR corrections for a variant IMF.
+
+        Applies the corrections from Chruslinska et al. (2020),
+        through :class:`sfh.Corrections`, to the SFR, for the variant
+        IGIMF from Jerabkova et al. (2018). Requires on a boolean mask
+        ``mask_array`` that filters out SFR-[Fe/H] pairs outside the
+        bounds of the corrections grid from the original paper,
+        :data:`constants.C20_CORRECTIONS_PATH`.
+        """
+
         mass_list = list()
         log_gsmf_list = list()
         zoh_list = list()
@@ -847,7 +904,7 @@ class GalaxyGrid:
         in log(SFR). Points outside of this region are removed from the
         grid if corrections are on.
         """
-        
+
         mass_array = np.empty((0, self.logm_per_redshift), np.float64)
         log_gsmf_array = np.empty((0, self.logm_per_redshift), np.float64)
         feh_array = np.empty((0, self.logm_per_redshift), np.float64)
