@@ -506,19 +506,34 @@ class GalaxyGrid:
         sampled at each redshift.
     grid_array : numpy_array
         Shape ``(n_redshift, logm_per_redshift, 6)`` array containing
-        the full grid.
+        the full grid of galaxy properties.
 
     Methods
     -------
     sample_redshift()
-        Sample :attr:`n_redshift` redshift between :attr:`min_redshift`
-        and :attr:`max_redshift` according to the GSMF.
+        Sample redshifts from the GSMF integrated over mass.
     get_grid()
-        Generate the galaxy grid.
+        Generate the (redshift, mass, metallicity, SFR) grid.
     save_grid()
-        Save galaxy grid to disk.
+        Save :attr:`grid_array` to disk.
 
+    Notes
+    -----
+    This class first samples the redshift, and then for each redshift
+    a fixed number of "galaxies", i.e., (mass, metallicity, SFR) sets.
+    The final grid of galaxies is stored as :attr:`grid_array`, and can
+    also be written to disk as a .pkl file with Pandas by calling
+    :meth:`save_grid`. The ``_array`` attributes are used to build
+    :attr:`grid_array`. The ``_list`` attributes are not used
+    internally, but were instead necessary for older versions of data
+    analysis/processing and test notebooks.
 
+    :attr:`sample_redshift_array` is initialized as a sample of
+    evenly-space redshifts between the set minimum and maximum.
+    :meth:`sample_redshift` must be run to get a sample from the GSMF.
+
+    It is recommended not to rely on the ``_list`` attributes, as they
+    should be removed in the future.
     """
 
     def __init__(self, n_redshift, redshift_min=0, redshift_max=10, force_boundary_redshift=True, logm_per_redshift=3,
@@ -624,6 +639,7 @@ class GalaxyGrid:
 
     @property
     def save_path(self):
+        """pathlib.Path: Path which to save the grid to."""
         if self._save_path is None:
             fname = f'galgrid_{self.mzr_model}_{self.sfmr_flattening}_{self.gsmf_slope_fixed}_{self.sampling_mode}_' \
                     f'{len(self.sample_redshift_array)}z_{self.logm_per_redshift}Z.pkl'
@@ -772,6 +788,17 @@ class GalaxyGrid:
         return mass_list, log_gsmf_list, zoh_list, feh_list, sfr_list
 
     def sample_redshift(self):
+        """Sample redshifts from the GSMF integrated over mass.
+
+        Integrating the GSMF over mass yields a star forming mass-over-
+        redshift distribution. A redshift sample is building by dividing
+        the redshift range :attr:`redshift_min`-:attr:`redshift_max`
+        into :attr:`n_redshift` quantiles and assigning each one its
+        mass-weighted average redshift. If
+        :attr:`force_boundary_redshift` is ``True``, the redshift
+        upper and lower limits are also added to the sample.
+        """
+
         # The probability of a galaxy falling in a given redshift bin is determined by the total stellar within it,
         # which results from integrating the m*GSMF at that redshift over all allowed masses and multiplying by the
         # comoving volume corresponding to the bin.
@@ -806,6 +833,13 @@ class GalaxyGrid:
                                                             [max_redshift_bin_lower_edge])))
 
     def get_grid(self):
+        """Generate the (redshift, mass, metallicity, SFR) grid.
+
+        For each redshift in :attr:`sample_redshift_array`, samples
+        galaxy stellar masses from :class:`sfh.GSMF`. Star-formation
+        rate and metallicity are assigned through :class:`sfh.SFMR` and
+        :class:`sfh.MZR`, respectively.
+        """
         mass_array = np.empty((0, self.logm_per_redshift), np.float64)
         log_gsmf_array = np.empty((0, self.logm_per_redshift), np.float64)
         feh_array = np.empty((0, self.logm_per_redshift), np.float64)
@@ -851,6 +885,7 @@ class GalaxyGrid:
         self.grid_array = np.append(redshift_grid, np.array(self.grid_array), axis=0)
 
     def save_grid(self):
+        """Save :attr:`grid_array` to disk."""
         columns = ['Redshift', 'Log(Mgal/Msun)', 'Log(Number density [Mpc-3 Msun-1])', 'Log(SFR [Msun yr-1])',
                    '12+log(O/H)', '[Fe/H]']
         grid_df = pd.DataFrame(self.grid_array, columns=columns)
