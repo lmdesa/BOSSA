@@ -1,6 +1,6 @@
 import sys
 sys.path.append('..')
-from src.sampling import CompactBinaryPopulation
+from src.postprocessing import CompactBinaryPopulation
 
 def main(canonical_distributions):
 	sampler = CompactBinaryPopulation(canonical_distributions=canonical_distributions)
