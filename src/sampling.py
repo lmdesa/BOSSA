@@ -812,6 +812,51 @@ class GalaxyGrid:
         ``mask_array`` that filters out SFR-[Fe/H] pairs outside the
         bounds of the corrections grid from the original paper,
         :data:`constants.C20_CORRECTIONS_PATH`.
+
+        Input arrays will have shape
+        (:attr:`n_redshift`, :attr:`logm_per_redshift`) or
+        (:attr:`n_redshift`+2, :attr:`logm_per_redshift`) depending on
+        whether :attr:`force_boundary_redshift` is ``True`` or
+        ``False``, respectively.
+
+        Output includes lists of arrays with potentially varying
+        lengths. Each list corresponds to a parameter (mass) and
+        each array to a redshift, but containing only parameters for
+        galaxies within the correction boundaries, which can lead
+        to different lengths.
+
+        Parameters
+        ----------
+        mass_array : NDArray
+            Galaxy stellar masses.
+        log_gsmf_array : NDArray
+            Log GSMF evaluated over ``mass_array``.
+        zoh_array : NDArray
+            Z_OH of each galaxy.
+        feh_array : NDArray
+            [Fe/H] of each galaxy.
+        sfr_array : NDArray
+            SFR of each galaxy.
+        mask_array : NDAray
+            Boolean mask filtering out [Fe/H],SFR pairs outside of the
+            correction boundaries.
+
+        Returns
+        -------
+        mass_list : list
+            List of arrays. Galaxy stellar masses within correction
+            boundaries.
+        log_gsmf_list : list
+            List of arrays. Log GSMF evaluated over ``mass_list``.
+        zoh_list : list
+            List of arrays. Z_OH of each galaxy within correction
+            boundaries.
+        feh_list : list
+            List of arrays. [Fe/H] of each galaxy within correction
+            boundaries.
+        sfr_list : list
+            List of arrays. SFR of each galaxy within correction
+            boundaries.
         """
 
         mass_list = list()
@@ -892,6 +937,7 @@ class GalaxyGrid:
                                                             self.sample_redshift_bins,
                                                             [max_redshift_bin_lower_edge])))
 
+    # TODO: Initialize arrays in get_grid with the appropriate shape
     def get_grid(self):
         """Generate the (redshift, mass, metallicity, SFR) grid.
 
