@@ -411,9 +411,9 @@ class SFMR:
     @float_or_arr_input
     def logsfr(self, logm: ArrayLike) -> ArrayLike:
         """Compute the SFR for a galaxy stellar mass log."""
-        sfr = self._sfr(logm)
-        sfr += self.scatter()
-        return sfr
+        logsfr = self._logsfr(logm)
+        logsfr += self.scatter()
+        return logsfr
 
 
 class MZR:
