@@ -688,38 +688,6 @@ class GalaxyGrid:
         sample.sample()
         return sample
 
-    def _mzr_scatter(self, logm):
-        """Standard deviation of a Gaussian scatter about the MZR at a given log10(mass)."""
-        if logm > 9.5:
-            galaxy_sigma = 0.1
-        else:
-            galaxy_sigma = -0.04 * logm + 0.48
-        return galaxy_sigma
-
-    def _mzr_scattered(self, mean_zoh, logm):
-        """MZR with Gaussian scatter about the best-fit relation."""
-        if self.scatter:
-            sigma0 = self._mzr_scatter(logm)
-            sigma_zoh = 0.14
-        else:
-            sigma0 = 0
-            sigma_zoh = 0
-        zoh_w_mzr_scatter = norm.rvs(loc=mean_zoh, scale=sigma0, size=1, random_state=self.random_state)[0]
-        zoh_w_scatter = norm.rvs(loc=zoh_w_mzr_scatter, scale=sigma_zoh, size=1, random_state=self.random_state)[0]
-        return zoh_w_scatter
-
-    def _sfmr_scatter(self, logm):
-        return 0.3
-
-    def _sfmr_scattered(self, mean_sfr, logm):
-        """SFMR with Gaussian scatter about the best-fit relation."""
-        if self.scatter:
-            sigma = self._sfmr_scatter(logm)
-        else:
-            sigma = 0
-        sfr_w_scatter = norm.rvs(loc=mean_sfr, scale=sigma, size=1, random_state=self.random_state)[0]
-        return sfr_w_scatter
-
     def _sample_galaxies(
             self, redshift: float
     ) -> tuple[NDArray[float], NDArray[float], NDArray[float], NDArray[float], NDArray[float],
