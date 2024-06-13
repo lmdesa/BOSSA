@@ -1230,9 +1230,9 @@ class SimpleBinaryPopulation:
         return powerlaw(m, self.lowmass_powerlaw_norm, self.lowmass_powerlaw_index)
 
     def _get_imf_random_sample(self, m_min, m_max, samplesize):
-        """Generate a random sampling of the PowerLawIMF of size samplesize, between m_min and m_max.
+        """Generate a random sampling of the IMF of size samplesize, between m_min and m_max.
 
-        Compute the values imf_arr of the PowerLawIMF at masses imf_mass_arr, then take a random sample randomsample from
+        Compute the values imf_arr of the IMF at masses imf_mass_arr, then take a random sample randomsample from
         imf_mass_arr with imf_arr as weights.
 
         Parameters
@@ -1264,7 +1264,7 @@ class SimpleBinaryPopulation:
         else:
             imf = IGIMF(self.sfr, self.feh)
             imf.set_clusters()
-        self.logger.debug(f'PowerLawIMF created with logSFR = {np.log10(self.sfr)} Msun yr-1 and [Fe/H] = {self.feh}')
+        self.logger.debug(f'IMF created with logSFR = {np.log10(self.sfr)} Msun yr-1 and [Fe/H] = {self.feh}')
         randomsampler = RandomSampling(imf)
         self.logger.debug(f'Created random sampler.')
         randomsampler.compute_imf()
@@ -1273,11 +1273,11 @@ class SimpleBinaryPopulation:
         imf_arr = randomsampler.discrete_imf
 
         time1 = time() - time0
-        self.logger.debug(f'PowerLawIMF random sampling completed in {time1:.6f} s.')
+        self.logger.debug(f'IMF random sampling completed in {time1:.6f} s.')
         return imf_mass_arr, imf_arr, randomsample
 
     def _low_high_mass_area_diff(self, lowmass_index, highmass_spline, highmass_area):
-        """Compute the difference in area between the power law PowerLawIMF at low masses and the IGIMF at high masses."""
+        """Compute the difference in area between the power law IMF at low masses and the IGIMF at high masses."""
         if lowmass_index < -1 or lowmass_index > 0:
             area_diff = 1e7
         else:
@@ -1287,8 +1287,8 @@ class SimpleBinaryPopulation:
         return area_diff
 
     def _set_lowmass_powerlaw(self, highmass_mass_arr, highmass_igimf_arr):
-        """Sets the power law PowerLawIMF at low masses such that its area is the same as the IGIMF's at high masses."""
-        self.logger.debug('Fitting PowerLawIMF m < 0.8 power law.')
+        """Sets the power law IMF at low masses such that its area is the same as the IGIMF's at high masses."""
+        self.logger.debug('Fitting IMF m < 0.8 power law.')
         time0 = time()
         hmass_spline = UnivariateSpline(highmass_mass_arr, highmass_igimf_arr, k=3)
         hmass_area = hmass_spline.integral(self.m1_min, self.m_max)
@@ -1310,9 +1310,9 @@ class SimpleBinaryPopulation:
 
         Notes
         -----
-        Because the primary mass sampling is limited to m1 >= m1_min, in any case the PowerLawIMF cannot be reproduced in the
-        m < m1_min region; at the same time, an PowerLawIMF at < m1_min is still necessary for the sampling of light companions.
-        Thus the PowerLawIMF for m < m1_min is defined to be a power law continuous with the IGIMF at m >= m1_min, with a slope
+        Because the primary mass sampling is limited to m1 >= m1_min, in any case the IMF cannot be reproduced in the
+        m < m1_min region; at the same time, an IMF at < m1_min is still necessary for the sampling of light companions.
+        Thus the IMF for m < m1_min is defined to be a power law continuous with the IGIMF at m >= m1_min, with a slope
         such that its area below m1_min is the same as that of the IGIMF above. This choice is made in order to conform
         with the drawing of the same amount poolsize/2 of masses from both sides of m1_min.
         """
@@ -1324,7 +1324,7 @@ class SimpleBinaryPopulation:
         self.logger.debug('Got m > 0.8 sampling pool.')
 
         self.igimf_arr = np.array([imf_mass_arr, imf_arr], np.float64)
-        self._set_lowmass_powerlaw(imf_mass_arr, imf_arr)  # the PowerLawIMF sample sets the equal area constraint
+        self._set_lowmass_powerlaw(imf_mass_arr, imf_arr)  # the IMF sample sets the equal area constraint
         lmass_mass_options = np.linspace(self.m_min, self.m1_min, 10 * lmass_pool_size, dtype=np.float32)
         lmass_option_probs = np.array([self._lowmass_powerlaw(m) for m in lmass_mass_options])
         lmass_option_probs /= np.sum(lmass_option_probs)

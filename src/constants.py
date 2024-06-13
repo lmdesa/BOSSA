@@ -60,7 +60,7 @@ BINARIES_UNCORRELATED_TABLE_PATH = Path(DATA_PATH, 'canonical_mp_qe_table.h5')
 """path_like: Path to the equiprobable binary parameters h5 file, generated from the uncorrelated distributions.
 
 The File is structured in 200 Groups, corresponding to 200
-    equiprobable m1 values drawn from a Salpeter PowerLawIMF [1]_.
+    equiprobable m1 values drawn from a Salpeter IMF [1]_.
     Each Group is structure in 100 Tables, each corresponding to one of
     100 equiprobable logp values drawn for that m1 from the
     CompanionFrequencyDistribution class. Each Table holds 1000 lines,
@@ -78,13 +78,13 @@ COMPAS_UNPROC_OUTPUT_DIR_PATH = Path(DATA_PATH, '2023_unproc_compas_output')
 COMPAS_PROC_OUTPUT_DIR_PATH = Path(DATA_PATH, '2023_proc_compas_output')
 """path_like: Path to the processed COMPAS output folder, generic placeholder folder."""
 COMPAS_12XX_PROC_OUTPUT_DIR_PATH = Path(DATA_PATH, '2023_12XX_proc_compas_output')
-"""path_like: Path to the processed COMPAS output folder, using a variant PowerLawIMF and correlated orbital parameters."""
+"""path_like: Path to the processed COMPAS output folder, using a variant IMF and correlated orbital parameters."""
 COMPAS_21XX_PROC_OUTPUT_DIR_PATH = Path(DATA_PATH, '2023_21XX_proc_compas_output')
-"""path_like: Path to the processed COMPAS output folder, using an invariant PowerLawIMF and uncorrelated orbital parameters."""
+"""path_like: Path to the processed COMPAS output folder, using an invariant IMF and uncorrelated orbital parameters."""
 COMPAS_12XX_GRIDS_PATH = Path(DATA_PATH, '2023_12XX_compas_grids')
-"""path_like : Path to the variant PowerLawIMF, correlated orbital parameters, COMPAS gridfiles folder."""
+"""path_like : Path to the variant IMF, correlated orbital parameters, COMPAS gridfiles folder."""
 COMPAS_21XX_GRIDS_PATH = Path(DATA_PATH, '2023_21XX_compas_grids')
-"""path_like : Path to the invariant PowerLawIMF, uncorrelated orbital parameters, COMPAS gridfiles folder."""
+"""path_like : Path to the invariant IMF, uncorrelated orbital parameters, COMPAS gridfiles folder."""
 
 IGIMF_ZAMS_DIR_PATH = Path(DATA_PATH, '2023_igimf_zams_samples')#, 'z10_Z10_grid_igimf_samples')
 """path_like: Path to the ZAMS binary samples folder."""

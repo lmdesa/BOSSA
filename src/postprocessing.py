@@ -796,7 +796,7 @@ class MergerRates:
 
     @property
     def canon_sfrd(self):
-        """Whether the star formation rate grid to be loaded should assume a Canonical Kroupa PowerLawIMF."""
+        """Whether the star formation rate grid to be loaded should assume a Canonical Kroupa IMF."""
         return self._canon_sfrd
 
     @canon_sfrd.setter
