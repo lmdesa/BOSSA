@@ -889,26 +889,28 @@ class GalaxyGrid:
         upper and lower limits are also added to the sample.
         """
 
-        # The probability of a galaxy falling in a given redshift bin is determined by the total stellar within it,
-        # which results from integrating the m*GSMF at that redshift over all allowed masses and multiplying by the
-        # comoving volume corresponding to the bin.
         redshift_pool, redshift_probs = self._discrete_redshift_probs(self.redshift_min,
                                                                       self.redshift_max,
                                                                       100*self.n_redshift)
 
-        # With probabilities calculated, we can generate a representative sample from which we find n_redshift
-        # uniform quantiles. Repetition is not an issue because only the quantiles are of interest.
+        # With probabilities calculated, we can generate a
+        # representative sample from which we find n_redshift quantiles.
+        # Repetition is not an issue because only the quantiles are of
+        # interest.
         redshift_choices = np.random.choice(redshift_pool,
                                             p=redshift_probs,
                                             size=int(1e4*self.n_redshift))
         self.sample_redshift_bins = np.quantile(redshift_choices,
                                                 np.linspace(0, 1, self.n_redshift + 1))
-        self.sample_redshift_bins[0] = self.redshift_min  # correct for the granularity of the sampling
+        # Correct for the granularity of the sampling.
+        self.sample_redshift_bins[0] = self.redshift_min
         self.sample_redshift_bins[-1] = self.redshift_max
 
-        # Finding uniform quantiles tells us which regions of the redshift range should be equally represented in order
-        # to reproduce the GSMF as well as possible. The quantiles themselves are represented by the mass-averaged
-        # redshift of their respective galaxies/stelar masses.
+        # Finding uniform quantiles defines which regions of the
+        # redshift range should be equally represented in order
+        # to reproduce the GSMF as well as possible. The quantiles
+        # themselves are represented in the sample by the mass-averaged
+        # redshift of their respective galaxies.
         redshift_i = 0
         if self.force_boundary_redshift:
             self.sample_redshift_array[0] = self.redshift_min
