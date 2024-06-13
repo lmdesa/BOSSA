@@ -82,13 +82,6 @@ class EccentricityDistribution:
     m1_max : float
         Maximum allowed ``m1``.
 
-    Methods
-    -------
-    set_parameters(m1, logp)
-        Set :attr:`eta`, :attr:`k` and :attr:`e_max`.
-    prob(e)
-        Return the PDF value at eccentricity `e`.
-
     Warns
     -----
     UserWarning
@@ -300,13 +293,6 @@ class MassRatioDistribution:
     m1_max : float
         Maximum allowed ``m1``.
 
-    Methods
-    -------
-    set_parameters(m1, logp)
-        Set :attr:`gamma_smallq`, :attr:`gamma_largeq`, :attr:`f_twin`
-        and :attr:`k`.
-    prob(q)
-        Return the PDF value at mass ratio ``q``.
 
     Warns
     -----
@@ -676,10 +662,6 @@ class CompanionFrequencyDistributionHighQ:
     m1 : float
         Primary mass.
 
-    Methods
-    -------
-    companion_frequency_q03(logp)
-        Return the companion frequency at ``logp``for :attr:`m1`.
 
     See Also
     --------
@@ -882,10 +864,6 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
     n_q01 : float
         Fraction of `0.1 <= q < 0.3` star pairs with :attr:`m1`.
 
-    Methods
-    -------
-    companion_frequency_q01(logp)
-        Return the companion frequency at ``logp`` for :attr:`m1`.
 
     Notes
     -----
@@ -910,7 +888,7 @@ class CompanionFrequencyDistribution(CompanionFrequencyDistributionHighQ):
     frequency in ``0.1 <= q <= 1.0`` (:math:`f_{\\log P; q>0.1}`).
 
     The uncorrelated distribution is a uniform on ``logp`` probability
-    distribution between ``0.4`` and ``3``, or Öpik's law [4]_. The
+    distribution between ``0.4`` and ``3``, or Öpik's law [3]_. The
     :attr:`extrapolate_uncorrelated_distribution` parameter allows
     extrapolating it to the same range as that of the correlated
     distribution.
@@ -989,7 +967,7 @@ class MultipleFraction:
 
     All masses are in solar masses.
 
-     Parameters
+    Parameters
     ----------
     mmin : float
         Minimum primary mass.
@@ -1023,26 +1001,10 @@ class MultipleFraction:
     nmean_max : float
         Maximum mean companion number, used for interpolation only.
 
-    Methods
-    -------
-    solve()
-        Set up interpolators and nmean_array.
-    ncomp_mean(m1)
-        Compute the mean companion number for primary mass m1.
-    prob(l, k)
-        Compute the companion number probability at value ``k``, for a
-        distribution with mean ``l``.
-    get_multiple_fraction(n)
-        Compute fraction of order ``n`` multiples for the masses in
-        ``m1_array``.
-    get_binary_fraction()
-        Compute binary fraction for the masses in ``m1_array``, assuming
-        all stars are either isolated or binary.
-
     Warns
     -----
     UserWarning
-        If :meth:`ncomp_mean` is called before :attr:`solve`.
+        If :meth:`ncomp_mean` is called before :meth:`solve`.
 
     See Also
     -------
@@ -1415,13 +1377,6 @@ class ZAMSSystemGenerator:
         identified by a set ``(logp,q,e)``.
     logger : logging.Logger
         Instance logger.
-
-    Methods
-    -------
-    setup_sampler()
-        Set up attributes for the sampler.
-    open_m1group(index)
-        Set the primary mass and open the corresponding group.
 
     See Also
     -------

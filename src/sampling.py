@@ -71,13 +71,6 @@ class RandomSampling:
         Upper truncation mass.
     sample : NDArray
         Last drawn sample.
-
-    Methods
-    -------
-    compute_imf()
-        Compute the IMF for interpolation.
-    get_sample(m_min, m_max, n)
-        Sample ``n`` masses between ``m_min`` and ``m_max``.
     """
 
     def __init__(self, imf: IMFLike, discretization_points:int = 100) -> None:
@@ -214,11 +207,6 @@ class GalaxyStellarMassSampling:
         Mass density within each mass bin.
     grid_logmasses : NDArray
         Sampled log galaxy stellar masses.
-
-    Methods
-    -------
-    sample()
-        Generate a sample of galaxy stellar masses.
 
     See Also
     --------
@@ -510,15 +498,6 @@ class GalaxyGrid:
         Shape ``(n_redshift, logm_per_redshift, 6)`` array containing
         the full grid of galaxy properties.
 
-    Methods
-    -------
-    sample_redshift()
-        Sample redshifts from the GSMF integrated over mass.
-    get_grid()
-        Generate the (redshift, mass, metallicity, SFR) grid.
-    save_grid()
-        Save :attr:`grid_array` to disk.
-
     Notes
     -----
     This class first samples the redshift, and then for each redshift
@@ -536,6 +515,18 @@ class GalaxyGrid:
 
     It is recommended not to rely on the ``_list`` attributes, as they
     should be removed in the future.
+
+    References
+    ----------
+    .. [1] Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z.
+       (2020). The effect of the environment-dependent IMF on the
+       formation and metallicities of stars over cosmic history.
+       A&A, 636, A10. doi:10.1051/0004-6361/202037688
+    .. [2] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
+       Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
+       metallicity and star formation rate on the time-dependent,
+       galaxy-wide stellar initial mass function. A&A, 620, A39.
+       doi:10.1051/0004-6361/20183
     """
 
     def __init__(self, n_redshift: int, redshift_min: int = 0., redshift_max: float = 10.,
@@ -791,9 +782,9 @@ class GalaxyGrid:
                list[NDArray[float]], list[NDArray[float]]]:
         """Applies SFR corrections for a variant IMF.
 
-        Applies the corrections from Chruslinska et al. (2020),
+        Applies the corrections from Chruslinska et al. (2020) [1]_,
         through :class:`sfh.Corrections`, to the SFR, for the variant
-        IGIMF from Jerabkova et al. (2018). Requires on a boolean mask
+        IGIMF from Jerabkova et al. (2018) [2]_. Requires on a boolean mask
         ``mask_array`` that filters out SFR-[Fe/H] pairs outside the
         bounds of the corrections grid from the original paper,
         :data:`constants.C20_CORRECTIONS_PATH`.
@@ -943,11 +934,11 @@ class GalaxyGrid:
         :class:`sfh.MZR`, respectively.
 
         If :attr:`apply_igimf_corrections` is ``True``, then the
-        corrections to the IMF by Chruslinska et al. (2020) for the IMF
-        from Jerabkova et al. (2018) are applied. Note that the grid of
-        corrections goes from -5 to 1.3 in [Fe/H], and from -3.3 to 3.3
-        in log(SFR). Points outside of this region are removed from the
-        grid if corrections are on.
+        corrections to the IMF by Chruslinska et al. (2020) [1]-for the
+        IMF from Jerabkova et al. (2018) [2]_ are applied. Note that the
+        grid of corrections goes from -5 to 1.3 in [Fe/H], and from -3.3
+        to 3.3 in log(SFR). Points outside of this region are removed
+        from the grid if corrections are on.
         """
 
         mass_array = np.empty((0, self.logm_per_redshift), np.float64)
@@ -1096,7 +1087,7 @@ class SimpleBinaryPopulation:
     Notes
     -----
     This sampler generates a population that simultaneously follows to correlated orbital parameter distributions by
-    Moe & Di Stefano (2017) and the IGIMF by Jerabkova et al. (2018). The sample is only representative of the IGIMF
+    Moe & Di Stefano (2017) [3]_ and the IGIMF by Jerabkova et al. (2018) [2]_. The sample is only representative of the IGIMF
     between 0.8 and 150 Msun, because the sampling of the primary mass m1 is restricted to this range in order as per
     the minimum mass sampled by the orbital parameter distributions. Components with masses between 0.08 and 0.8 Msun
     appear as companions, but they will not reproduce the IGIMF below 0.8 Msun as all < 0.8 Msun primaries and their
@@ -1105,11 +1096,8 @@ class SimpleBinaryPopulation:
 
     References
     ----------
-    .. [1] Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio (Q)
+    .. [3] Moe, M., Di Stefano, R. (2017). Mind Your Ps and Qs: The Interrelation between Period (P) and Mass-ratio (Q)
         Distributions of Binary Stars. ApJS, 230(2), 55. doi:10.3847/1538-4365/aa6fb6
-    .. [2] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G., Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
-        metallicity and star formation rate on the time-dependent, galaxy-wide stellar initial mass function. A&A, 620,
-        A39. doi:10.1051/0004-6361/20183
     """
 
     inner_binary_sample_columns = ['Mass_ZAMS1_Found',  #0

@@ -42,13 +42,6 @@ class BoogaardSFMR:
     redshift : float
         Redshift at which to compute the relation.
 
-    Methods
-    -------
-    sfr(logm)
-        Compute the SFR for a given galactic stellar mass log10(m).
-    logm(sfr)
-        Compute the galactic stellar mass log10(m) for a given SFR.
-
     Notes
     -----
     The model is by Boogaard et al. (2018) [1]_ , with the SFR as a
@@ -125,13 +118,6 @@ class SpeagleSFMR:
         Redshift at which to compute the relation.
     lowmass_sfmr : :class:`sfr.BoogaardSFMR`.
         SFMR below :const:`LOGM_BREAK`.
-
-    Methods
-    -------
-    sfr(logm)
-        Computes the SFR for a given galactic stellar mass log.
-    logm(sfr)
-        Computes the galactic stellar mass log for a given SFR.
 
     Notes
     -----
@@ -210,11 +196,6 @@ class TomczakSFMR:
         Redshift at which to compute the relation.
     lowmass_sfmr : :class:`sfh.BoogaardSFMR`
         SFMR below :attr:`logm_break`.
-
-    Methods
-    -------
-    sfr(logm)
-        Computes the SFR for a given galactic stellar mass log10(m).
 
     Notes
     -----
@@ -474,17 +455,6 @@ class MZR:
         Low-mass end slope. Redshift-dependent.
     dz : float
         Mean variation rate of the MZR between z=2.2 and z=3.5.
-
-    Methods
-    -------
-    set_params()
-        Interpolate from the original parameter set to the given 
-        redshift.
-    zoh(logm)
-        Compute metallicity for a given galactic stellar mass log10(m).
-    logm(zoh)
-        Compute the galactic stellar mass log10(m) for a given
-        metallicity.
 
     Warns
     -----
@@ -822,12 +792,6 @@ class GSMF:
         Whether to use the fixed (True) or the varying (False) low-mass
         slope model.
 
-    Methods
-    -------
-    log_gsmf(logm)
-        Computes log10(GSMF) for a given galaxy stellar mass as log10(m)
-        at the set redshift.
-
     Notes
     -----
     This class implements the GSMF model from Chruslisnka & Nelemans 
@@ -859,13 +823,6 @@ class GSMF:
         f(z) = 7.8 + 0.4 z
 
     up to `z=8` and be constant beyond.
-
-    References
-    ----------
-    .. [1] Chruslinska, M., Nelemans, G. (2019). Metallicity of stars
-        formed throughout the cosmic history based on the observational
-        properties of star-forming galaxies. MNRAS, 488(4), 5300.
-        doi:10.1093/mnras/stz2057
     """
 
     def __init__(self, redshift: float, fixed_slope: bool = True) -> None:
@@ -1070,12 +1027,6 @@ class Corrections:
     sfr_correction_data : NDArray
         Correction columns from the precalculated grid.
 
-    Methods
-    -------
-    get_corrections()
-        Interpolates from the precalculated correction grid to the given
-        metallicity-kSFR pairs.
-
     Notes
     -----
     The corrections are obtained for arbitrary values of SFR and
@@ -1088,7 +1039,7 @@ class Corrections:
     References
     ----------
     .. [9] Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z. (2020).
-        The effect of the environment-dependent PowerLawIMF on the
+        The effect of the environment-dependent IMF on the
         formation and metallicities of stars over cosmic history. A&A,
         636, A10. doi:10.1051/0004-6361/202037688
     """
@@ -1200,14 +1151,6 @@ class ChruslinskaSFRD:
         Array of time steps defining the SFRD grid redshifts.
     logsfrd_array : numpy array
         SFRD log array over the redshift-metallicity grid.
-
-    Methods
-    -------
-    load_grid()
-        Loads the pre-computed SFRD grid from disk.
-    get_logsfrd(feh, redshift)
-        Returns the SFRD log corresponding to the closest
-        `(feh, redshift)` in the SFRD grid.
 
     Warns
     -----

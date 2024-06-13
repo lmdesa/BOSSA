@@ -360,11 +360,11 @@ class Star(PowerLawIMF):
     _m_max : float
         Maximum stellar mass. Embedded cluster-specific.
     k1 : float
-        m<0.5 PowerLawIMF normalization constant.
+        m<0.5 IMF normalization constant.
     k2 : float
-        0.5<=m<1 PowerLawIMF normalization constant.
+        0.5<=m<1 IMF normalization constant.
     k3 : float
-        1<= PowerLawIMF normalization constant.
+        1<= IMF normalization constant.
     a1 : float
         First interval power-law index.
     a2 : float
@@ -460,9 +460,9 @@ class Star(PowerLawIMF):
 
     @property
     def a1(self):
-        """PowerLawIMF exponent for m < 0.5 Msun. Function of [Fe/H]."""
+        """IMF exponent for m < 0.5 Msun. Function of [Fe/H]."""
         if self._a1 is None:
-            alpha1_kroupa = -1.3  # Kroupa PowerLawIMF a1
+            alpha1_kroupa = -1.3  # Kroupa IMF a1
             if self.invariant:
                 self._a1 = alpha1_kroupa
             else:
@@ -472,7 +472,7 @@ class Star(PowerLawIMF):
 
     @property
     def a2(self):
-        """PowerLawIMF exponent for 0.5 Msun <= m < 1.0 Msun. Function
+        """IMF exponent for 0.5 Msun <= m < 1.0 Msun. Function
         of [Fe/H].
         """
 
@@ -487,7 +487,7 @@ class Star(PowerLawIMF):
 
     @property
     def a3(self):
-        """PowerLawIMF exponent for m >= 1.0 Msun. Dependent on [Fe/H]
+        """IMF exponent for m >= 1.0 Msun. Dependent on [Fe/H]
         and m_tot through the auxiliary variable x.
         """
 
@@ -506,7 +506,7 @@ class Star(PowerLawIMF):
 
     @property
     def g1(self):
-        """Auxiliary variable g1. Related to the PowerLawIMF integral
+        """Auxiliary variable g1. Related to the IMF integral
         over low masses.
         """
 
@@ -520,7 +520,7 @@ class Star(PowerLawIMF):
 
     @property
     def g2(self):
-        """Auxiliary variable g2. Related to the PowerLawIMF integral
+        """Auxiliary variable g2. Related to the IMF integral
         over intermediary masses.
         """
 
@@ -624,7 +624,7 @@ class Star(PowerLawIMF):
         initial guesses for k3 and _m_max.
 
         After solving for k3 and _m_max, k1 and k2 are immediately
-        determined. Automatically sets the PowerLawIMF to zero for all
+        determined. Automatically sets the IMF to zero for all
         masses if the star-forming region mass is below a minimum of 5
         solar masses.
         """
@@ -696,10 +696,10 @@ class EmbeddedCluster(PowerLawIMF):
     References
     ----------
     .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
-    Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of metallicity
-    and star formation rate on the time-dependent, galaxy-wide stellar
-    initial mass function. A&A, 620,
-        A39. doi:10.1051/0004-6361/20183
+       Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of metallicity
+       and star formation rate on the time-dependent, galaxy-wide
+       stellar initial mass function. A&A, 620,
+       A39. doi:10.1051/0004-6361/20183
     """
 
     M_TRUNC_MIN = 5.0
@@ -858,8 +858,8 @@ class EmbeddedCluster(PowerLawIMF):
 class IGIMF:
     """Compute the galactic initial mass function.
 
-    The galactic PowerLawIMF (gIMF) is computed according to the
-    integrated galaxy-wide PowerLawIMF (IGIMF) framework by integrating
+    The galactic IMF (gIMF) is computed according to the
+    integrated galaxy-wide IMF (IGIMF) framework by integrating
     the product between the embedded cluster (ECL) and stellar IMFs
     (eIMF and sIMF, respectively) over all embedded clusters in the
     galaxy. This corresponds to integrating over the product of the imf
@@ -1005,7 +1005,7 @@ class IGIMF:
 
     def _get_stars(self, m_ecl, m):
         """For a given ECL mass, instantiate a Star object, compute the
-        PowerLawIMF and return dN/dm for a stellar mass m.
+        IMF and return dN/dm for a stellar mass m.
         """
 
         stellar = Star(m_ecl=m_ecl,
@@ -1095,7 +1095,7 @@ class IGIMF:
         Returns
         -------
         imf : float
-            PowerLawIMF value at mass m.
+            IMF value at mass m.
 
         Warns
         ------
