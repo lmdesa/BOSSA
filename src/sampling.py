@@ -4,7 +4,9 @@
 """Sampling of arbitrary distributions, galaxy parameters and binary populations."""
 import gc
 import logging
+import pathlib
 import warnings
+from os import PathLike
 from time import time
 from datetime import datetime
 from pathlib import Path
@@ -536,9 +538,12 @@ class GalaxyGrid:
     should be removed in the future.
     """
 
-    def __init__(self, n_redshift, redshift_min=0, redshift_max=10, force_boundary_redshift=True, logm_per_redshift=3,
-                 logm_min=6, logm_max=12, mzr_model='KK04', sfmr_flattening='none', gsmf_slope_fixed=True,
-                 sampling_mode='mass', scatter_model='none', apply_igimf_corrections=True, random_state=None):
+    def __init__(self, n_redshift: int, redshift_min: int = 0., redshift_max: float = 10.,
+                 force_boundary_redshift: bool = True, logm_per_redshift: int = 3,
+                 logm_min: float = 6., logm_max: float = 12., mzr_model: str = 'KK04',
+                 sfmr_flattening: str = 'none', gsmf_slope_fixed: bool = True,
+                 sampling_mode: str = 'mass', scatter_model: str = 'none',
+                 apply_igimf_corrections: bool = True, random_state: bool = None) -> None:
         # Redshift settings
         self.n_redshift = n_redshift
         self.redshift_min = redshift_min
@@ -583,7 +588,7 @@ class GalaxyGrid:
         if self.random_state is not None:
             np.random.seed(self.random_state)
 
-    def _get_sample_redshift_array(self):
+    def _get_sample_redshift_array(self) -> NDArray[float]:
         """Return initial uniform redshift array."""
         if self.force_boundary_redshift:
             return np.linspace(self.redshift_min, self.redshift_max, self.n_redshift+2)
@@ -591,55 +596,55 @@ class GalaxyGrid:
             return np.linspace(self.redshift_min, self.redshift_max, self.n_redshift)
 
     @property
-    def mzr_model(self):
+    def mzr_model(self) -> str:
         """Mass-(gas) metallicity relation model choice."""
         return self._mzr_model
 
     @mzr_model.setter
-    def mzr_model(self, model):
+    def mzr_model(self, model: str) -> None:
         models = ['KK04', 'T04', 'M09', 'PP04']
         if model not in models:
             raise ValueError(f'mzr_model must be one of {models}.')
         self._mzr_model = model
 
     @property
-    def sfmr_flattening(self):
+    def sfmr_flattening(self) -> str:
         """Star formation-mass relation model choice."""
         return self._sfmr_flattening
 
     @sfmr_flattening.setter
-    def sfmr_flattening(self, flattening):
+    def sfmr_flattening(self, flattening: str) -> None:
         models = ['none', 'moderate', 'sharp']
         if flattening not in models:
             raise ValueError(f'sfmr_flattening must be one of {models}.')
         self._sfmr_flattening = flattening
 
     @property
-    def sampling_mode(self):
+    def sampling_mode(self) -> str:
         """Sampling mode choice."""
         return self._sampling_mode
 
     @sampling_mode.setter
-    def sampling_mode(self, mode):
+    def sampling_mode(self, mode: str) -> None:
         modes = ['mass', 'number', 'uniform']
         if mode not in modes:
             raise ValueError(f'sampling mode must be one of {modes}.')
         self._sampling_mode = mode
 
     @property
-    def scatter_model(self):
+    def scatter_model(self) -> str:
         """Scattering model choice for the SFMR and the MZR."""
         return self._scatter_model
 
     @scatter_model.setter
-    def scatter_model(self, model):
+    def scatter_model(self, model: str) -> None:
         models = ['none', 'normal', 'min', 'max']
         if model not in models:
             raise ValueError(f'sampling mode must be one of {models}.')
         self._scatter_model = model
 
     @property
-    def save_path(self):
+    def save_path(self) -> pathlib.Path:
         """pathlib.Path: Path which to save the grid to."""
         if self._save_path is None:
             fname = f'galgrid_{self.mzr_model}_{self.sfmr_flattening}_{self.gsmf_slope_fixed}_{self.sampling_mode}_' \
@@ -647,7 +652,8 @@ class GalaxyGrid:
             self._save_path = Path(GALAXYGRID_DIR_PATH, fname)
         return self._save_path
 
-    def _discrete_redshift_probs(self, min_z, max_z, size):
+    def _discrete_redshift_probs(self, min_z: float, max_z: float, size: int
+                                 ) -> tuple[NDArray[float], NDArray[float]]:
         """Return probabilities for a uniform redshift pool.
 
         Generates and returns a ``pool`` of evenly-space ``size```
@@ -669,7 +675,7 @@ class GalaxyGrid:
         probs /= probs.sum()
         return pool, probs
 
-    def _sample_masses(self, redshift):
+    def _sample_masses(self, redshift: float) -> GalaxyStellarMassSampling:
         """Sample masses from the GSMF at ``redshift``.
 
         Returns a :class:`sfh.GSMF` object which holds the sampled
@@ -714,7 +720,10 @@ class GalaxyGrid:
         sfr_w_scatter = norm.rvs(loc=mean_sfr, scale=sigma, size=1, random_state=self.random_state)[0]
         return sfr_w_scatter
 
-    def _sample_galaxies(self, redshift):
+    def _sample_galaxies(
+            self, redshift: float
+    ) -> tuple[NDArray[float], NDArray[float], NDArray[float], NDArray[float], NDArray[float],
+               NDArray[float], NDArray[float], NDArray[bool], NDArray[float], NDArray[bool]]:
         """Return a sample of galaxies properties at ``redshift``.
 
         Samples a number :attr:`logm_per_redshift` of galaxies at
@@ -803,7 +812,12 @@ class GalaxyGrid:
         return ndensity_array, density_array, logm_array, log_gsmf_array, zoh_array, zoh_bins, feh_array, feh_mask, log_sfr_array, \
                sfr_mask
 
-    def _correct_sample(self, mass_array, log_gsmf_array, zoh_array, feh_array, sfr_array, mask_array):
+    def _correct_sample(
+            self, mass_array: NDArray[float], log_gsmf_array: NDArray[float],
+            zoh_array: NDArray[float], feh_array: NDArray[float], sfr_array:NDArray[float],
+            mask_array: NDArray[bool]
+    ) -> tuple[list[NDArray[float]], list[NDArray[float]], list[NDArray[float]],
+               list[NDArray[float]], list[NDArray[float]]]:
         """Applies SFR corrections for a variant IMF.
 
         Applies the corrections from Chruslinska et al. (2020),
@@ -892,7 +906,7 @@ class GalaxyGrid:
 
         return mass_list, log_gsmf_list, zoh_list, feh_list, sfr_list
 
-    def sample_redshift(self):
+    def sample_redshift(self) -> None:
         """Sample redshifts from the GSMF integrated over mass.
 
         Integrating the GSMF over mass yields a star forming mass-over-
@@ -938,7 +952,7 @@ class GalaxyGrid:
                                                             [max_redshift_bin_lower_edge])))
 
     # TODO: Initialize arrays in get_grid with the appropriate shape
-    def get_grid(self):
+    def get_grid(self) -> None:
         """Generate the (redshift, mass, metallicity, SFR) grid.
 
         For each redshift in :attr:`sample_redshift_array`, samples
@@ -998,7 +1012,7 @@ class GalaxyGrid:
 
         self.grid_array = np.append(redshift_grid, np.array(self.grid_array), axis=0)
 
-    def save_grid(self):
+    def save_grid(self) -> None:
         """Save :attr:`grid_array` to disk."""
         columns = ['Redshift', 'Log(Mgal/Msun)', 'Log(Number density [Mpc-3 Msun-1])', 'Log(SFR [Msun yr-1])',
                    '12+log(O/H)', '[Fe/H]']
