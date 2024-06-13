@@ -647,8 +647,9 @@ class GalaxyGrid:
     def save_path(self) -> pathlib.Path:
         """pathlib.Path: Path which to save the grid to."""
         if self._save_path is None:
-            fname = f'galgrid_{self.mzr_model}_{self.sfmr_flattening}_{self.gsmf_slope_fixed}_{self.sampling_mode}_' \
-                    f'{len(self.sample_redshift_array)}z_{self.logm_per_redshift}Z.pkl'
+            fname = (f'galgrid_{self.mzr_model}_{self.sfmr_flattening}_{self.gsmf_slope_fixed}_'
+                     f'{self.sampling_mode}_{len(self.sample_redshift_array)}z_'
+                     f'{self.logm_per_redshift}Z.pkl')
             self._save_path = Path(GALAXYGRID_DIR_PATH, fname)
         return self._save_path
 
@@ -670,7 +671,9 @@ class GalaxyGrid:
             pool[i] = (z_llim + z_ulim) / 2
             gsmf = GSMF(pool[i])
             c_vol = cosmo.comoving_volume(z_ulim).value - cosmo.comoving_volume(z_llim).value
-            density = quad(lambda logm: 10**logm * 10**gsmf.log_gsmf(logm), self.logm_min, self.logm_max)[0]
+            density = quad(lambda logm: 10**logm * 10**gsmf.log_gsmf(logm),
+                           self.logm_min,
+                           self.logm_max)[0]
             probs[i] = density * c_vol
         probs /= probs.sum()
         return pool, probs
@@ -777,8 +780,8 @@ class GalaxyGrid:
                     sfr_mask[0, i] = 0
             sfr_mask = sfr_mask.astype(bool)
 
-        return ndensity_array, density_array, logm_array, log_gsmf_array, zoh_array, zoh_bins, feh_array, feh_mask, log_sfr_array, \
-               sfr_mask
+        return (ndensity_array, density_array, logm_array, log_gsmf_array, zoh_array, zoh_bins,
+                feh_array, feh_mask, log_sfr_array, sfr_mask)
 
     def _correct_sample(
             self, mass_array: NDArray[float], log_gsmf_array: NDArray[float],
@@ -847,8 +850,8 @@ class GalaxyGrid:
         feh_list = list()
         sfr_list = list()
 
-        for masses, log_gsmfs, zohs, fehs, sfrs, mask in zip(mass_array, log_gsmf_array, zoh_array, feh_array,
-                                                             sfr_array, mask_array):
+        for masses, log_gsmfs, zohs, fehs, sfrs, mask in zip(mass_array, log_gsmf_array, zoh_array,
+                                                             feh_array, sfr_array, mask_array):
             f_masses = masses[mask]
             f_log_gsmfs = log_gsmfs[mask]
             f_zohs = zohs[mask]
@@ -889,13 +892,17 @@ class GalaxyGrid:
         # The probability of a galaxy falling in a given redshift bin is determined by the total stellar within it,
         # which results from integrating the m*GSMF at that redshift over all allowed masses and multiplying by the
         # comoving volume corresponding to the bin.
-        redshift_pool, redshift_probs = self._discrete_redshift_probs(self.redshift_min, self.redshift_max,
+        redshift_pool, redshift_probs = self._discrete_redshift_probs(self.redshift_min,
+                                                                      self.redshift_max,
                                                                       100*self.n_redshift)
 
         # With probabilities calculated, we can generate a representative sample from which we find n_redshift
         # uniform quantiles. Repetition is not an issue because only the quantiles are of interest.
-        redshift_choices = np.random.choice(redshift_pool, p=redshift_probs, size=int(1e4*self.n_redshift))
-        self.sample_redshift_bins = np.quantile(redshift_choices, np.linspace(0, 1, self.n_redshift + 1))
+        redshift_choices = np.random.choice(redshift_pool,
+                                            p=redshift_probs,
+                                            size=int(1e4*self.n_redshift))
+        self.sample_redshift_bins = np.quantile(redshift_choices,
+                                                np.linspace(0, 1, self.n_redshift + 1))
         self.sample_redshift_bins[0] = self.redshift_min  # correct for the granularity of the sampling
         self.sample_redshift_bins[-1] = self.redshift_max
 
@@ -907,14 +914,19 @@ class GalaxyGrid:
             self.sample_redshift_array[0] = self.redshift_min
             self.sample_redshift_array[-1] = self.redshift_max
             redshift_i += 1
-        for quantile0, quantile1 in zip(self.sample_redshift_bins[:-1], self.sample_redshift_bins[1:]):
-            redshift_pool, redshift_probs = self._discrete_redshift_probs(quantile0, quantile1, 100)
+        for quantile0, quantile1 in zip(self.sample_redshift_bins[:-1],
+                                        self.sample_redshift_bins[1:]):
+            redshift_pool, redshift_probs = self._discrete_redshift_probs(quantile0,
+                                                                          quantile1,
+                                                                          100)
             massaverage_redshift = np.average(redshift_pool, weights=redshift_probs)
             self.sample_redshift_array[redshift_i] = massaverage_redshift
             redshift_i += 1
 
-        min_redshift_bin_upper_edge = (self.sample_redshift_array[0] + self.sample_redshift_array[1]) / 2
-        max_redshift_bin_lower_edge = (self.sample_redshift_array[-1] + self.sample_redshift_array[-2]) / 2
+        min_redshift_bin_upper_edge = (self.sample_redshift_array[0]
+                                       + self.sample_redshift_array[1]) / 2
+        max_redshift_bin_lower_edge = (self.sample_redshift_array[-1]
+                                       + self.sample_redshift_array[-2]) / 2
         self.sample_redshift_bins = np.sort(np.concatenate(([min_redshift_bin_upper_edge],
                                                             self.sample_redshift_bins,
                                                             [max_redshift_bin_lower_edge])))
@@ -944,8 +956,8 @@ class GalaxyGrid:
         sfr_mask_array = np.empty((0, self.logm_per_redshift), np.float64)
 
         for redshift in self.sample_redshift_array:
-            ndensity_array, density_array, masses, log_gsmfs, zohs, bin_zohs, fehs, feh_mask, sfrs, sfr_mask = \
-                self._sample_galaxies(redshift)
+            (ndensity_array, density_array, masses, log_gsmfs, zohs, bin_zohs, fehs, feh_mask,
+             sfrs, sfr_mask) = self._sample_galaxies(redshift)
             mass_array = np.append(mass_array, [masses], axis=0)
             log_gsmf_array = np.append(log_gsmf_array, log_gsmfs, axis=0)
             self.zoh_array = np.append(self.zoh_array, zohs, axis=0)
@@ -959,7 +971,11 @@ class GalaxyGrid:
         mask_array = np.logical_and(feh_mask_array, sfr_mask_array)
 
         if self.apply_igimf_corrections:
-            self.grid_array = self._correct_sample(mass_array, log_gsmf_array, self.zoh_array, feh_array, sfr_array,
+            self.grid_array = self._correct_sample(mass_array,
+                                                   log_gsmf_array,
+                                                   self.zoh_array,
+                                                   feh_array,
+                                                   sfr_array,
                                                    mask_array)
         else:
             self.grid_array = mass_array, log_gsmf_array, self.zoh_array, feh_array, sfr_array
@@ -967,12 +983,17 @@ class GalaxyGrid:
         for i, sublist in enumerate(self.grid_array):
             for j, ssublist in enumerate(sublist):
                 try:
-                    self.grid_array[i][j] = np.pad(ssublist, (0, self.logm_per_redshift-len(ssublist)), mode='edge')
+                    self.grid_array[i][j] = np.pad(ssublist,
+                                                   (0, self.logm_per_redshift-len(ssublist)),
+                                                   mode='edge')
                 except ValueError:
-                    self.grid_array[i][j] = np.pad(ssublist, (0, self.logm_per_redshift - len(ssublist)), mode='empty')
+                    self.grid_array[i][j] = np.pad(ssublist,
+                                                   (0, self.logm_per_redshift - len(ssublist)),
+                                                   mode='empty')
 
         self.grid_array = np.array(self.grid_array, np.float64)
-        self.mass_list, self.log_gsmf_list, self.zoh_list, self.feh_list, self.sfr_list = self.grid_array
+        (self.mass_list, self.log_gsmf_list, self.zoh_list, self.feh_list,
+         self.sfr_list) = self.grid_array
 
         redshift_grid = self.sample_redshift_array.reshape(*self.sample_redshift_array.shape, 1)
         redshift_grid = np.tile(redshift_grid, (1, self.logm_per_redshift))
@@ -982,8 +1003,8 @@ class GalaxyGrid:
 
     def save_grid(self) -> None:
         """Save :attr:`grid_array` to disk."""
-        columns = ['Redshift', 'Log(Mgal/Msun)', 'Log(Number density [Mpc-3 Msun-1])', 'Log(SFR [Msun yr-1])',
-                   '12+log(O/H)', '[Fe/H]']
+        columns = ['Redshift', 'Log(Mgal/Msun)', 'Log(Number density [Mpc-3 Msun-1])',
+                   'Log(SFR [Msun yr-1])', '12+log(O/H)', '[Fe/H]']
         grid_df = pd.DataFrame(self.grid_array, columns=columns)
         grid_df.to_pickle(self.save_path)
 
