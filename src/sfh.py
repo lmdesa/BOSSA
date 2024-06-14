@@ -255,7 +255,7 @@ class TomczakSFMR:
         """float: Correction to match the SFMR models at the break."""
         if self._break_corr is None:
             self._break_corr = (self.lowmass_sfmr._logsfr(self.logm_break)
-                                - self._sfr(self.logm_break, yshift=0))
+                                - self._logsfr(self.logm_break, yshift=0))
         return self._break_corr
 
     @staticmethod
