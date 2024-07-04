@@ -459,10 +459,16 @@ class GalaxyGrid:
         Minimum log10(mass) to sample.
     logm_max : float
         Maximum log10(mass) to sample.
-    sample_redshift_bins : NDArray
-        Limits of the bins represented by :attr:`sample_redshift_array`.
     sample_redshift_array : NDArray
         Redshift sample defining the grid.
+    sample_redshift_bins : NDArray
+        Limits of the bins represented by :attr:`sample_redshift_array`.
+    sample_logm_array : NDArray
+        Galaxy stellar mass samples for each redshift in
+        :attr:`sample_redshift_array`.
+    sample_logm_bins : NDArray
+        Limits of the bins represented by :attr:`sample_logm_array`,
+        per redshift.
     gsmf_slope_fixed : bool
         Whether the GSMF low-mass slope should be fixed or not.
     random_state : int
@@ -531,7 +537,7 @@ class GalaxyGrid:
                  force_boundary_redshift: bool = True, logm_per_redshift: int = 3,
                  logm_min: float = 6., logm_max: float = 12., mzr_model: str = 'KK04',
                  sfmr_flattening: str = 'none', gsmf_slope_fixed: bool = True,
-                 sampling_mode: str = 'mass', scatter_model: str = 'none',
+                 sampling_mode: str = 'sfr', scatter_model: str = 'none',
                  apply_igimf_corrections: bool = True, random_state: bool = None) -> None:
         # Redshift settings
         self.n_redshift = n_redshift
@@ -544,9 +550,13 @@ class GalaxyGrid:
         self.logm_min = logm_min
         self.logm_max = logm_max
 
-        # Redshift sampling storage
-        self.sample_redshift_bins = None
+        # Galaxy sampling storage
         self.sample_redshift_array = self._get_sample_redshift_array()
+        self.sample_redshift_bins = np.zeros(self.sample_redshift_array.shape[0] + 1)
+        self.sample_logm_array = np.zeros((self.sample_redshift_array.shape[0],
+                                           self.logm_per_redshift))
+        self.sample_logm_bins = np.zeros((self.sample_redshift_array.shape[0],
+                                          self.logm_per_redshift + 1))
 
         # Physical models
         self.mzr_model = mzr_model
@@ -615,7 +625,7 @@ class GalaxyGrid:
 
     @sampling_mode.setter
     def sampling_mode(self, mode: str) -> None:
-        modes = ['mass', 'number', 'uniform']
+        modes = ['sfr', 'mass', 'number', 'uniform']
         if mode not in modes:
             raise ValueError(f'sampling mode must be one of {modes}.')
         self._sampling_mode = mode
@@ -642,15 +652,15 @@ class GalaxyGrid:
             self._save_path = Path(GALAXYGRID_DIR_PATH, fname)
         return self._save_path
 
-    def _discrete_redshift_probs(self, min_z: float, max_z: float, size: int
+    def _discrete_redshift_probs(self, min_z: float, max_z: float, size: int,
                                  ) -> tuple[NDArray[float], NDArray[float]]:
         """Return probabilities for a uniform redshift pool.
 
         Generates and returns a ``pool`` of evenly-space ``size```
         redshifts between ``min_z`` and ``max_z``. Computes and returns
         their probabilities (``probs``) from the number of galaxies at
-        that redshift, found by integrating ``m*GSMF(m)`` over the
-        entire mass span at each redshift.
+        that redshift, found by integrating either ``m*GSMF(m)`` or
+        ``SFR(m)*GSMF(m)`` over the entire mass span at each redshift.
         """
 
         bin_edges = np.linspace(min_z, max_z, size + 1)
@@ -658,20 +668,61 @@ class GalaxyGrid:
         probs = np.zeros(size)
         for i, (z_llim, z_ulim) in enumerate(zip(bin_edges[:-1], bin_edges[1:])):
             pool[i] = (z_llim + z_ulim) / 2
-            gsmf = GSMF(pool[i])
-            c_vol = cosmo.comoving_volume(z_ulim).value - cosmo.comoving_volume(z_llim).value
-            density = quad(lambda logm: 10**logm * 10**gsmf.log_gsmf(logm),
-                           self.logm_min,
-                           self.logm_max)[0]
-            probs[i] = density * c_vol
+            gsmf = GSMF(redshift=pool[i],
+                        fixed_slope=self.gsmf_slope_fixed)
+
+            if self.sampling_mode == 'sfr':
+                sfmr = SFMR(redshift=pool[i],
+                            flattening=self.sfmr_flattening,
+                            scatter_model=self.scatter_model)
+                def sfrd_dlogm(logm):
+                    # Return the star formation rate density per
+                    # logarithmic galaxy stellar mass bin.
+                    return 10.**gsmf.log_gsmf(logm) * 10.**sfmr.logsfr(logm)
+                # Get the total star formation rate density at redshift.
+                sfrd = quad(sfrd_dlogm, self.logm_min, self.logm_max)[0]
+                probs[i] = sfrd
+
+            elif self.sampling_mode == 'mass':
+                def density_dlogm(logm):
+                    # Return the (stellar) mass density of galaxies
+                    # of (stellar) mass logm per logarithmic galaxy
+                    # stellar mass bin.
+                    return logm * 10.**gsmf.log_gsmf(logm)
+                # Get the total galaxy (stellar) mass density at
+                # redshift.
+                # We assume the density is uniform within the redshift bin.
+                c_vol = cosmo.comoving_volume(z_ulim).value - cosmo.comoving_volume(z_llim).value
+                density = quad(density_dlogm, self.logm_min, self.logm_max)[0]
+                probs[i] = density * c_vol
+
+            elif self.sampling_mode == 'number':
+                def ndensity_dlogm(logm):
+                    # Return the number density of galaxies of (stellar)
+                    # mass logm per logarithmic galaxy stellar mass bin.
+                    return 10.**gsmf.log_gsmf(logm)
+                # Get the total number density at redshift.
+                # We assume the density is uniform within the redshift bin.
+                c_vol = cosmo.comoving_volume(z_ulim).value - cosmo.comoving_volume(z_llim).value
+                density = quad(ndensity_dlogm, self.logm_min, self.logm_max)[0]
+                probs[i] = density * c_vol
+
+            elif self.sampling_mode == 'uniform':
+                probs[i] = 1.
+
         probs /= probs.sum()
         return pool, probs
 
-    def _sample_masses(self, redshift: float) -> GalaxyStellarMassSampling:
+    def _gsmf_sample_masses(self, redshift: float) -> GalaxyStellarMassSampling:
         """Sample masses from the GSMF at ``redshift``.
 
         Returns a :class:`sfh.GSMF` object which holds the sampled
         masses and respective densities as attributes.
+
+        Warnings
+        --------
+        This method is deprecated and will be removed in the next
+        version.
         """
 
         gsmf = GSMF(redshift, self.gsmf_slope_fixed)
@@ -679,6 +730,111 @@ class GalaxyGrid:
                                            self.logm_per_redshift, self.sampling_mode)
         sample.sample()
         return sample
+
+    def _discrete_mass_probs(self, min_logm: float, max_logm: float, redshift: float, size: int,
+                                 ) -> tuple[NDArray[float], NDArray[float]]:
+        """Return probabilities for a uniform mass pool at a redshift.
+
+        Generates and returns a ``pool`` of evenly-space ``size``
+        galaxy stellar masses between ``min_logm`` and ``max_logm``.
+        Computes and returns their probabilities (``probs``) weighted
+        by either density (mass or number), or SFRD.
+        """
+
+        bin_edges = np.linspace(min_logm, max_logm, size + 1)
+        pool = np.zeros(size)
+        probs = np.zeros(size)
+        gsmf = GSMF(redshift=redshift,
+                    fixed_slope=self.gsmf_slope_fixed)
+        sfmr = SFMR(redshift=redshift,
+                    flattening=self.sfmr_flattening,
+                    scatter_model=self.scatter_model)
+        for i, (logm0, logm1) in enumerate(zip(bin_edges[:-1], bin_edges[1:])):
+            pool[i] = (logm0 + logm1) / 2
+
+            if self.sampling_mode == 'sfr':
+                def sfrd_dlogm(logm):
+                    # Return the star formation rate density per
+                    # logarithmic galaxy stellar mass bin.
+                    return 10. ** gsmf.log_gsmf(logm) * 10. ** sfmr.logsfr(logm)
+                probs[i] = sfrd_dlogm(pool[i])
+
+            elif self.sampling_mode == 'mass':
+                def density_dlogm(logm):
+                    # Return the (stellar) mass density of galaxies
+                    # of (stellar) mass logm per logarithmic galaxy
+                    # stellar mass bin.
+                    return logm * 10. ** gsmf.log_gsmf(logm)
+
+                # Get the total galaxy (stellar) mass at redshift.
+                c_vol = cosmo.differential_comoving_volume(redshift)
+                density = density_dlogm(pool[i])
+                probs[i] = density * c_vol
+
+            elif self.sampling_mode == 'number':
+                def ndensity_dlogm(logm):
+                    # Return the number density of galaxies of (stellar)
+                    # mass logm per logarithmic galaxy stellar mass bin.
+                    return 10. ** gsmf.log_gsmf(logm)
+
+                # Get the total number at redshift.
+                c_vol = cosmo.differential_comoving_volume(redshift)
+                density = ndensity_dlogm(pool[i])
+                probs[i] = density * c_vol
+
+            elif self.sampling_mode == 'uniform':
+                probs[i] = 1.
+
+        probs /= probs.sum()
+        return pool, probs
+
+    # TODO: implement density-weighted sampling within this method
+    def _sample_masses(self) -> None:
+        """Sample galaxy stellar mass at ``redshift``.
+
+        Depending on ``sampling_mode``, sample galaxy stellar mass with
+        probability weighted by galaxy number density, galaxy stellar
+        mass density or star formation rate density (SFRD).
+        """
+
+        for redshift_i, redshift in enumerate(self.sample_redshift_array):
+            logm_pool, logm_probs = self._discrete_mass_probs(self.logm_min,
+                                                              self.logm_max,
+                                                              redshift=redshift,
+                                                              size=100*self.logm_per_redshift)
+
+            # With probabilities calculated, we can generate a
+            # representative sample from which we find logm_per_redshift)
+            # quantiles. Repetition is not an issue because only the
+            # quantiles are of interest (so we can ask for a sample larger
+            # than logm_pool).
+            logm_choices = np.random.choice(logm_pool,
+                                            p=logm_probs,
+                                            size=int(1e4*self.logm_per_redshift))
+            self.sample_logm_bins[redshift_i] = np.quantile(
+                logm_choices,
+                np.linspace(0, 1, self.logm_per_redshift+1)
+            )
+            # Correct for the granularity of the sampling.
+            self.sample_logm_bins[redshift_i, 0] = self.logm_min
+            self.sample_logm_bins[redshift_i, -1] = self.logm_max
+
+            # Finding uniform quantiles defines which regions of the
+            # redshift range should be equally represented in order
+            # to reproduce the GSMF as well as possible. The quantiles
+            # themselves are represented in the sample by the averaged
+            # redshift of their respective galaxies. Weighting depends on
+            # :attr:`sampling_mode`.
+            logm_i = 0
+            for quantile0, quantile1 in zip(self.sample_logm_bins[redshift_i, :-1],
+                                            self.sample_logm_bins[redshift_i, 1:]):
+                logm_pool, logm_probs = self._discrete_mass_probs(quantile0,
+                                                                  quantile1,
+                                                                  redshift=redshift,
+                                                                  size=100)
+                average_logm = np.average(logm_pool, weights=logm_probs)
+                self.sample_logm_array[redshift_i, logm_i] = average_logm
+                logm_i += 1
 
     def _sample_galaxies(
             self, redshift: float
@@ -733,18 +889,27 @@ class GalaxyGrid:
             of :class:`sfh.Corrections`.
         """
 
-        sample = self._sample_masses(redshift)
-        logm_bins = sample.bin_limits
-
-        ndensity_array = sample.grid_ndensity_array.reshape(1, self.logm_per_redshift)
-        density_array = sample.grid_density_array.reshape(1, self.logm_per_redshift)
-
-        logm_array = sample.grid_logmasses
+        i_redshift = np.argmin(np.abs(redshift-self.sample_redshift_array))
+        logm_array = self.sample_logm_array[i_redshift]
+        logm_bins = self.sample_logm_bins[i_redshift]
 
         gsmf = GSMF(redshift)
         sfmr = SFMR(redshift, flattening=self.sfmr_flattening, scatter_model=self.scatter_model)
         mzr = MZR(redshift, self.mzr_model, scatter_model=self.scatter_model)
         mzr.set_params()
+
+        density_array = np.zeros(self.logm_per_redshift)
+        ndensity_array = np.zeros(self.logm_per_redshift)
+        for i in range(self.logm_per_redshift):
+            logm0, logm1 = logm_bins[[i, i+1]]
+            density_array[i] = quad(lambda logm: logm * 10.**gsmf.log_gsmf(logm),
+                                    logm0,
+                                    logm1)[0]
+            ndensity_array[i] = quad(lambda logm: 10. ** gsmf.log_gsmf(logm),
+                                     logm0,
+                                     logm1)[0]
+        density_array = density_array.reshape(1, self.logm_per_redshift)
+        ndensity_array = ndensity_array.reshape(1, self.logm_per_redshift)
 
         log_gsmf_array = np.array([[np.float64(gsmf.log_gsmf(logm)) for logm in logm_array]])
 
@@ -769,8 +934,8 @@ class GalaxyGrid:
                     sfr_mask[0, i] = 0
             sfr_mask = sfr_mask.astype(bool)
 
-        return (ndensity_array, density_array, logm_array, log_gsmf_array, zoh_array, zoh_bins,
-                feh_array, feh_mask, log_sfr_array, sfr_mask)
+        return (ndensity_array, density_array, logm_array, log_gsmf_array, zoh_array,
+                zoh_bins, feh_array, feh_mask, log_sfr_array, sfr_mask)
 
     def _correct_sample(
             self, mass_array: NDArray[float], log_gsmf_array: NDArray[float],
