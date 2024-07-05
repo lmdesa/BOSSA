@@ -1044,7 +1044,7 @@ class Corrections:
         636, A10. doi:10.1051/0004-6361/202037688
     """
 
-    def __init__(self, metallicity: float, sfr: float) -> None:
+    def __init__(self, metallicity: NDArray[float], sfr: NDArray[float]) -> None:
         self.metallicity = metallicity
         self.sfr_kroupa = sfr
         self.corrections = np.empty((0, self.sfr_kroupa.shape[0]), np.float64)
