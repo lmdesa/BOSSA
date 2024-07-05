@@ -975,7 +975,7 @@ class GSMF:
                 [[self._f(logm, params) for params in schechter_params]]
             )
             # interpolate to set redshift
-            log_gsmf = interpolate(ipX, ipY, self.redshift)
+            log_gsmf = interpolate(ipX, ipY, self.redshift)[0]
 
         # for z>9, keep logm_co and a, and assume that logphi increases
         # linearly with the same rate as in (8,9)
