@@ -1104,6 +1104,7 @@ class GalaxyGrid:
         from the grid if corrections are on.
         """
 
+        self._sample_masses()
         mass_array = np.empty((0, self.logm_per_redshift), np.float64)
         log_gsmf_array = np.empty((0, self.logm_per_redshift), np.float64)
         feh_array = np.empty((0, self.logm_per_redshift), np.float64)
