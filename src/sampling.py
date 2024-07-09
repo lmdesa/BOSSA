@@ -1088,7 +1088,7 @@ class GalaxyGrid:
                                                             [max_redshift_bin_lower_edge])))
 
     # TODO: Initialize arrays in get_grid with the appropriate shape
-    def get_grid(self) -> None:
+    def _scatterless_get_grid(self) -> None:
         """Generate the (redshift, mass, metallicity, SFR) grid.
 
         For each redshift in :attr:`sample_redshift_array`, samples
@@ -1157,6 +1157,17 @@ class GalaxyGrid:
         redshift_grid = redshift_grid.reshape(1, *redshift_grid.shape)
 
         self.grid_array = np.append(redshift_grid, np.array(self.grid_array), axis=0)
+
+    # TODO: complete scatter_get_grid()
+    def _scatter_get_grid(self) -> None:
+        warnings.warn('Scatter get_grid() not implemented yet!')
+        return
+
+    def get_grid(self) -> None:
+        if self.scatter_model == 'normal':
+            self._scatter_get_grid()
+        else:
+            self._scatterless_get_grid()
 
     def save_grid(self) -> None:
         """Save :attr:`grid_array` to disk."""
