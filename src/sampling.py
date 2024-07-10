@@ -17,6 +17,7 @@ from astropy.cosmology import WMAP9 as cosmo
 import numpy as np
 import pandas as pd
 from numpy._typing import NDArray, ArrayLike
+from numpy.lib.recfunctions import unstructured_to_structured
 from scipy.integrate import quad
 from scipy.optimize import fsolve, fmin
 from scipy.interpolate import UnivariateSpline
@@ -29,7 +30,8 @@ import src.sfh as sfh
 from src.imf import Star, IGIMF
 from src.sfh import MZR, SFMR, Corrections, GSMF
 from src.zams import ZAMSSystemGenerator, MultipleFraction
-from src.utils import interpolate, ZOH_to_FeH, create_logger, format_time, Length
+from src.utils import interpolate, ZOH_to_FeH, create_logger, format_time, Length, get_bin_centers, \
+    enumerate_bin_edges
 from src.constants import (
     Z_SUN, LOG_PATH, BINARIES_CORRELATED_TABLE_PATH, BINARIES_UNCORRELATED_TABLE_PATH,
     IGIMF_ZAMS_DIR_PATH, GALAXYGRID_DIR_PATH, PHYSICAL_CORE_COUNT, TOTAL_PHYSICAL_MEMORY
@@ -584,6 +586,17 @@ class GalaxyGrid:
         self.grid_array = np.empty((0, 5), np.float64)
         self._save_path = None
 
+        # TODO: document sampling grid attributes
+        # Sampling grid attributes
+        self.sampling_grid_side = self.n_redshift*5
+        self.sampling_grid_samplesize_per_bin = self.logm_per_redshift*10
+        self.sampling_grid_redshift_bins = None
+        self.sampling_grid_logm_bins = None
+        self.sampling_grid = None
+        self.sampling_grid_zoh_axis = None
+        self.sampling_grid_logsfr_axis = None
+        self.sampling_grid_logsfrd_overlay = None
+
         if self.random_state is not None:
             np.random.seed(self.random_state)
 
@@ -1087,8 +1100,129 @@ class GalaxyGrid:
                                                             self.sample_redshift_bins,
                                                             [max_redshift_bin_lower_edge])))
 
+    def _get_sfr_zoh(self, logm, redshift):
+        sfmr = SFMR(redshift=redshift,
+                    flattening=self.sfmr_flattening,
+                    scatter_model=self.scatter_model)
+        mzr = MZR(redshift=redshift,
+                  model=self.mzr_model,
+                  scatter_model=self.scatter_model)
+        mzr.set_params()
+
+        logsfr = sfmr.logsfr(logm)
+        sfr = 10.**logsfr
+        zoh = np.array(mzr.zoh(logm)).flatten()
+        feh = np.array([ZOH_to_FeH(zoh) for zoh in zoh])
+
+        if self.apply_igimf_corrections:
+            corrections = Corrections(metallicity=feh,
+                                      sfr=np.tile(logsfr.reshape((logsfr.shape[0], 1)),
+                                                  (1, feh.shape[0])))
+            corrections.load_data()
+            try:
+                corr = np.diag(corrections.get_corrections())
+            except ValueError:
+                corr = np.tile(np.nan, sfr.shape[0])
+            finally:
+                sfr *= 10.**corr
+
+        return sfr, zoh
+
+    def _set_redshift_logm_sampling_grid(self):
+        # First 2d bins on the redshift-logm plane are set.
+        self.sampling_grid_redshift_bins = np.linspace(self.redshift_min,
+                                                       self.redshift_max,
+                                                       self.sampling_grid_side + 1)
+        self.sampling_grid_logm_bins = np.linspace(self.logm_min,
+                                                   self.logm_max,
+                                                   self.sampling_grid_side + 1)
+        sampling_grid_redshift_centers = get_bin_centers(self.sampling_grid_redshift_bins)
+        sampling_grid_logm_centers = get_bin_centers(self.sampling_grid_logm_bins)
+
+        # Initialize the arrays for number density, SFR and Z_O/H
+        # of galaxies at the centers of the redshift-logm bins.
+        sampling_grid_ndensity_centers = np.zeros((self.sampling_grid_side,
+                                                   self.sampling_grid_side,
+                                                   self.sampling_grid_samplesize_per_bin))
+        sampling_grid_sfr_centers = np.zeros((self.sampling_grid_side,
+                                              self.sampling_grid_side,
+                                              self.sampling_grid_samplesize_per_bin))
+        sampling_grid_zoh_centers = np.zeros((self.sampling_grid_side,
+                                              self.sampling_grid_side,
+                                              self.sampling_grid_samplesize_per_bin))
+
+        # Fill the three arrays initialized above.
+        # Iterate over redshift bins.
+        for row, (z0, z1) in enumerate_bin_edges(self.sampling_grid_redshift_bins):
+            redshift = (z0 + z1) / 2
+            gsmf = GSMF(redshift=redshift,
+                        fixed_slope=self.gsmf_slope_fixed)
+            # Iterate over logm bins.
+            for col, (logm0, logm1) in enumerate_bin_edges(self.sampling_grid_logm_bins):
+                # Compute the total number density of galaxies with the
+                # 2d bin.
+                ndensity = np.abs(quad(lambda logm: 10.**gsmf.log_gsmf(logm), logm0, logm1)[0])
+
+                # Compute the number density of galaxies represented by
+                # each galaxy (logm) to be drawn within the bin.
+                ndensity_sample = np.tile(ndensity/self.sampling_grid_samplesize_per_bin,
+                                          self.sampling_grid_samplesize_per_bin)
+
+                # Draw a logm sample, and then for each logm a SFR,
+                # Z_O/H pair. This draw accounts for a normal spread
+                # around the mean values set by the SFMR and MZR.
+                logm_sample = np.random.uniform(logm0,
+                                                logm1,
+                                                self.sampling_grid_samplesize_per_bin)
+                sfr_sample, zoh_sample = self._get_sfr_zoh(logm_sample, redshift)
+
+                # Fill the grid arrays.
+                sampling_grid_ndensity_centers[row, col] = ndensity_sample
+                sampling_grid_sfr_centers[row, col] = sfr_sample
+                sampling_grid_zoh_centers[row, col] = zoh_sample
+
+        # Reorganize the sampling grid arrays into a single array.
+        # First make the redshift and logm arrays the same shape.
+        sampling_grid_redshift_centers = np.tile(
+            sampling_grid_logm_centers.reshape((self.sampling_grid_side, 1)),
+            (1, self.sampling_grid_side)
+        ).reshape((self.sampling_grid_side, self.sampling_grid_side, 1))
+        sampling_grid_redshift_centers = np.tile(
+            sampling_grid_redshift_centers,
+            (1, 1, self.sampling_grid_samplesize_per_bin)
+        )
+
+        sampling_grid_logm_centers = np.tile(
+            sampling_grid_logm_centers, (self.sampling_grid_side, 1)
+        ).reshape(self.sampling_grid_side, self.sampling_grid_side, 1)
+        sampling_grid_logm_centers = np.tile(
+            sampling_grid_logm_centers,
+            (1, 1, self.sampling_grid_samplesize_per_bin)
+        )
+
+        # Now reorganize.
+        self.sampling_grid = np.array([sampling_grid_redshift_centers,
+                                       sampling_grid_logm_centers,
+                                       sampling_grid_ndensity_centers,
+                                       np.log10(sampling_grid_sfr_centers),
+                                       sampling_grid_zoh_centers])
+        self.sampling_grid = self.sampling_grid.T.reshape(
+            (self.sampling_grid_side*self.sampling_grid_side*self.sampling_grid_samplesize_per_bin,
+             5)
+        )
+
+        # Now each line of sampling_grid is a "galaxy" with 5 properties.
+        self.sampling_grid = unstructured_to_structured(
+            self.sampling_grid,
+            np.dtype([('redshift', float),
+                      ('logm', float),
+                      ('ndensity', float),
+                      ('logsfr', float),
+                      ('zoh', float)])
+        )
+
     # TODO: Initialize arrays in get_grid with the appropriate shape
-    def _scatterless_get_grid(self) -> None:
+    def _scatterless_get_sample(self) -> None:
         """Generate the (redshift, mass, metallicity, SFR) grid.
 
         For each redshift in :attr:`sample_redshift_array`, samples
@@ -1158,16 +1292,117 @@ class GalaxyGrid:
 
         self.grid_array = np.append(redshift_grid, np.array(self.grid_array), axis=0)
 
-    # TODO: complete scatter_get_grid()
-    def _scatter_get_grid(self) -> None:
-        warnings.warn('Scatter get_grid() not implemented yet!')
+    # TODO: complete scatter_get_sample()
+    # TODO: document scatter_get_sample()
+    def _set_zoh_logsfr_grid(self) -> None:
+        # First set up the bins to be used when sampling "galaxies".
+        self._set_redshift_logm_sampling_grid()
+
+        # Then build the axes over which to sample.
+        self.sampling_grid_logsfr_axis = np.linspace(np.nanmin(self.sampling_grid[:]['logsfr']),
+                                                     np.nanmax(self.sampling_grid[:]['logfsr']),
+                                                     self.sampling_grid_side + 1)
+        self.sampling_grid_zoh_axis = np.linspace(np.nanmin(self.sampling_grid[:]['zoh']),
+                                                  np.nanmax(self.sampling_grid[:]['zoh']),
+                                                  self.sampling_grid_side + 1)
+
+        # And the array which will hold the SFRD computed over those
+        # axes.
+        self.sampling_grid_logsfrd_overlay = np.zeros((self.sampling_grid_side,
+                                                       self.sampling_grid_side))
+
+        # Iterate over the axes and fill the SFRD overlay.
+        for row, (zoh0, zoh1) in enumerate_bin_edges(self.sampling_grid_zoh_axis):
+            # Get all galaxies from the grid that fall within this
+            # metallicity bin.
+            zoh_sample = self.sampling_grid[(self.sampling_grid[:]['zoh'] >= zoh0)
+                                            & (self.sampling_grid[:]['zoh'] < zoh1)]
+            for col, (logsfr0, logsfr1) in enumerate_bin_edges(self.sampling_grid_logsfr_axis):
+                # Now all the galaxies that fall within this logSFR bin.
+                sfr_sample = zoh_sample[(zoh_sample[:]['logsfr'] >= logsfr0)
+                                        & (zoh_sample[:]['logsfr'] < logsfr1)]
+
+                # The limits of the SFR corrections grid cause some SFRs
+                # to become NaN. Eliminate those values.
+                sfr_sample = sfr_sample[~np.isnan(sfr_sample[:]['logsfr'])]
+
+                # Now get the SFRD represented by each galaxy, from the
+                # galaxy number density it represents, and sum to get
+                # the total SFRD within the metallicity-SFR bin, and
+                # fill the overlay.
+                sfrd = np.sum(sfr_sample[:]['ndensity'] * 10.**sfr_sample[:]['logsfr'])
+                self.sampling_grid_logsfrd_overlay[row, col] = np.log10(sfrd)
         return
 
-    def get_grid(self) -> None:
+    # TODO: have _scatter_get_sample() set the same arrays as _scatterless_get_sample()
+    def _scatter_get_sample(self) -> None:
+        # Compute the SFRD on the metallicity-log SFR plane. This will
+        # set the sampling weights.
+        self._set_zoh_logsfr_grid()
+
+        # Set the sampling pool for metallicity and log SFR.
+        zoh_pool = get_bin_centers(self.sampling_grid_zoh_axis)
+        logsfr_pool = get_bin_centers(self.sampling_grid_logsfr_axis)
+
+
+        # Set the sampling pool as a 2D array the elements of which
+        # correspond to their indices, then ravel it to a list of index
+        # pairs.
+        pool = np.moveaxis(np.indices(self.sampling_grid_logsfrd_overlay.shape), 0, -1)
+        pool = pool.reshape(pool.shape[0]*pool.shape[1], pool.shape[2])
+
+        # Set the weights from the SFRD grid.
+        probs = np.copy(10.**self.sampling_grid_logsfrd_overlay.ravel())
+        min_prob = np.nanmin(probs[probs != -np.inf])
+        probs -= min_prob
+        probs[probs == -np.inf] = 0.
+        probs /= probs.sum()
+
+        # Randomly sample zoh-SFR pairs through their indices, stored in
+        # pool, weighted by probs. Start by drawing an index from pool.
+        sample_indices = np.random.choice(pool.shape[0], p=probs,
+                                          size=self.n_redshift*self.logm_per_redshift)
+        sample_zoh_i, sample_logsfr_i = pool[sample_indices].T
+        sample_zoh = zoh_pool[sample_zoh_i]
+        sample_logsfr = logsfr_pool[sample_logsfr_i]
+        sample = [[zoh, logsfr] for zoh, logsfr in zip(sample_zoh, sample_logsfr)]
+        sample = np.array(sample, dtype=[('zoh', float), ('logsfr', float)])
+
+        # Now iterate over the sample to complete it with redshifts.
+        sample_redshift = np.zeros(sample_zoh.shape)
+        for i, galaxy in enumerate(sample):
+            zoh, logsfr = galaxy
+
+            # Search for the zoh-logsfr bin in which this galaxy falls.
+            zoh_i = np.searchsorted(self.sampling_grid_zoh_axis, side='right')
+            zoh_bin0, zoh_bin1 = self.sampling_grid_zoh_axis[zoh_i-1:zoh_i+1]
+            logsfr_i = np.searchsorted(self.sampling_grid_logsfr_axis, side='right')
+            logsfr_bin0, logsfr_bin1 = self.sampling_grid_logsfr_axis[logsfr_i-1:logsfr_i+1]
+
+            # Get the redshifts of the galaxies within this bin.
+            logsfr_bin_sample = sample[(self.sampling_grid[:]['logsfr'] >= logsfr_bin0)
+                                    & (self.sampling_grid[:]['logsfr'] < logsfr_bin1)]
+            zoh_bin_sample = logsfr_bin_sample[(logsfr_bin_sample[:]['zoh'] >= zoh_bin0)
+                                               & (logsfr_bin_sample[:]['zoh'] < zoh_bin1)]
+            redshift_bin_sample = zoh_bin_sample[:]['redshift']
+
+            # Use the redshift distribution in the bin to draw a
+            # redshift for this galaxy. Here only
+            probs, redshift_edges = np.histogram(redshift_bin_sample, bins=10)
+            redshift_pool = get_bin_centers(redshift_edges)
+            sample_redshift[i] = np.random.choice(redshift_pool, p=probs, size=1)[0]
+
+        # Complete the sample.
+        sample = [[zoh, logsfr, redshift] for zoh, logsfr, redshift in zip(sample_zoh,
+                                                                           sample_logsfr,
+                                                                           sample_redshift)]
+        sample = np.array(sample, dtype=[('zoh', float), ('logsfr', float), ('redshift', float)])
+
+    def get_sample(self) -> None:
         if self.scatter_model == 'normal':
-            self._scatter_get_grid()
+            self._scatter_get_sample()
         else:
-            self._scatterless_get_grid()
+            self._scatterless_get_sample()
 
     def save_grid(self) -> None:
         """Save :attr:`grid_array` to disk."""
