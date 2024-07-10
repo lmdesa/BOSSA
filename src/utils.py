@@ -318,3 +318,10 @@ def get_linear_fit(xy0, xy1):
 def get_linear_fit_area(linear_fit, x0, x1):
     fitx0, fitx1, slope, intercept = linear_fit
     return np.abs(slope * (x1*x1 - x0*x0)/2) + np.abs(intercept * (x1-x0))
+
+def get_bin_centers(bin_edges):
+    bin_centers = np.array([(x0+x1)/2 for x0, x1 in zip(bin_edges[:-1], bin_edges[1:])])
+    return bin_centers
+
+def enumerate_bin_edges(bin_edges):
+    return enumerate(zip(bin_edges[:-1], bin_edges[1:]))
