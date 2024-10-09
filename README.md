@@ -1,5 +1,5 @@
-# environIMF
+# BOSSA: Binary Object environment-Sensitive Sampling Algorithm
 
-C20_Results contains the publicly available data from Chruslinska et al. (2020). It is read by the Corrections class in sfr.py
+BOSSA is a sampling code for generating ZAMS populations of binary or multiples of arbitrary order for binary population synthesis. 
 
-src contains the code scripts. main.py is the only one that should modified and run by the users.  Redshift, metallicities and stellar masses for which the IMF is calculated are defined by the z, feh and ms arrays, respectively . Minimum functionality for now.
+This repository is still under construction. See the dev branch for the current working version of the code and in-progress documentation; tutorial notebooks are still being added.
