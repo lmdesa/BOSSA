@@ -1,7 +1,7 @@
 client_config_backend: settings
 client_config:
-  client_id: ***REMOVED***
-  client_secret: ***REMOVED***
+  client_id: 
+  client_secret: 
 
 save_credentials: True
 save_credentials_backend: file
