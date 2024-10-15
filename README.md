@@ -1,10 +1,10 @@
 # BOSSA
 
-The Binary Object environment-Sensitive Sampling Algorithm (BOSSA) generates samples of ZAMS binaries (or higher-order multiples) consistent with the metallicity- and star formation rate-dependent IMF by Jerabkova et al. (2018), the cosmic star-formation history by Chruslinska & Nelemans (2019) and Chruslinska et al. (2020); and the correlated orbital parameter distributions by Moe & Di Stefano (2018). Although the ouput is written with COMPAS in mind, it does not depend on it.
+The Binary Object environment-Sensitive Sampling Algorithm (BOSSA) generates samples of ZAMS binaries (or higher-order multiples) consistent with the metallicity- and star formation rate-dependent IMF by [Jeřábková et al. (2018)](https://www.aanda.org/articles/aa/full_html/2018/12/aa33055-18/aa33055-18.html), the cosmic star-formation history by[Chruślińska & Nelemans (2019)](https://academic.oup.com/mnras/article/488/4/5300/5538863) and [Chruślińska, Jeřábková, Nelemans & Yan (2020)](https://www.aanda.org/articles/aa/full_html/2020/04/aa37688-20/aa37688-20.html); and the correlated orbital parameter distributions by [Moe & Di Stefano (2017)](https://iopscience.iop.org/article/10.3847/1538-4365/aa6fb6). Although the ouput is written with COMPAS in mind, it does not depend on it.
 
 ### Data
 
-C20_Results contains the publicly available data from Chruslinska et al. (2020). It is read by the `sfh.Corrections` class.
+The ```data/C20_Results``` contains data from [Chruślińska & Nelemans (2019)](https://academic.oup.com/mnras/article/488/4/5300/5538863) and [Chruślińska, Jeřábková, Nelemans & Yan (2020)](https://www.aanda.org/articles/aa/full_html/2020/04/aa37688-20/aa37688-20.html). It is read by the `sfh.Corrections` class.
 
 ### Documentation
 
