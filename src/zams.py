@@ -12,7 +12,9 @@ from pathlib import Path
 from typing import Annotated
 
 import numpy as np
-import tables
+ # for now tables is imported twice; tables is used for typing, tb for
+ # everything else
+import tables 
 import tables as tb
 import scipy
 from numpy._typing import NDArray
@@ -680,8 +682,8 @@ class CompanionFrequencyDistributionHighQ:
 
     .. math::
 
-        f_{\log P; q>0.3} (M_1,P) := \\frac{d N_{cp, q>0.3} }{d N_1\,
-         d\log P},
+        f_{\\log P; q>0.3} (M_1,P) := \\frac{d N_{cp, q>0.3} }{d N_1\\,
+         d\\log P},
 
     i.e., the number of companions, per primary with mass :math:`M_1`,
     per orbital period decade, around a period :math:`P`.
@@ -1025,8 +1027,8 @@ class MultipleFraction:
 
     .. math::
 
-        f_\\mathrm{mult}(M_1) = \int_{0.2}^{0.8} d\log P\,
-        f_{\log P; q>0.3}(M_1,\log P).
+        f_\\mathrm{mult}(M_1) = \\int_{0.2}^{0.8} d\\log P\\,
+        f_{\\log P; q>0.3}(M_1,\\log P).
 
     The multiplicity fraction, :math:`F_n`, is defined as the fraction
     of all primaries with a number :math:`n` of companions. These relate
@@ -1580,7 +1582,7 @@ class ZAMSSystemGenerator:
         .. math::
 
             \\frac{|m_\\mathrm{comp}^\\mathrm{array}-m_\\mathrm{table}|}
-            {m_\\mathrm{comp}^\\mathrm{array}} \leq
+            {m_\\mathrm{comp}^\\mathrm{array}} \\leq
             dm_\\mathrm{comp}^\\mathrm{tol},
 
         the pair is accepted. If not, ``q,e`` can be drawn for up to

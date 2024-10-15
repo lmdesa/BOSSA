@@ -86,11 +86,11 @@ COMPAS_12XX_GRIDS_PATH = Path(DATA_PATH, '2023_12XX_compas_grids')
 COMPAS_21XX_GRIDS_PATH = Path(DATA_PATH, '2023_21XX_compas_grids')
 """path_like : Path to the invariant IMF, uncorrelated orbital parameters, COMPAS gridfiles folder."""
 
-IGIMF_ZAMS_DIR_PATH = Path(DATA_PATH, '2023_igimf_zams_samples')#, 'z10_Z10_grid_igimf_samples')
+IGIMF_ZAMS_DIR_PATH = Path(DATA_PATH, 'zams_samples')#, 'z10_Z10_grid_igimf_samples')
 """path_like: Path to the ZAMS binary samples folder."""
-COMPACT_OBJ_DIR_PATH = Path(DATA_PATH, '2023_compact_object_samples')
+COMPACT_OBJ_DIR_PATH = Path(DATA_PATH, 'compact_object_samples')
 """path_like: Path to the compact binary samples folder."""
-GALAXYGRID_DIR_PATH = Path(DATA_PATH, '2023_galaxy_grids')
+GALAXYGRID_DIR_PATH = Path(DATA_PATH, 'galaxy_grids')
 """path_like: Path to the galaxy parameter grids folder."""
 
 

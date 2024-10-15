@@ -1221,6 +1221,8 @@ class GalaxyGrid:
                       ('zoh', float)])
         )
 
+        print('SAMPLING GRID CREATED WITH SHAPE {self.sampling_grid.shape}')
+
     # TODO: Initialize arrays in get_grid with the appropriate shape
     def _scatterless_get_sample(self) -> None:
         """Generate the (redshift, mass, metallicity, SFR) grid.
@@ -1300,7 +1302,7 @@ class GalaxyGrid:
 
         # Then build the axes over which to sample.
         self.sampling_grid_logsfr_axis = np.linspace(np.nanmin(self.sampling_grid[:]['logsfr']),
-                                                     np.nanmax(self.sampling_grid[:]['logfsr']),
+                                                     np.nanmax(self.sampling_grid[:]['logsfr']),
                                                      self.sampling_grid_side + 1)
         self.sampling_grid_zoh_axis = np.linspace(np.nanmin(self.sampling_grid[:]['zoh']),
                                                   np.nanmax(self.sampling_grid[:]['zoh']),
@@ -1374,9 +1376,9 @@ class GalaxyGrid:
             zoh, logsfr = galaxy
 
             # Search for the zoh-logsfr bin in which this galaxy falls.
-            zoh_i = np.searchsorted(self.sampling_grid_zoh_axis, side='right')
+            zoh_i = np.searchsorted(self.sampling_grid_zoh_axis, zoh, side='right')
             zoh_bin0, zoh_bin1 = self.sampling_grid_zoh_axis[zoh_i-1:zoh_i+1]
-            logsfr_i = np.searchsorted(self.sampling_grid_logsfr_axis, side='right')
+            logsfr_i = np.searchsorted(self.sampling_grid_logsfr_axis, logsfr, side='right')
             logsfr_bin0, logsfr_bin1 = self.sampling_grid_logsfr_axis[logsfr_i-1:logsfr_i+1]
 
             # Get the redshifts of the galaxies within this bin.
