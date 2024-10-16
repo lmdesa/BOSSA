@@ -1,4 +1,12 @@
-.ipynb_checkpoints
 */.ipynb_checkpoints/*
 __pycache__/
 *.py[cod]
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/codeStyles/codeStyleConfig.xml
+docs/
+logs/
+Analysis_server_05_07_2024/
+analysis_desktop/
+analysis_server/
+.idea/
+notebooks/figures
