@@ -1,0 +1,1260 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bossa.imf &mdash; BOSSA 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BOSSA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bossa.html">bossa package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BOSSA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bossa.imf</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bossa.imf</h1><div class="highlight"><pre>
+<span></span><span class="c1"># TODO: Add module documentation</span>
+<span class="c1"># TODO: Revise documentation</span>
+
+
+<span class="sd">&quot;&quot;&quot;Star, embedded cluster and galaxy mass functions.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">fsolve</span>
+<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">quad</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">linregress</span>
+
+
+<span class="n">KROUPA_BREAKS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.08</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">150.</span><span class="p">]</span>
+<span class="n">KROUPA_EXPONENTS</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.3</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.3</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="PowerLawIMF">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.PowerLawIMF">[docs]</a>
+<span class="k">class</span> <span class="nc">PowerLawIMF</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generic broken power-law initial mass function.</span>
+
+<span class="sd">    This class contains the attributes that are expected by the module</span>
+<span class="sd">    from any choice of broken power-law IMF with an arbitrary number of</span>
+<span class="sd">    breaks, as well as methods for returning dN/dM and integrating the</span>
+<span class="sd">    IMF within an arbitrary interval.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    m_tot : float</span>
+<span class="sd">        Total mass of the population described by the IMF.</span>
+<span class="sd">    m_trunc_min : float</span>
+<span class="sd">        Lower truncation mass, taken as the IMF lower limit.</span>
+<span class="sd">    m_trunc_max : float</span>
+<span class="sd">        Upper truncation the same, can be &gt;= ``m_max``.</span>
+<span class="sd">    m_max : float</span>
+<span class="sd">        IMF upper limit.</span>
+<span class="sd">    breaks : list</span>
+<span class="sd">        Power-law breaks.</span>
+<span class="sd">    exponents : list</span>
+<span class="sd">        Power law exponents with padding. Carries the sign.</span>
+<span class="sd">    norms : list</span>
+<span class="sd">        Normalization constants for each range, with padding.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    imf(m)</span>
+<span class="sd">        Return dN/dM at mass ``m``.</span>
+<span class="sd">    integrate(m0, m1, mass=False, normalized=True)</span>
+<span class="sd">        Return the integral of ``imf(m)`` or ``m*imf(m)`` between ``m0``</span>
+<span class="sd">        and ``m1``, for the IMF normalized to ``m_tot``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    In keeping with the convention suggested by Hopkins (2018) [1]_, the</span>
+<span class="sd">    power law index is defined to have the same signal as the power law</span>
+<span class="sd">    slope, i.e.,</span>
+
+<span class="sd">    .. math:: dN/dM = k M^a.</span>
+
+<span class="sd">   This class is written so that ``breaks``, ``exponents`` and ``norms``</span>
+<span class="sd">   may be set by subclasses. These properties&#39; setters add appropriate</span>
+<span class="sd">   padding that is expected by the ``imf`` and ``integrate`` methods and</span>
+<span class="sd">   by the ``norms`` setter. The ``m_tot``, ``m_trunc_min`` and</span>
+<span class="sd">   ``m_trunc_max`` properties are defined so that this class will not</span>
+<span class="sd">   overwrite those of a subclass instance for which they are already</span>
+<span class="sd">   set.</span>
+
+<span class="sd">    All masses are given and expected in solar masses.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Hopkins, A. (2018). The Dawes Review 8: Measuring the Stellar</span>
+<span class="sd">        Initial Mass Function. PASA, 35, E039. doi:10.1017/pasa.2018.29</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    Star : subclass for a variable stellar IMF.</span>
+<span class="sd">    EmbeddedCluster : subclass for a variable cluster IMF.</span>
+<span class="sd">    IGIMF : a galaxy IMF from ``Star`` and ``EmbeddedCluster``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.e10</span><span class="p">,</span> <span class="n">m_trunc_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.08</span><span class="p">,</span> <span class="n">m_trunc_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">150.</span><span class="p">,</span>
+                 <span class="n">m_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">150.</span><span class="p">,</span> <span class="n">breaks</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">KROUPA_BREAKS</span><span class="p">,</span>
+                 <span class="n">exponents</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">KROUPA_EXPONENTS</span><span class="p">,</span>
+                 <span class="n">norms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        m_tot : float, default : 1.e10</span>
+<span class="sd">            Total mass of the population described by the IMF.</span>
+<span class="sd">        m_trunc_min : float, default : 0.08</span>
+<span class="sd">            Lower truncation mass, taken as the IMF lower limit.</span>
+<span class="sd">        m_trunc_max : float, default : 150.0</span>
+<span class="sd">            Upper truncation the same, can be &gt;= ``m_max``.</span>
+<span class="sd">        m_max : float, default : 150.0</span>
+<span class="sd">            IMF upper limit.</span>
+<span class="sd">        breaks : list of floats, default : [0.08, 1., 150.]</span>
+<span class="sd">            Power-law breaks. Defaults to a Kroupa IMF.</span>
+<span class="sd">        exponents : list of floats, default : [-1.3, -2.3]</span>
+<span class="sd">            Power law exponents. Carries the sign. Defaults to a</span>
+<span class="sd">            Kroupa IMF.</span>
+<span class="sd">        norms : list of floats or None, default : None</span>
+<span class="sd">            Normalization constants for each range. If None, determined</span>
+<span class="sd">            from ``m_tot`` and continuity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">=</span> <span class="n">m_tot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_min</span> <span class="o">=</span> <span class="n">m_trunc_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_max</span> <span class="o">=</span> <span class="n">m_trunc_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_max</span> <span class="o">=</span> <span class="n">m_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">breaks</span> <span class="o">=</span> <span class="n">breaks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">exponents</span> <span class="o">=</span> <span class="n">exponents</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norms</span> <span class="o">=</span> <span class="n">norms</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_h1</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Integral of ``m**a`` between ``m1`` and ``m2``.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">m2</span> <span class="o">/</span> <span class="n">m1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">m2</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="n">m1</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">a</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_h2</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Integral of ``m*m**a`` between ``m1`` and ``m2.``&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="o">-</span><span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">m2</span> <span class="o">/</span> <span class="n">m1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">m2</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="n">m1</span> <span class="o">**</span> <span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">a</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">m_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Total mass represented by the IMF.</span>
+
+<span class="sd">        Total mass represented by the IMF. Will not overwrite itself in</span>
+<span class="sd">        a child class if also defined there.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m_tot</span>
+
+    <span class="nd">@m_tot</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">m_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_m_tot&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_m_tot</span> <span class="o">=</span> <span class="n">m_tot</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">m_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upper limit of the IMF.</span>
+
+<span class="sd">        Upper limit of the IMF. Will not overwrite itself in a child</span>
+<span class="sd">        class if also defined there.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span>
+
+    <span class="nd">@m_max</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">m_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_max</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_m_max&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span> <span class="o">=</span> <span class="n">m_max</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">m_trunc_max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upper truncation mass of the IMF.</span>
+
+<span class="sd">        Upper truncation mass of the IMF. Will not overwrite</span>
+<span class="sd">        itself in a child class if also defined there.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m_trunc_max</span>
+
+    <span class="nd">@m_trunc_max</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">m_trunc_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_trunc_max</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_m_trunc_max&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_m_trunc_max</span> <span class="o">=</span> <span class="n">m_trunc_max</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">m_trunc_min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Lower truncation mass of the IMF.</span>
+
+<span class="sd">        Lower truncation mass of the IMF. Treated as the lower limit of</span>
+<span class="sd">        the IMF. Will not overwrite itself in a child class if also</span>
+<span class="sd">        defined there.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m_trunc_min</span>
+
+    <span class="nd">@m_trunc_min</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">m_trunc_min</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_trunc_min</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_m_trunc_min&#39;</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_m_trunc_min</span> <span class="o">=</span> <span class="n">m_trunc_min</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">breaks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Power-law breaks.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_breaks</span>
+
+    <span class="nd">@breaks</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">breaks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">breaks</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_breaks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">breaks</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exponents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Padded broken power-law exponents.</span>
+
+<span class="sd">        Padded broken power-law exponents. The first and last exponents</span>
+<span class="sd">        are repeated in the padding. The padding is expected when</span>
+<span class="sd">        computing the norms and locating the appropriate region for</span>
+<span class="sd">        masses are passed to ``imf(m)`` and ``integrate(m0, m1)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span>
+
+    <span class="nd">@exponents</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">exponents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exponents</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">exponents</span><span class="p">])</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span><span class="p">,</span>
+                                 <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+                                 <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span>
+                                 <span class="n">constant_values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_exponents</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">norms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Padded broken power-law normalization constants.</span>
+
+<span class="sd">        Padded broken power-law normalization constants. Zeros are added</span>
+<span class="sd">        in the padding. The padding is expected when computing the norms</span>
+<span class="sd">        and when locating the appropriate region for masses passed to</span>
+<span class="sd">        ``imf(m)`` and ``integrate(m0, m1)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_norms</span>
+
+    <span class="nd">@norms</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">norms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">norms</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">norms</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">integrate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_max</span><span class="p">,</span> <span class="n">mass</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exponents</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">norms</span><span class="p">,</span>
+                                 <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                 <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span>
+                                 <span class="n">constant_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="n">norms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">break_</span><span class="p">,</span> <span class="n">exp</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponents</span><span class="p">[</span><span class="mi">1</span><span class="p">:])):</span>
+                <span class="n">prev_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponents</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">norm</span> <span class="o">*=</span> <span class="n">break_</span><span class="o">**</span><span class="p">(</span><span class="n">prev_exp</span> <span class="o">-</span> <span class="n">exp</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_norms</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">norm</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">norms</span><span class="p">,</span>
+                                 <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                                 <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span>
+                                 <span class="n">constant_values</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+<div class="viewcode-block" id="PowerLawIMF.integrate">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.PowerLawIMF.integrate">[docs]</a>
+    <span class="k">def</span> <span class="nf">integrate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">mass</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">normalized</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Integrate for number or mass with or without normalization.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        m0 : float</span>
+<span class="sd">            Lower integration limit.</span>
+<span class="sd">        m1 : float</span>
+<span class="sd">            Upper integration limit.</span>
+<span class="sd">        mass : bool, default : False</span>
+<span class="sd">            Whether to integrate for nuber (False) or mass (True).</span>
+<span class="sd">        normalized : bool, default : True</span>
+<span class="sd">            Whether to multiply (True) or not (False) by ``norms``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        integral : float</span>
+<span class="sd">            Result of the integration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">integration_limits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="n">m0</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">])</span>
+        <span class="n">integration_limits</span> <span class="o">=</span> <span class="n">integration_limits</span><span class="p">[(</span><span class="n">integration_limits</span> <span class="o">&gt;=</span> <span class="n">m0</span><span class="p">)</span>
+                                                <span class="o">&amp;</span> <span class="p">(</span><span class="n">integration_limits</span> <span class="o">&lt;=</span> <span class="n">m1</span><span class="p">)]</span>
+        <span class="n">integral</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">for</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">integration_limits</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">integration_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponents</span><span class="p">[</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">normalized</span><span class="p">:</span>
+                <span class="n">norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norms</span><span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s1">&#39;right&#39;</span><span class="p">)</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">norm</span> <span class="o">=</span> <span class="mf">1.</span>
+            <span class="k">if</span> <span class="n">mass</span><span class="p">:</span>
+                <span class="n">integral</span> <span class="o">+=</span> <span class="n">norm</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h2</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">integral</span> <span class="o">+=</span> <span class="n">norm</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h1</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">integral</span></div>
+
+
+<div class="viewcode-block" id="PowerLawIMF.imf">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.PowerLawIMF.imf">[docs]</a>
+    <span class="k">def</span> <span class="nf">imf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute dN/dM at a given mass.</span>
+
+<span class="sd">        Compute dN/dM at mass ``m``. As some subclasses migh require a</span>
+<span class="sd">        ``set_mmax_k()`` method to be run to compute ``m_max`` and</span>
+<span class="sd">        the normalization constants, warn the user if ``m_mas`` is None.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        m : float</span>
+<span class="sd">            Mass at which to compute dN/dM.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            dN/dM at ``m``.</span>
+
+<span class="sd">        Warns</span>
+<span class="sd">        -----</span>
+<span class="sd">        UserWarning</span>
+<span class="sd">            If ``m_max`` is None (``set_mmax_k`` not run).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;m_max not yet defined. &#39;</span>
+                          <span class="s1">&#39;Please run set_mmax_k().&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># Below we determine which power law region the mass m is in.</span>
+        <span class="c1"># With limits, exponents and norms properly set up according to</span>
+        <span class="c1"># the class docstring, this should work for both simple and</span>
+        <span class="c1"># broken power-laws.</span>
+        <span class="n">index</span><span class="p">,</span> <span class="n">m_break</span> <span class="o">=</span> <span class="p">(</span><span class="nb">next</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">break_</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">break_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">)</span> <span class="k">if</span> <span class="n">break_</span> <span class="o">&gt;</span> <span class="n">m</span><span class="p">),</span>
+                          <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_max</span><span class="p">))</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norms</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponents</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="n">m</span> <span class="o">**</span> <span class="n">a</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Star">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.Star">[docs]</a>
+<span class="k">class</span> <span class="nc">Star</span><span class="p">(</span><span class="n">PowerLawIMF</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the stellar initial mass function.</span>
+
+<span class="sd">    Compute the stellar initial mass function (sIMF) specific to a given</span>
+<span class="sd">    star-forming region (embedded cluster, or ECL), with a set [Fe/H],</span>
+<span class="sd">    and a total ECL stellar mass, ``m_tot``. According to the</span>
+<span class="sd">    ``invariant`` attribute, the sIMF might either follow an invariant</span>
+<span class="sd">    Kroupa (2001) [1]_ IMF or a metallicity- and star formation rate-</span>
+<span class="sd">    dependent Jerabkova et al. (2018) [2]_ IMF.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    x</span>
+<span class="sd">    g1</span>
+<span class="sd">    g2</span>
+<span class="sd">    feh : float</span>
+<span class="sd">        Embedded cluster metallicity in [Fe/H].</span>
+<span class="sd">    m_ecl_min : float</span>
+<span class="sd">        Absolute minimum embedded cluster mass.</span>
+<span class="sd">    _m_max : float</span>
+<span class="sd">        Maximum stellar mass. Embedded cluster-specific.</span>
+<span class="sd">    k1 : float</span>
+<span class="sd">        m&lt;0.5 IMF normalization constant.</span>
+<span class="sd">    k2 : float</span>
+<span class="sd">        0.5&lt;=m&lt;1 IMF normalization constant.</span>
+<span class="sd">    k3 : float</span>
+<span class="sd">        1&lt;= IMF normalization constant.</span>
+<span class="sd">    a1 : float</span>
+<span class="sd">        First interval power-law index.</span>
+<span class="sd">    a2 : float</span>
+<span class="sd">        Second interval power-law index.</span>
+<span class="sd">    a3: float</span>
+<span class="sd">        Third interval power-law index.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_mmax_k()</span>
+<span class="sd">        Solves the system of equations made up of methods f1 and f2 to</span>
+<span class="sd">        determine m_max and k1.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If invariant is set to False, the sIMF is as given by Jerabkova et al.</span>
+<span class="sd">    (2018) [1]_. ``M_TRUNC_MIN`` is set at the hydrogen burning</span>
+<span class="sd">    threshold of 0.08 Msun. Normalization constants ``k1`` and ``k2``</span>
+<span class="sd">    are found from ``k3`` by continuity. ``k3`` and ``m_max`` are</span>
+<span class="sd">    determined from two constraints.</span>
+
+<span class="sd">    ``M_TRUNC_MAX`` sets the mass of the most massive formable star,</span>
+<span class="sd">    ``m_max``, but is not equal to it. Thus, the first constraint is</span>
+<span class="sd">    obtained by imposing that the number of stars found with mass equal</span>
+<span class="sd">    to or higher than ``m_max`` be one, i.e., by equating the integral</span>
+<span class="sd">    of the IMF between ``m_max`` and ``M_TRUNC_MAX`` to unity. This</span>
+<span class="sd">    constraint is expressed in method ``f1``.</span>
+
+<span class="sd">    ``m_tot`` does set the total formed stellar mass. Thus, the second</span>
+<span class="sd">    constraint is obtained by integrating ``m*imf(m)`` between</span>
+<span class="sd">    ``M_TRUNC_MIN`` and ``m_max``. This constraint is expressed in</span>
+<span class="sd">    methods ``f1`` and ``f2``.</span>
+
+<span class="sd">    Solving ``f1`` and ``f2`` simultaneously determines ``m_max`` and</span>
+<span class="sd">    ``k3``, which also determines ``k1`` and ``k2``. This is done by the</span>
+<span class="sd">    method ``get_mmax_k``.</span>
+
+<span class="sd">    All masses are given and expected in solar masses.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,</span>
+<span class="sd">        Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of</span>
+<span class="sd">        metallicity and star formation rate on the time-dependent,</span>
+<span class="sd">        galaxy-wide stellar initial mass function. A&amp;A, 620, A39.</span>
+<span class="sd">        doi:10.1051/0004-6361/20183</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">BREAKS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.08</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">150.</span><span class="p">]</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Power-law breaks shared between both IMFs.&quot;&quot;&quot;</span>
+    <span class="n">M_TRUNC_MIN</span> <span class="o">=</span> <span class="mf">0.08</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lower truncation mass.&quot;&quot;&quot;</span>
+    <span class="n">M_TRUNC_MAX</span> <span class="o">=</span> <span class="mf">150.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Upper truncation mass.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_ecl</span><span class="o">=</span><span class="mf">1.e7</span><span class="p">,</span> <span class="n">m_ecl_min</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">feh</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">invariant</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        m_ecl : float</span>
+<span class="sd">            Embedded cluster stellar mass.</span>
+<span class="sd">        m_ecl_min : float</span>
+<span class="sd">            Minimum possible embedded cluster mass.</span>
+<span class="sd">        feh : float</span>
+<span class="sd">            Embedded cluster [Fe/H].</span>
+<span class="sd">        invariant : bool, default : False</span>
+<span class="sd">            Whether to use an invariant IMF.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">=</span> <span class="n">m_ecl</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invariant</span> <span class="o">=</span> <span class="n">invariant</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_min</span> <span class="o">=</span> <span class="n">m_ecl_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feh</span> <span class="o">=</span> <span class="n">feh</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_a1</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_a2</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_a3</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k2</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k3</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_g1</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_g2</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Auxiliary variable. Function of [Fe/H] and m_tot.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.14</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">feh</span> <span class="o">+</span> <span class="mf">0.6</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">/</span> <span class="mf">1e6</span><span class="p">)</span>
+                       <span class="o">+</span> <span class="mf">2.83</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">a1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;IMF exponent for m &lt; 0.5 Msun. Function of [Fe/H].&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">alpha1_kroupa</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.3</span>  <span class="c1"># Kroupa IMF a1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">invariant</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_a1</span> <span class="o">=</span> <span class="n">alpha1_kroupa</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_a1</span> <span class="o">=</span> <span class="n">alpha1_kroupa</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">feh</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">a2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;IMF exponent for 0.5 Msun &lt;= m &lt; 1.0 Msun. Function</span>
+<span class="sd">        of [Fe/H].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">alpha2_kroupa</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.3</span>  <span class="c1"># Salpeter-Massey index</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">invariant</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_a2</span> <span class="o">=</span> <span class="n">alpha2_kroupa</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_a2</span> <span class="o">=</span> <span class="n">alpha2_kroupa</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">feh</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a2</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">a3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;IMF exponent for m &gt;= 1.0 Msun. Dependent on [Fe/H]</span>
+<span class="sd">        and m_tot through the auxiliary variable x.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a3</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">alpha3_kroupa</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.3</span>  <span class="c1"># Salpeter-Massey index</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">invariant</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_a3</span> <span class="o">=</span> <span class="n">alpha3_kroupa</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">0.87</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_a3</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.3</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">1.94</span> <span class="o">/</span> <span class="mf">0.41</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_a3</span> <span class="o">=</span> <span class="mf">0.41</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="mf">1.94</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_a3</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a3</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">g1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Auxiliary variable g1. Related to the IMF integral</span>
+<span class="sd">        over low masses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">c1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a1</span><span class="p">)</span>
+            <span class="n">c2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a3</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_g1</span> <span class="o">=</span> <span class="n">c1</span> <span class="o">*</span> <span class="n">c2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a1</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">M_TRUNC_MIN</span><span class="p">,</span>
+                                          <span class="mf">0.5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g1</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">g2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Auxiliary variable g2. Related to the IMF integral</span>
+<span class="sd">        over intermediary masses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">c2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a3</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a2</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_g2</span> <span class="o">=</span> <span class="n">c2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_g2</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_solar_metallicity_mmax</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_m_max as a function of m_tot for solar metallicity, from a</span>
+<span class="sd">        hyperbolic tangent fit to numerical results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">74.71537925</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="mf">75.25923734</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mf">1.33638975</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mf">3.39574507</span>
+        <span class="n">log_m_ecl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">)</span>
+        <span class="n">m_max</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">c</span> <span class="o">*</span> <span class="n">log_m_ecl</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span>
+        <span class="k">return</span> <span class="n">m_max</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_solar_metallicity_k3</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;k3 as a function of m_tot for solar metallicity, from a</span>
+<span class="sd">        log-linear fit to numerical results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">0.57066144</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.01373531</span>
+        <span class="n">log_m_ecl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">)</span>
+        <span class="n">log_k3</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">log_m_ecl</span> <span class="o">+</span> <span class="n">b</span>
+        <span class="k">return</span> <span class="mf">10.</span> <span class="o">**</span> <span class="n">log_k3</span>
+
+    <span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k3</span><span class="p">,</span> <span class="n">m_max</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constraint on k3 and _m_max for the existence of only one</span>
+<span class="sd">        star with mass equal to or higher than _m_max.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">k3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a3</span><span class="p">,</span> <span class="n">m_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">M_TRUNC_MAX</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_f2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k3</span><span class="p">,</span> <span class="n">m_max</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constraint on k3 and _m_max for the total stellar mass being</span>
+<span class="sd">        equal to the mass of the star-forming region.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">g3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">m_max</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">-</span> <span class="n">k3</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">g1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">g2</span> <span class="o">+</span> <span class="n">g3</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_initial_guesses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate initial guesses of k3 and _m_max for solving the</span>
+<span class="sd">        two constraints f1 and f2.</span>
+
+<span class="sd">        Calculate initial guesses of k3 and _m_max for solving the two</span>
+<span class="sd">        constraints f1 and f2. Initial guesses are taken from analytical</span>
+<span class="sd">        fits to numerical k3-m_tot and _m_max-m_tot results for solar</span>
+<span class="sd">        metallicity.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">k3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solar_metallicity_k3</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span><span class="p">)</span>
+        <span class="n">m_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solar_metallicity_mmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">k3</span><span class="p">,</span> <span class="n">m_max</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;For a k3, _m_max pair, compute both constraints and return</span>
+<span class="sd">        them as a two-dimensional vector.</span>
+
+<span class="sd">        The output of this method is the vector that is minimized in</span>
+<span class="sd">        order to solve the system and find _m_max, k1, k2 and k3. As a</span>
+<span class="sd">        safeguard against negative values of either k1 or _m_max, this</span>
+<span class="sd">        method is set to automatically return a vector with large</span>
+<span class="sd">        components if the solver tries to use negative values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vec : tuple</span>
+<span class="sd">            A tuple with k3 as its first element and _m_max as second.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        f1, f2 : tuple</span>
+<span class="sd">            Results of submitting vec to the two constraints f1 and f2.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">k3</span><span class="p">,</span> <span class="n">m_max</span> <span class="o">=</span> <span class="n">vec</span>
+        <span class="k">if</span> <span class="n">k3</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">m_max</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">1e6</span><span class="p">,</span> <span class="mf">1e6</span>
+        <span class="n">f1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f1</span><span class="p">(</span><span class="n">k3</span><span class="p">,</span> <span class="n">m_max</span><span class="p">)</span>
+        <span class="n">f2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f2</span><span class="p">(</span><span class="n">k3</span><span class="p">,</span> <span class="n">m_max</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span>
+
+    <span class="k">def</span> <span class="nf">_set_k1_k2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set k1 and k2 once k3 has been determined.&quot;&quot;&quot;</span>
+        <span class="n">c1</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a2</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a1</span><span class="p">)</span>
+        <span class="n">c2</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">a3</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k2</span> <span class="o">=</span> <span class="n">c2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">k3</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k1</span> <span class="o">=</span> <span class="n">c1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">k2</span>
+
+<div class="viewcode-block" id="Star.get_mmax_k">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.Star.get_mmax_k">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmax_k</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use Scipy&#39;s fsolve to solve the two constraints with adequate</span>
+<span class="sd">        initial guesses for k3 and _m_max.</span>
+
+<span class="sd">        After solving for k3 and _m_max, k1 and k2 are immediately</span>
+<span class="sd">        determined. Automatically sets the IMF to zero for all</span>
+<span class="sd">        masses if the star-forming region mass is below a minimum of 5</span>
+<span class="sd">        solar masses.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_min</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k3</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">solution</span><span class="p">,</span> <span class="n">infodict</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">fsolve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">_initial_guesses</span><span class="p">(),</span>
+                                            <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">k3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span> <span class="o">=</span> <span class="n">solution</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_k1_k2</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">breaks</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">M_TRUNC_MIN</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span><span class="p">],</span>
+                         <span class="n">exponents</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">a1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a3</span><span class="p">],</span>
+                         <span class="n">norms</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">k1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k3</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="EmbeddedCluster">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.EmbeddedCluster">[docs]</a>
+<span class="k">class</span> <span class="nc">EmbeddedCluster</span><span class="p">(</span><span class="n">PowerLawIMF</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the embedded cluster initial mass function.</span>
+
+<span class="sd">    Compute the embedded cluster initial mass function (eIMF) specific</span>
+<span class="sd">    to a given galaxy with a set star formation rate (SFR) and star</span>
+<span class="sd">    formation duration (time). The eIMF is a simple power law between</span>
+<span class="sd">    M_TRUNC_MIN and M_max. The index beta is given as a function of the</span>
+<span class="sd">    SFR, while the normalization constant, k, and m_max result from the</span>
+<span class="sd">    numerical solution of two adequate constraints.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    beta</span>
+<span class="sd">    sfr : float</span>
+<span class="sd">        Galactic SFR.</span>
+<span class="sd">    time : float</span>
+<span class="sd">        Duration of ECL formation.</span>
+<span class="sd">    _m_max : float</span>
+<span class="sd">        Maximum mass of an ECL.</span>
+<span class="sd">    k : float</span>
+<span class="sd">        Normalization constant of the eIMF.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_mmax_k()</span>
+<span class="sd">        Solves the system of equations made up of methods f1 and f2 to</span>
+<span class="sd">        determine m_max and k.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The eIMF is as given by Jerabkova et al. (2018) [1]_. M_TRUNC_MIN is</span>
+<span class="sd">     set to the default 5 Msun, and the maximum mass m_max is at most</span>
+<span class="sd">     1e9 Msun. k and m_max are determined from two constraints.</span>
+
+<span class="sd">    A constant star formation history (SFH) is assumed. Given the</span>
+<span class="sd">    duration of the period of formation of new ECLs within a galaxy,</span>
+<span class="sd">    time, the total galactic stellar ECL mass is m_tot=time*SFR. The</span>
+<span class="sd">    first constraint is obtained by imposing that the total stellar mass</span>
+<span class="sd">    of all ECLs be equal to m_tot, i.e., by equaling to m_tot the</span>
+<span class="sd">    integral of the eIMF between M_TRUNC_MIN and m_max.</span>
+
+<span class="sd">    The second constraint is obtained by imposing that only one ECL be</span>
+<span class="sd">    found with stellar mass equal to or greater than m_max, i.e., by</span>
+<span class="sd">    equaling to unity the integral of the eIMF between m_max and 1e9.</span>
+
+<span class="sd">    All masses in this class are given in units of solar mass. The SFR</span>
+<span class="sd">    is given in units of solar masses per year. The ECL formation time</span>
+<span class="sd">    is given in years.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,</span>
+<span class="sd">       Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of metallicity</span>
+<span class="sd">       and star formation rate on the time-dependent, galaxy-wide</span>
+<span class="sd">       stellar initial mass function. A&amp;A, 620,</span>
+<span class="sd">       A39. doi:10.1051/0004-6361/20183</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">M_TRUNC_MIN</span> <span class="o">=</span> <span class="mf">5.0</span>
+    <span class="n">M_TRUNC_MAX</span> <span class="o">=</span> <span class="mf">1.e9</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">formation_time</span><span class="o">=</span><span class="mf">1e7</span><span class="p">,</span> <span class="n">m_tot</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sfr : float</span>
+<span class="sd">            Galactic SFR.</span>
+<span class="sd">        formation_time : float, default: 1e7</span>
+<span class="sd">            Duration of ECL formation.</span>
+<span class="sd">        m_tot : float, default: None</span>
+<span class="sd">            Total galaxy stellar mass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfr</span> <span class="o">=</span> <span class="n">sfr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">formation_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_m_tot</span><span class="p">(</span><span class="n">m_tot</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_m_trunc_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M_TRUNC_MIN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_m_trunc_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">M_TRUNC_MAX</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">beta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;eIMF exponent beta. Function of the SFR.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span> <span class="o">=</span> <span class="mf">0.106</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfr</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_beta</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_10myr_mmax</span><span class="p">(</span><span class="n">sfr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;_m_max as a function of sfr for time=10 Myr, from a</span>
+<span class="sd">        log-linear fit to numerical results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">1.0984734</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="mf">6.26502395</span>
+        <span class="n">log_sfr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">sfr</span><span class="p">)</span>
+        <span class="n">log_m_max</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">log_sfr</span> <span class="o">+</span> <span class="n">b</span>
+        <span class="k">return</span> <span class="mf">10.</span> <span class="o">**</span> <span class="n">log_m_max</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_10myr_k</span><span class="p">(</span><span class="n">sfr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;k as a function of sfr for time=10 Myr, from a Voigt profile</span>
+<span class="sd">        fit to numerical results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">a</span> <span class="o">=</span> <span class="mf">74.39240515</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="mf">7.88026109</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="mf">2.03861484</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.90034429</span>
+        <span class="n">log_sfr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">sfr</span><span class="p">)</span>
+        <span class="n">voigt_inv</span> <span class="o">=</span> <span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">+</span> <span class="p">((</span><span class="n">log_sfr</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">/</span> <span class="n">b</span><span class="p">)</span> <span class="o">**</span> <span class="mf">2.</span><span class="p">)</span>
+        <span class="n">log_k</span> <span class="o">=</span> <span class="n">d</span> <span class="o">+</span> <span class="n">a</span> <span class="o">/</span> <span class="n">voigt_inv</span>
+        <span class="k">return</span> <span class="mf">10.</span> <span class="o">**</span> <span class="n">log_k</span>
+
+    <span class="k">def</span> <span class="nf">_get_m_tot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;If m_tot is not given, set it to SFR*time.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">m_tot</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">m_tot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sfr</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+        <span class="k">return</span> <span class="n">m_tot</span>
+
+    <span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">m_max</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constraint on k and _m_max for the existence of only one ECL</span>
+<span class="sd">        with mass equal to or higher than _m_max.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="n">m_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">M_TRUNC_MAX</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_f2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">m_max</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constraint on k and _m_max for the total stellar mass being</span>
+<span class="sd">        equal to the galaxy stellar mass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">-</span> <span class="n">k</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_min</span><span class="p">,</span> <span class="n">m_max</span><span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_initial_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate initial guesses of k and _m_max for solving the two</span>
+<span class="sd">        constraints f1 and f2.</span>
+
+<span class="sd">        Calculate initial guesses of k and _m_max for solving the two</span>
+<span class="sd">        constraints f1 and f2. Initial guesses are taken from analytical</span>
+<span class="sd">        fits to numerical k-sfr and _m_max-sfr results for</span>
+<span class="sd">        time = 10 Myr.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_10myr_k</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfr</span><span class="p">)</span>
+        <span class="n">m_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_10myr_mmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">k</span><span class="p">,</span> <span class="n">m_max</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vec</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;For a k, _m_max pair, compute both constraints and return</span>
+<span class="sd">        them as a two-dimensional vector.</span>
+
+<span class="sd">        For a k, _m_max pair, compute both constraints and return them</span>
+<span class="sd">        as a two-dimensional vector. The output of this method is the</span>
+<span class="sd">        vector that is minimized in order to solve the system and find</span>
+<span class="sd">        _m_max and k1.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        vec : tuple</span>
+<span class="sd">            A tuple with k as its first element and _m_max as second.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        f1, f2 : tuple</span>
+<span class="sd">            Results of submitting vec to the two constraints f1 and f2.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        As a safeguard against negative values of either k or _m_max,</span>
+<span class="sd">        this method is set to automatically return a vector with large</span>
+<span class="sd">        components if the solver tries to use negative values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">k</span><span class="p">,</span> <span class="n">m_max</span> <span class="o">=</span> <span class="n">vec</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">m_max</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">1e9</span><span class="p">,</span> <span class="mf">1e9</span>
+        <span class="n">f1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f1</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">m_max</span><span class="p">)</span>
+        <span class="n">f2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f2</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">m_max</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span>
+
+<div class="viewcode-block" id="EmbeddedCluster.get_mmax_k">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.EmbeddedCluster.get_mmax_k">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_mmax_k</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use Scipy&#39;s fsolve to solve the constraints with an adequate</span>
+<span class="sd">        initial guess and determine the maximum mass.</span>
+
+<span class="sd">        Use Scipy&#39;s fsolve to solve the constraints with an adequate</span>
+<span class="sd">        initial guess from the initial_guess method and determine</span>
+<span class="sd">        _m_max.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This method must be run before get_k, otherwise get_k will</span>
+<span class="sd">        return None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">solution</span><span class="p">,</span> <span class="n">infodict</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">fsolve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constraints</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_guess</span><span class="p">(),</span>
+                                        <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span> <span class="o">=</span> <span class="n">solution</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">m_trunc_min</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">M_TRUNC_MIN</span><span class="p">,</span>
+                         <span class="n">m_trunc_max</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">M_TRUNC_MAX</span><span class="p">,</span>
+                         <span class="n">breaks</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m_max</span><span class="p">],</span>
+                         <span class="n">exponents</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">],</span>
+                         <span class="n">norms</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">])</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IGIMF">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.IGIMF">[docs]</a>
+<span class="k">class</span> <span class="nc">IGIMF</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the galactic initial mass function.</span>
+
+<span class="sd">    The galactic IMF (gIMF) is computed according to the</span>
+<span class="sd">    integrated galaxy-wide IMF (IGIMF) framework by integrating</span>
+<span class="sd">    the product between the embedded cluster (ECL) and stellar IMFs</span>
+<span class="sd">    (eIMF and sIMF, respectively) over all embedded clusters in the</span>
+<span class="sd">    galaxy. This corresponds to integrating over the product of the imf</span>
+<span class="sd">    methods of the Star and EmbeddedCluster classes with respect to ECL</span>
+<span class="sd">    mass, with all other parameters (including stellar mass) fixed.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sfr : float</span>
+<span class="sd">        SFR of the galaxy.</span>
+<span class="sd">    feh : float</span>
+<span class="sd">        [Fe/H] metallicity of the galaxy.</span>
+<span class="sd">    time : float</span>
+<span class="sd">        Duration of the period of ECL formation in the galaxy.</span>
+<span class="sd">    m_trunc_min : float</span>
+<span class="sd">        Minimum possible stellar mass.</span>
+<span class="sd">    m_trunc_max : float</span>
+<span class="sd">        Maximum possible stellar mass.</span>
+<span class="sd">    m_ecl_min : float</span>
+<span class="sd">        Minimum possible embedded cluster mass.</span>
+<span class="sd">    m_ecl_max : float</span>
+<span class="sd">        Maximum mass of embedded clusters in the galaxy.</span>
+<span class="sd">    clusters : EmbeddedCluster object</span>
+<span class="sd">        Calculates the eIMF of the galaxy.</span>
+<span class="sd">    m_ecl_array : numpy array</span>
+<span class="sd">        Array of ECL masses over which to compute the sIMF for</span>
+<span class="sd">        interpolation.</span>
+<span class="sd">    stellar_imf_ip: scipy.interpolate interp1d</span>
+<span class="sd">        Interpolation of the sIMF over ECL masses, for a fixed star</span>
+<span class="sd">        mass.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    get_clusters()</span>
+<span class="sd">        Instantiate an EmbeddedCluster object and compute the maximum</span>
+<span class="sd">        embedded cluster mass.</span>
+<span class="sd">    imf(m)</span>
+<span class="sd">        Integrate the product of the sIMF and eIMF with respect to the</span>
+<span class="sd">        ECL mass, for a given stellar mass.</span>
+
+<span class="sd">    Warns</span>
+<span class="sd">    ------</span>
+<span class="sd">    UserWarning</span>
+<span class="sd">        If method imf(m) is run before get_clusters().</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The IGIMF framework is applied as described in Jerabkova et al.</span>
+<span class="sd">    (2018) [1]_, Yan et al. (2017) [2]_ and references therein.</span>
+<span class="sd">    Explicitly, the gIMF at a given stellar mass `m` is</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\xi_\\mathrm{g}(m|\\mathrm{SFR},\\mathrm{Z}) = \\int_0^\\infty</span>
+<span class="sd">        \\mathrm{d}M\\, \\xi_\\mathrm{s}(m|M,\\mathrm{Z})\\,</span>
+<span class="sd">        \\xi_\\mathrm{e}(M|\\mathrm{SFR}),</span>
+
+<span class="sd">    where `M` is the ECL stellar mass; Z the galaxy metallicity, assumed</span>
+<span class="sd">    homogeneous. The integration interval is broken into log-uniform</span>
+<span class="sd">    intervals. Integration is performed with Scipy&#39;s quad function.</span>
+
+<span class="sd">    This constitutes a spatial integration over the whole galaxy for all</span>
+<span class="sd">    the stars formed within the ECLs during a time interval</span>
+<span class="sd">    :attr:`time`, without taking into account the spatial distribution</span>
+<span class="sd">    of star-forming regions or their differing chemical properties.</span>
+<span class="sd">    Thus, the entire galaxy is specified by :attr:`SFR` and :attr:`feh`.</span>
+
+<span class="sd">    The SFR is given in solar masses per year. The metallicity is</span>
+<span class="sd">    expressed as [Fe/H]. Time is given in years. All masses are given in</span>
+<span class="sd">    solar masses.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,</span>
+<span class="sd">        Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of</span>
+<span class="sd">        metallicity and star formation rate on the time-dependent,</span>
+<span class="sd">        galaxy-wide stellar initial mass function. A&amp;A, 620, A39.</span>
+<span class="sd">        doi:10.1051/0004-6361/20183</span>
+<span class="sd">    .. [2] Yan, Z., Jerabkova, T., Kroupa, P. (2017). The optimally</span>
+<span class="sd">        sampled galaxy-wide stellar initial mass function: Observational</span>
+<span class="sd">        tests and the publicly available GalIMF code. A&amp;A, 607, A126.</span>
+<span class="sd">        doi:10.1051/0004-6361/201730987</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sfr</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">feh</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sfr : float</span>
+<span class="sd">            SFR of the galaxy.</span>
+<span class="sd">        feh : float</span>
+<span class="sd">            [Fe/H] metallicity of the galaxy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfr</span> <span class="o">=</span> <span class="n">sfr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feh</span> <span class="o">=</span> <span class="n">feh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="mf">1e7</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sfr</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_min</span> <span class="o">=</span> <span class="mf">0.08</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_max</span> <span class="o">=</span> <span class="mi">150</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_min</span> <span class="o">=</span> <span class="mi">5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_max</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stellar_imf_ip</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_integration_intervals</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logger</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates and returns a class logger.&quot;&quot;&quot;</span>
+        <span class="n">loggername</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">])</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">loggername</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logger</span>
+
+<div class="viewcode-block" id="IGIMF.set_clusters">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.IGIMF.set_clusters">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_clusters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate an EmbeddedCluster object and compute the maximum</span>
+<span class="sd">        ECL mass.</span>
+
+<span class="sd">        Instantiate an EmbeddedCluster object and compute the maximum</span>
+<span class="sd">        ECL mass, which is also saved as an instance attribute.</span>
+
+<span class="sd">        Warnings</span>
+<span class="sd">        --------</span>
+<span class="sd">        Must be called before the imf method, otherwise the eIMF will</span>
+<span class="sd">        not be available for integration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Getting clusters...&#39;</span><span class="p">)</span>
+        <span class="n">time0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span> <span class="o">=</span> <span class="n">EmbeddedCluster</span><span class="p">(</span><span class="n">sfr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sfr</span><span class="p">,</span>
+                                        <span class="n">formation_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Started EmbeddedCluster IMF.&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="o">.</span><span class="n">get_mmax_k</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="o">.</span><span class="n">m_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_min</span><span class="p">),</span>
+                                       <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_max</span><span class="p">),</span>
+                                       <span class="mi">100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_max</span>
+        <span class="n">time1</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">time0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Finished getting clusters in </span><span class="si">{</span><span class="n">time1</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_get_stars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_ecl</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;For a given ECL mass, instantiate a Star object, compute the</span>
+<span class="sd">        IMF and return dN/dm for a stellar mass m.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">stellar</span> <span class="o">=</span> <span class="n">Star</span><span class="p">(</span><span class="n">m_ecl</span><span class="o">=</span><span class="n">m_ecl</span><span class="p">,</span>
+                       <span class="n">feh</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">feh</span><span class="p">)</span>
+        <span class="n">stellar</span><span class="o">.</span><span class="n">get_mmax_k</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">stellar</span><span class="o">.</span><span class="n">imf</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_stars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate the sIMF over ECL masses for a fixed star mass,</span>
+<span class="sd">        and save the interpolation as an attribute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">interpolation_simf_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m_ecl</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span><span class="p">):</span>
+            <span class="n">interpolation_simf_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_stars</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stellar_imf_ip</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span><span class="p">,</span>
+                                       <span class="n">interpolation_simf_array</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_integrand</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_ecl</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the product of the stellar and eIMFs for given ECL</span>
+<span class="sd">        mass, with a fixed star mass.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">stellar_imf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stellar_imf_ip</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">)</span>
+        <span class="n">cluster_imf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span><span class="o">.</span><span class="n">imf</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stellar_imf</span> <span class="o">*</span> <span class="n">cluster_imf</span>
+
+    <span class="k">def</span> <span class="nf">_set_integration_intervals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Break the full period range into manageable sub-intervals for</span>
+<span class="sd">        integration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">integrand_array</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">mecl_array</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">peak_mecl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">m_ecl</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_array</span><span class="p">:</span>
+            <span class="n">intg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrand</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">intg</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">integrand_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">intg</span><span class="p">)</span>
+                <span class="n">mecl_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">integrand_array</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">integrand_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">integrand_array</span><span class="p">)</span>
+            <span class="n">log_mecl</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">m_ecl</span><span class="p">)</span> <span class="k">for</span> <span class="n">m_ecl</span> <span class="ow">in</span> <span class="n">mecl_array</span><span class="p">]</span>
+            <span class="n">log_intg</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">intg</span><span class="p">)</span> <span class="k">for</span> <span class="n">intg</span> <span class="ow">in</span> <span class="n">integrand_array</span><span class="p">]</span>
+
+            <span class="n">i_max_intg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">log_intg</span><span class="p">)</span>
+            <span class="n">peak_mecl</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="n">log_mecl</span><span class="p">[</span><span class="n">i_max_intg</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">i_max_intg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">log_slope_post_peak</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">log_mecl</span><span class="p">,</span> <span class="n">log_intg</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="c1"># skip while loop for pre peak masses</span>
+                <span class="n">log_slope_pre_peak</span> <span class="o">=</span> <span class="mf">0.1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log_slope_post_peak</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">log_mecl</span><span class="p">[</span><span class="n">i_max_intg</span><span class="p">:],</span>
+                                                 <span class="n">log_intg</span><span class="p">[</span><span class="n">i_max_intg</span><span class="p">:])[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">log_slope_pre_peak</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">log_mecl</span><span class="p">[:</span><span class="n">i_max_intg</span><span class="p">],</span>
+                                                <span class="n">log_intg</span><span class="p">[:</span><span class="n">i_max_intg</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_slope_post_peak</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span>  <span class="c1"># skip both while loops</span>
+            <span class="n">log_slope_pre_peak</span> <span class="o">=</span> <span class="mf">0.1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_integration_intervals</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">m_next</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_min</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">m_next</span> <span class="o">&lt;</span> <span class="n">peak_mecl</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_integration_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m_next</span><span class="p">)</span>
+            <span class="n">logm_next</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">m_next</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">log_slope_pre_peak</span>
+            <span class="n">m_next</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="n">logm_next</span>
+        <span class="n">m_next</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_min</span><span class="p">,</span> <span class="n">peak_mecl</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">m_next</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_max</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_integration_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m_next</span><span class="p">)</span>
+            <span class="n">logm_next</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">m_next</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="o">/</span><span class="n">log_slope_post_peak</span>
+            <span class="n">m_next</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="n">logm_next</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_integration_intervals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_max</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IGIMF.imf">
+<a class="viewcode-back" href="../../bossa.html#bossa.imf.IGIMF.imf">[docs]</a>
+    <span class="k">def</span> <span class="nf">imf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Integrate the product of the sIMF and the eIMF with respect</span>
+<span class="sd">        to ECL mass, for a given stellar mass.</span>
+
+<span class="sd">        Integrate the product of the sIMF and the eIMF with respect to</span>
+<span class="sd">        ECL mass, for a given stellar mass, using Scipy&#39;s quad function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        m : float</span>
+<span class="sd">            Star mass at which to compute the imf.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        imf : float</span>
+<span class="sd">            IMF value at mass m.</span>
+
+<span class="sd">        Warns</span>
+<span class="sd">        ------</span>
+<span class="sd">        UserWarning</span>
+<span class="sd">            If &#39;clusters&#39; is not defined (get_clusters() has not been</span>
+<span class="sd">            run).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clusters</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No eIMF. Please run get_clusters() first.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_stars</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_integration_intervals</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+
+        <span class="n">imf</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">m0</span><span class="p">,</span> <span class="n">m1</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_integration_intervals</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                          <span class="bp">self</span><span class="o">.</span><span class="n">_integration_intervals</span><span class="p">[</span><span class="mi">1</span><span class="p">:]):</span>
+            <span class="n">m_norm</span> <span class="o">=</span> <span class="n">m1</span> <span class="o">-</span> <span class="n">m0</span>
+            <span class="n">intg_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrand</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrand</span><span class="p">(</span><span class="n">m0</span><span class="p">))</span>
+            <span class="n">intg_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrand</span><span class="p">(</span><span class="n">m1</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_integrand</span><span class="p">(</span><span class="n">m0</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">intg_norm</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="n">intg_norm</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+            <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">m</span><span class="p">):</span> <span class="k">return</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_integrand</span><span class="p">(</span><span class="n">m</span><span class="o">*</span><span class="n">m_norm</span> <span class="o">+</span> <span class="n">m0</span><span class="p">)</span> <span class="o">-</span> <span class="n">intg_min</span><span class="p">)</span>
+                              <span class="o">/</span> <span class="n">intg_norm</span><span class="p">)</span>
+            <span class="n">imff</span> <span class="o">=</span> <span class="n">quad</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="p">(</span><span class="n">m1</span><span class="o">-</span><span class="n">m0</span><span class="p">)</span><span class="o">/</span><span class="n">m_norm</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">epsabs</span><span class="o">=</span><span class="mf">5e-5</span><span class="p">)</span>
+
+            <span class="n">imf0</span> <span class="o">=</span> <span class="p">(</span><span class="n">intg_norm</span> <span class="o">*</span> <span class="n">imff</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">intg_min</span> <span class="p">)</span> <span class="o">*</span> <span class="n">m_norm</span>
+            <span class="n">imf</span> <span class="o">+=</span> <span class="n">imf0</span>
+        <span class="k">return</span> <span class="n">imf</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lucas de Sá.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
