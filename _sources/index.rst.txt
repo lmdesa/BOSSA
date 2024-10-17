@@ -26,16 +26,24 @@ Documentation progress
 ----------------------
 
 Documentation and comments are gradually being added to the code. Progress:
+
+
 * `constants`: partially documented,
 * `utils`: not documented,
 * `imf`: complete,
 * `sfh`: complete,
 * `sampling`: partially documented,
+
   * `RandomSampling`: complete,
+
   * `GalaxyStellarMassSampling`: complete,
+    
   * `GalaxyGrid`: complete,
+
   * `SimpleBinaryPopulation`: partially documented,
+
   * `CompositeBinaryPopulation`: not documented,
+
 * `postprocessing`: not documented.
 
 .. toctree::
