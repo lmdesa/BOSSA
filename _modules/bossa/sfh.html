@@ -1,0 +1,1445 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bossa.sfh &mdash; BOSSA 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            BOSSA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../bossa.html">bossa package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">BOSSA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">bossa.sfh</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for bossa.sfh</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Galaxy parameter distributions.&quot;&quot;&quot;</span>
+
+<span class="c1"># TODO: add fundamental metallicity relation</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">astropy.cosmology</span> <span class="kn">import</span> <span class="n">WMAP9</span> <span class="k">as</span> <span class="n">cosmo</span>
+<span class="kn">from</span> <span class="nn">numpy._typing</span> <span class="kn">import</span> <span class="n">ArrayLike</span><span class="p">,</span> <span class="n">NDArray</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">curve_fit</span><span class="p">,</span> <span class="n">fsolve</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">norm</span>
+
+<span class="c1">#import sys</span>
+<span class="c1">#sys.path.append(&#39;..&#39;)</span>
+<span class="kn">from</span> <span class="nn">bossa.constants</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">LN10</span><span class="p">,</span> <span class="n">Z_SUN</span><span class="p">,</span> <span class="n">T04_MZR_params_list</span><span class="p">,</span> <span class="n">M09_MZR_params_list</span><span class="p">,</span> <span class="n">KK04_MZR_params_list</span><span class="p">,</span>
+    <span class="n">PP04_MZR_params_list</span><span class="p">,</span> <span class="n">REDSHIFT_SFRD_DATA_PATH</span><span class="p">,</span> <span class="n">LOWMET_SFRD_PATH</span><span class="p">,</span> <span class="n">MIDMET_SFRD_DATA_PATH</span><span class="p">,</span>
+    <span class="n">HIGHMET_SFRD_DATA_PATH</span><span class="p">,</span> <span class="n">LOWMET_CANON_SFRD_PATH</span><span class="p">,</span> <span class="n">MIDMET_CANON_SFRD_DATA_PATH</span><span class="p">,</span>
+    <span class="n">HIGHMET_CANON_SFRD_DATA_PATH</span><span class="p">,</span> <span class="n">CHR19_GSMF</span><span class="p">,</span> <span class="n">C20_CORRECTIONS_PATH</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">bossa.utils</span> <span class="kn">import</span> <span class="n">ZOH_to_FeH</span><span class="p">,</span> <span class="n">FeH_to_Z</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">float_or_arr_input</span>
+
+
+<div class="viewcode-block" id="BoogaardSFMR">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.BoogaardSFMR">[docs]</a>
+<span class="k">class</span> <span class="nc">BoogaardSFMR</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Redshift-dependent SFMR with no flattening at high masses.</span>
+
+<span class="sd">    Computes the redshift-dependent star formation-mass relation (SFMR)</span>
+<span class="sd">    with no flattening at high masses, for a given redshift. Allows</span>
+<span class="sd">    calculating either the star-formation rate (SFR) from the galaxy</span>
+<span class="sd">    stellar mass, or the galaxy stellar mass from the SFR. Meant to be</span>
+<span class="sd">    implemented trough :func:`sfr.SFMR`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The model is by Boogaard et al. (2018) [1]_ , with the SFR as a</span>
+<span class="sd">    log-linear function of the mass, `a` the slope and `b` the</span>
+<span class="sd">    intercept.</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    SFMR : Implements this class.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Boogaard,L. A., Brinchmann, J., Bouche, N. et al. (2018). The</span>
+<span class="sd">        MUSE Hubble Ultra Deep Field Survey - XI. Constraining the</span>
+<span class="sd">        low-mass end of the stellar mass-star formation rate relation at</span>
+<span class="sd">        z&lt;1. A&amp;A, 619, A27. doi:10.1051/0004-6361/201833136</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="mf">0.83</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;float: Slope of the log-linear SFR(m).&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">=</span> <span class="n">redshift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: Log-linear SFR(m) intercept. Redshift-dependent.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;=</span> <span class="mf">1.8</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span> <span class="o">-</span> <span class="mf">8.2</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span> <span class="o">-</span> <span class="mf">8.2</span> 
+                           <span class="o">+</span> <span class="mf">1.8</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mf">2.8</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">c</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: SFMR auxiliary variable. Redshift-dependent.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;=</span> <span class="mf">1.8</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">=</span> <span class="mf">2.8</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c</span>
+
+    <span class="k">def</span> <span class="nf">_logsfr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the SFR for a log galactic stellar mass `logm`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="n">logm</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span>
+
+    <span class="k">def</span> <span class="nf">_logm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sfr</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute log of galactic stellar mass for `sfr`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">sfr</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span></div>
+
+
+
+<div class="viewcode-block" id="SpeagleSFMR">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.SpeagleSFMR">[docs]</a>
+<span class="k">class</span> <span class="nc">SpeagleSFMR</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Redshift-dependent SFMR with moderate flattening at high masses.</span>
+
+<span class="sd">    Computes the redshift-dependent star formation-mass relation (SFMR)</span>
+<span class="sd">    with moderate flattening at high masses, while keeping a</span>
+<span class="sd">    :class:`~sfr.BoogaardSFMR` at low masses, for a given redshift.</span>
+<span class="sd">    Allows calculating the star-formation rate (SFR) from the galaxy</span>
+<span class="sd">    stellar mass. Meant to be implemented trough :func:`sfr.SFMR`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+<span class="sd">    lowmass_sfmr : :class:`sfr.BoogaardSFMR`.</span>
+<span class="sd">        SFMR below :const:`LOGM_BREAK`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The SFR is modeled as a log-linear function of the mass, with</span>
+<span class="sd">    :attr:`a` as the slope and :attr:`b` the intercept. Below a break</span>
+<span class="sd">    mass :const:LOGM_BREAK, the SFMR is given by a</span>
+<span class="sd">    :class:`~BoogaardSFMR` (Boogaard et al., 2018) [1]_. Above the</span>
+<span class="sd">    break, the log-linear form is kept, but the slope becomes</span>
+<span class="sd">    redshift-dependent, following the model by Speagle et al. (2014)</span>
+<span class="sd">    [2]_. The intercept is defined by continuity with the Boogaard SFMR.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [2] Speagle, J. S., Steinhardt, C. L., Capak, P. L., Silverman,</span>
+<span class="sd">        J. D. (2014). A highly consistent framework for the evolution of</span>
+<span class="sd">        the star-forming &quot;main sequence&quot; from z~0-6. ApJS, 214, 15.</span>
+<span class="sd">        doi:10.1088/0067-0049/214/2/15.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">LOGM_BREAK</span> <span class="o">=</span> <span class="mf">9.7</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;float: Break mass between Boogaard and Speagle SFMRs.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">=</span> <span class="n">redshift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowmass_sfmr</span> <span class="o">=</span> <span class="n">BoogaardSFMR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: Age of the universe, in Gyr, at :attr:`redshift`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">cosmo</span><span class="o">.</span><span class="n">age</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">a</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: Log-linear SFR(m) slope. Redshift-dependent.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">=</span> <span class="mf">0.84</span> <span class="o">-</span> <span class="mf">0.026</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">b</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: Log-linear SFR(m) intercept. Redshift-dependent.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowmass_sfmr</span><span class="o">.</span><span class="n">_logsfr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LOGM_BREAK</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="mf">9.7</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_b</span>
+
+    <span class="k">def</span> <span class="nf">_logsfr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the SFR for a given log10galactic stellar mass.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">logm</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">LOGM_BREAK</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowmass_sfmr</span><span class="o">.</span><span class="n">_logsfr</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">logm</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">b</span></div>
+
+
+
+<div class="viewcode-block" id="TomczakSFMR">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.TomczakSFMR">[docs]</a>
+<span class="k">class</span> <span class="nc">TomczakSFMR</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Redshift-dependent SFMR with sharp flattening at high masses.</span>
+
+<span class="sd">    Computes the redshift-dependent star formation-mass relation (SFMR)</span>
+<span class="sd">    with sharp flattening at high masses, while keeping a</span>
+<span class="sd">    :class:`~sfr.BoogaardSFMR` at low masses, for a given redshift.</span>
+<span class="sd">    Allows calculating the star-formation rate (SFR) from the galaxy</span>
+<span class="sd">    stellar mass. Meant to be  implemented trough :func:`sfr.SFMR`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+<span class="sd">    lowmass_sfmr : :class:`sfh.BoogaardSFMR`</span>
+<span class="sd">        SFMR below :attr:`logm_break`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Tomczak et al. (2016) [3]_ model the SFMR as a power-law with slope</span>
+<span class="sd">    :const:`GAMMA` at low masses, which saturates to :attr:`s0` above a</span>
+<span class="sd">    turn-off mass :attr:`m_to`. Following Chruslinska &amp; Nelemans (2019)</span>
+<span class="sd">    [4]_, here the SFMR is given as a :class:`sfr.BoogaardSFMR` below</span>
+<span class="sd">    the turn-off, and by the Tomczak SFMR above it.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [3] Tomczak, A. R., Quadri, R. F., Tran, K.-V. H. et al. (2014).</span>
+<span class="sd">        Galaxy stellar mass functions from ZFOURGE/CANDELS: an excess of</span>
+<span class="sd">        low-mass galaxies since z=2 and the rapid buildup of quiescent </span>
+<span class="sd">        galaxies. ApJ, 783, 95. doi:10.1088/0004-637X/783/2/85</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">GAMMA</span> <span class="o">=</span> <span class="mf">1.091</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;float: Power-law slope.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">=</span> <span class="n">redshift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lowmass_sfmr</span> <span class="o">=</span> <span class="n">BoogaardSFMR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_s0</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_break_corr</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">s0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: High mass saturation SFR log. Redshift-dependent.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_s0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_s0</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.448</span> <span class="o">+</span> <span class="mf">1.220</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">-</span> <span class="mf">0.174</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_s0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">logm_to</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: Turn-off mass log. Redshift-dependent.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to_func</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&gt;</span> <span class="mf">3.28</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to_func</span><span class="p">(</span><span class="mf">3.28</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_to</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">logm_break</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: Break mass between Boogaard and Tomczak SFMRs.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span> <span class="o">=</span> <span class="n">fsolve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span> <span class="o">/</span> <span class="mi">9</span> <span class="o">+</span> <span class="mi">9</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">break_corr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;float: Correction to match the SFMR models at the break.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_break_corr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_break_corr</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lowmass_sfmr</span><span class="o">.</span><span class="n">_logsfr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logm_break</span><span class="p">)</span>
+                                <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logsfr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logm_break</span><span class="p">,</span> <span class="n">yshift</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_break_corr</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_logm_to_func</span><span class="p">(</span><span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Turn-off mass log as a function of redshift.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">9.458</span> <span class="o">+</span> <span class="mf">0.865</span> <span class="o">*</span> <span class="n">redshift</span> <span class="o">-</span> <span class="mf">0.132</span> <span class="o">*</span> <span class="n">redshift</span> <span class="o">**</span> <span class="mi">2</span>
+
+    <span class="k">def</span> <span class="nf">_f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Continuity constraint at the break.&quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">8</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">11</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">10</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_to</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lowmass_sfmr</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">GAMMA</span> <span class="o">*</span> <span class="n">dx</span><span class="p">))</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">GAMMA</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_logsfr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">yshift</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the SFR for a given log10 galactic stellar mass.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">logm</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_break</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowmass_sfmr</span><span class="o">.</span><span class="n">_logsfr</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">yshift</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">yshift</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">break_corr</span>
+            <span class="n">exp10</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">GAMMA</span> <span class="o">*</span> <span class="p">(</span><span class="n">logm</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_to</span><span class="p">))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">s0</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp10</span><span class="p">)</span> <span class="o">+</span> <span class="n">yshift</span></div>
+
+
+
+<div class="viewcode-block" id="SFMR">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.SFMR">[docs]</a>
+<span class="k">class</span> <span class="nc">SFMR</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General redshift-dependent star-formation mass relation class.</span>
+
+<span class="sd">    General SFMR class, with options for no, moderate or sharp </span>
+<span class="sd">    flattening at high masses. Provides a unified way to access the </span>
+<span class="sd">    three SFMR classes: :class:`~sfr.BoogaardSFMR` (no flattening),</span>
+<span class="sd">    :class:`~sfr.SpeagleSFMR` (moderate flattening) and</span>
+<span class="sd">    :class:`~sfr.TomczakSFMR` (sharp flattening).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+<span class="sd">    flattening : {&#39;none&#39;, &#39;moderate&#39;, &#39;sharp&#39;}, default: &#39;none&#39;</span>
+<span class="sd">        SFMR flattening mode.</span>
+<span class="sd">    scatter_model : {&#39;none&#39;, &#39;normal&#39;, &#39;min&#39;, &#39;max&#39;}, default : &#39;none&#39;</span>
+<span class="sd">        Model for SFR scatter_model about the SFMR.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Follows Chruslinska &amp; Nelemans (2019) [4]_.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [4] Chruslinska, M. &amp; Nelemans, G. (2019). Metallicity of stars</span>
+<span class="sd">        formed throughout the cosmic history based on the observational</span>
+<span class="sd">        properties of star-forming galaxies. MNRAS, 488(4), 5300.</span>
+<span class="sd">        doi:10.1093/mnras/stz2057</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">DISPERSION</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># dex</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;float: Empirical SFR dispersion around the SFMR.</span>
+<span class="sd">    </span>
+<span class="sd">    From Chruslisnka &amp; Nelemans (2019). [4]_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">INTERNAL_DISPERION</span> <span class="o">=</span> <span class="mf">0.14</span>  <span class="c1"># dex</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;float: Galaxy internal Z_OH dispersion.</span>
+<span class="sd">    </span>
+<span class="sd">    From Chruslisnka &amp; Nelemans (2019). [4]_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">flattening</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span>
+                 <span class="n">scatter_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">=</span> <span class="n">redshift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfmr</span> <span class="o">=</span> <span class="n">flattening</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scatter</span> <span class="o">=</span> <span class="n">scatter_model</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Redirect calls to self to the chosen SFMR class instance.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sfmr</span><span class="o">.</span><span class="fm">__getattribute__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sfmr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BoogaardSFMR</span> <span class="o">|</span> <span class="n">SpeagleSFMR</span> <span class="o">|</span> <span class="n">TomczakSFMR</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instance of one of the SFMR model classes.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfmr</span>
+
+    <span class="nd">@sfmr</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">sfmr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flattening</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">flattening</span> <span class="o">==</span> <span class="s1">&#39;none&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sfmr</span> <span class="o">=</span> <span class="n">BoogaardSFMR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">flattening</span> <span class="o">==</span> <span class="s1">&#39;moderate&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sfmr</span> <span class="o">=</span> <span class="n">SpeagleSFMR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">flattening</span> <span class="o">==</span> <span class="s1">&#39;sharp&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sfmr</span> <span class="o">=</span> <span class="n">TomczakSFMR</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Parameter `flattening` must be one of &#39;</span>
+                          <span class="s1">&#39;&quot;none&quot;, &quot;moderate&quot;, &quot;sharp&quot;.&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a value for SFR scatter around the SFMR.</span>
+
+<span class="sd">        Depending on :attr:`flattening`, will be a normal distribution</span>
+<span class="sd">        with mean 0 and standard deviation equal to</span>
+<span class="sd">        :const:`DISPERSION` (if :attr:`flattening` is &quot;norm&quot;); or fixed</span>
+<span class="sd">        to either `0` (if :attr:`flattening` is &quot;none&quot;),</span>
+<span class="sd">        :const:`DISPERSION` (if :attr:`flattening` is &quot;min&quot;) or</span>
+<span class="sd">        -:const:`DISPERSION` (if :attr:`flattening` is &quot;max&quot;).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scatter</span>
+
+    <span class="nd">@scatter</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatter</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">scatter_models</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;none&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_none_scatter</span><span class="p">,</span>
+                          <span class="s1">&#39;normal&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normal_scatter</span><span class="p">,</span>
+                          <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_scatter</span><span class="p">,</span>
+                          <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_scatter</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">scatter</span> <span class="ow">in</span> <span class="n">scatter_models</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scatter</span> <span class="o">=</span> <span class="n">scatter_models</span><span class="p">[</span><span class="n">scatter</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Parameter &quot;scatter_model&quot; must be one of &#39;</span>
+                             <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">scatter_models</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_none_scatter</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return `0.0` scatter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mf">0.</span>
+
+    <span class="k">def</span> <span class="nf">_normal_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return scatter drawn from a normal distribution.</span>
+
+<span class="sd">        The distribution is centered on zero and has standard deviation</span>
+<span class="sd">        equal to :const:`DISPERSION`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">sfmr_scatter</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">DISPERSION</span><span class="p">)</span><span class="o">.</span><span class="n">rvs</span><span class="p">()</span>
+        <span class="n">internal_scatter</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">INTERNAL_DISPERION</span><span class="p">)</span><span class="o">.</span><span class="n">rvs</span><span class="p">()</span>
+        <span class="n">scatter</span> <span class="o">=</span> <span class="n">sfmr_scatter</span> <span class="o">+</span> <span class="n">internal_scatter</span>
+        <span class="k">return</span> <span class="n">scatter</span>
+
+    <span class="k">def</span> <span class="nf">_min_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return -:const:`DISPERSION` scatter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DISPERSION</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">INTERNAL_DISPERION</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_max_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return :const:`DISPERSION` scatter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">DISPERSION</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">INTERNAL_DISPERION</span>
+
+<div class="viewcode-block" id="SFMR.logsfr">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.SFMR.logsfr">[docs]</a>
+    <span class="nd">@float_or_arr_input</span>
+    <span class="k">def</span> <span class="nf">logsfr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the SFR for a galaxy stellar mass log.&quot;&quot;&quot;</span>
+        <span class="n">logsfr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logsfr</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+        <span class="n">logsfr</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">logsfr</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MZR">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.MZR">[docs]</a>
+<span class="k">class</span> <span class="nc">MZR</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;General redshift-dependent metallicity-mass relation class.</span>
+
+<span class="sd">    Compute the redshift-dependent mass-(gas) metallicity relation (MZR)</span>
+<span class="sd">    for one of four parameter sets: : &quot;KK04&quot;, &quot;T04&quot;, &quot;M09&quot; or &quot;PP04&quot;.</span>
+<span class="sd">    The MZR takes the form of a power-law at low masses with slope</span>
+<span class="sd">    :attr:`gamma`, which flattens around a turnover mass :attr:`m_to` to</span>
+<span class="sd">    an asymptotic metallicity :attr:`z_a`. Metallicity given and</span>
+<span class="sd">    expected as</span>
+
+<span class="sd">    .. math ::</span>
+
+<span class="sd">        \\mathrm{Z}_\\mathrm{OH} = 12 + \\log(\\mathrm{O}/\\mathrm{H}).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+<span class="sd">    model : {&quot;KK04&quot;, &quot;T04&quot;, &quot;M09&quot;, &quot;PP04&quot;}, default: &quot;KK04&quot;</span>
+<span class="sd">        Option of MZR parameter set.</span>
+<span class="sd">    scatter_model : {&quot;none&quot;, &quot;normal&quot;, &quot;max&quot;, &quot;min&quot;}, default : &quot;none&quot;</span>
+<span class="sd">        Model for metallicity scatter about the MZR.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the relation.</span>
+<span class="sd">    mzr_model : str</span>
+<span class="sd">        Option of MZR parameter set.</span>
+<span class="sd">    z_a : float</span>
+<span class="sd">        Asymptotic Z_OH metallicity of the high-mass end of the </span>
+<span class="sd">        relation. Redshift-dependent.</span>
+<span class="sd">    logm_to : float</span>
+<span class="sd">        Turnover mass, i.e., mass at which the relation begins to </span>
+<span class="sd">        flatten to the asymptotic z_a.</span>
+<span class="sd">    gamma : float</span>
+<span class="sd">        Low-mass end slope. Redshift-dependent.</span>
+<span class="sd">    dz : float</span>
+<span class="sd">        Mean variation rate of the MZR between z=2.2 and z=3.5.</span>
+
+<span class="sd">    Warns</span>
+<span class="sd">    -----</span>
+<span class="sd">    UserWarning</span>
+<span class="sd">        If methods zoh(m) or m(zoh) are run before set_params().</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This class implements the MZR models in from Chruslinska &amp; Nelemans</span>
+<span class="sd">    (2019) [4]_. They choose a parametrization</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        12 + \\log[\\mathrm{O/H}] = \\mathrm{Z}_a -</span>
+<span class="sd">        \\log\\left[</span>
+<span class="sd">        1 + \\left(\\frac{M_\\ast}{M_\\mathrm{TO}}\\right)^{-\\gamma}</span>
+<span class="sd">        \\right],</span>
+
+<span class="sd">    where the parameters are the asymptotic metallicity :attr:`z_a`, the</span>
+<span class="sd">    turn-off mass (log) :attr:`logm_to` and the low-mass end slope</span>
+<span class="sd">    :attr:`gamma.</span>
+
+<span class="sd">    Four sets of parameters are collected by Chruslinska &amp;</span>
+<span class="sd">    Nelemans (2019) [4]_: Tremontini et al. (2004) [5]_ (T04),</span>
+<span class="sd">    Kobulnicky &amp; Kewley [6]_ (2004) (KK04), Pettini &amp; Pagel [7]_ (2004)</span>
+<span class="sd">    (PP04) and Mannucci et al. [8]_ (2009) (M09).</span>
+
+<span class="sd">    The relation is fitted for four redshift bins z ~ 0.07, 0.7, 2.2, </span>
+<span class="sd">    3.5, such that each model provides four sets of corresponding MZR </span>
+<span class="sd">    parameters. In order to get the MZR at arbitrary redshift, a (mass,</span>
+<span class="sd">    metallicity) array is generated at each of the four original z and,</span>
+<span class="sd">    for each mass, the metallicity is interpolated to the desired z.</span>
+<span class="sd">    Fitting of the MZR to the interpolated points sets the parameters at</span>
+<span class="sd">    that z.</span>
+
+<span class="sd">    For z &gt; 3.5, parameters are kept as for z=3.5, but it is assumed </span>
+<span class="sd">    that the normalization varies linearly with redshift with the same </span>
+<span class="sd">    rate as the average rate (dz) between z=2.2 and z=3.5.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [5] Tremontini, C. A., Heckamn, T. M., Kauffmann, G. et al.</span>
+<span class="sd">        (2004). The Origin of the Mass-Metallicity Relation: Insights </span>
+<span class="sd">        from 53,000 Star-forming Galaxies in the Sloan Digital Sky </span>
+<span class="sd">        Survey. ApJ, 613, 898. doi:10.1086/423264</span>
+<span class="sd">    .. [6] Kobulnicky, H. A., Kewley, L. J. (2004). Metallicities of 0.3</span>
+<span class="sd">        &lt; z &lt; 1.0 Galaxies in the GOODS-North Field. ApJ, 617, 240. </span>
+<span class="sd">        doi:10.1086/425299</span>
+<span class="sd">    .. [7] Pettini, M., Pagel, B. E. J. (2004). [Oiii]/[Nii] as an</span>
+<span class="sd">        abundance indicator at high redshift. MNRAS, 348(3), L59. </span>
+<span class="sd">        doi:10.1111/j.1365-2966.2004.07591.x</span>
+<span class="sd">    .. [8] Mannucci, F., Cresci, G., Maiolino, R. et al. (2009). LSD:</span>
+<span class="sd">        Lyman-break galaxies Stellar populations and Dynamics - I. Mass,</span>
+<span class="sd">        metallicity and gas at z~3.1. MNRAS, 398(4), 1915.</span>
+<span class="sd">        doi:10.1111/j.1365-2966.2009.15185.x</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">IP_REDSHIFT_ARRAY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">,</span> <span class="mf">3.5</span><span class="p">])</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NDArray: Redshifts from which to interpolate.&quot;&quot;&quot;</span>
+    <span class="n">IP_ARRAYS_LEN</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;int: Length of mass array to use for interpolation.&quot;&quot;&quot;</span>
+    <span class="n">LOGM_MIN</span> <span class="o">=</span> <span class="mf">7.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;float: Minimum mass log for interpolation.&quot;&quot;&quot;</span>
+    <span class="n">LOGM_MAX</span> <span class="o">=</span> <span class="mf">12.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;float: Maximum mass log for interpolation.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;KK04&#39;</span><span class="p">,</span> <span class="n">scatter_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span>
+                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">=</span> <span class="n">redshift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mzr_model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">=</span> <span class="n">scatter_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scatter</span> <span class="o">=</span> <span class="n">scatter_model</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_a</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logm_to</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dz</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ip_param_list</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a value for metallicity scatter around the MZR.</span>
+
+<span class="sd">        Depending on :attr:`scatter_model`, will be a normal distribution</span>
+<span class="sd">        with mean 0 and standard deviation equal to</span>
+<span class="sd">        :const:`DISPERSION` (if :attr:`flattening` is &quot;norm&quot;); or fixed</span>
+<span class="sd">        to either `0` (if :attr:`flattening` is &quot;none&quot;),</span>
+<span class="sd">        :const:`DISPERSION` (if :attr:`flattening` is &quot;min&quot;) or</span>
+<span class="sd">        -:const:`DISPERSION` (if :attr:`flattening` is &quot;max&quot;).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scatter</span>
+
+    <span class="nd">@scatter</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scatter</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">scatter_models</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;none&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_none_scatter</span><span class="p">,</span>
+                          <span class="s1">&#39;normal&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_normal_scatter</span><span class="p">,</span>
+                          <span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_scatter</span><span class="p">,</span>
+                          <span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_scatter</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">scatter</span> <span class="ow">in</span> <span class="n">scatter_models</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scatter</span> <span class="o">=</span> <span class="n">scatter_models</span><span class="p">[</span><span class="n">scatter</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Parameter &quot;scatter&quot; must be one of &#39;</span>
+                             <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">scatter_models</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_dispersion</span><span class="p">(</span><span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Empirical Z_OH dispersion around the MZR. Mass-dependent.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">logm</span> <span class="o">&gt;</span> <span class="mf">9.5</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.1</span>  <span class="c1"># dex</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mf">0.04</span> <span class="o">*</span> <span class="n">logm</span> <span class="o">+</span> <span class="mf">0.48</span>  <span class="c1"># dex</span>
+
+    <span class="k">def</span> <span class="nf">_none_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return `0.0` scatter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">rvs</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_normal_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return scatter drawn from a normal distribution.</span>
+
+<span class="sd">        The distribution is centered on zero and has a mass-dependent</span>
+<span class="sd">        standard deviation given by :meth:`_dispersion`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">stdev</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispersion</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+        <span class="n">scatter</span> <span class="o">=</span> <span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">stdev</span><span class="p">)</span><span class="o">.</span><span class="n">rvs</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">scatter</span>
+
+    <span class="k">def</span> <span class="nf">_min_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return -:meth:`_dispersion` scatter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_dispersion</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_max_scatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return :meth:`_dispersion` scatter.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispersion</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ip_param_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Array of MZR parameters from the chosen model.</span>
+
+<span class="sd">        Contains parameters for all fit redshifts simultaneously, for</span>
+<span class="sd">        use in interpolation to arbitrary redshift. Lines are</span>
+<span class="sd">        z = 0.07, 0.7, 2.2, 3.5; columns are :attr:`z_a`,</span>
+<span class="sd">        :attr:`logm_to`, :attr:`gamma`, :attr:`dz`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_param_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mzr_model</span> <span class="o">==</span> <span class="s1">&#39;T04&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ip_param_list</span> <span class="o">=</span> <span class="n">T04_MZR_params_list</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mzr_model</span> <span class="o">==</span> <span class="s1">&#39;M09&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ip_param_list</span> <span class="o">=</span> <span class="n">M09_MZR_params_list</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mzr_model</span> <span class="o">==</span> <span class="s1">&#39;KK04&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ip_param_list</span> <span class="o">=</span> <span class="n">KK04_MZR_params_list</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mzr_model</span> <span class="o">==</span> <span class="s1">&#39;PP04&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ip_param_list</span> <span class="o">=</span> <span class="n">PP04_MZR_params_list</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Parameter &quot;mzr_model&quot; must be one of &#39;</span>
+                                 <span class="s1">&#39;&quot;T04&quot;, &quot;M09&quot;, &quot;KK04&quot;, &quot;PP04&quot;.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_param_list</span>
+
+    <span class="k">def</span> <span class="nf">_get_ip_arrays</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">,</span> <span class="n">NDArray</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the mass-metallicity arrays for interpolation.&quot;&quot;&quot;</span>
+        <span class="n">ip_logm_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">LOGM_MIN</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">LOGM_MAX</span><span class="p">,</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">IP_ARRAYS_LEN</span><span class="p">)</span>
+        <span class="c1"># Initialize Z_OH array with one line of length IP_ARRAYS LEN</span>
+        <span class="c1"># per fit redshift (4).</span>
+        <span class="n">ip_zoh_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_param_array</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">IP_ARRAYS_LEN</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="c1"># Fill the Z_OH array at the redshifts for which the MZR</span>
+        <span class="c1"># parameters have been fitted.</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">params</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_param_array</span><span class="p">):</span>
+            <span class="n">ip_zohs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">_lowredshift_zoh</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">logm</span> <span class="ow">in</span> <span class="n">ip_logm_array</span><span class="p">]]</span>
+            <span class="p">)</span>
+            <span class="n">ip_zoh_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ip_zohs</span>
+        <span class="n">ip_zoh_array</span> <span class="o">=</span> <span class="n">ip_zoh_array</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">ip_logm_array</span><span class="p">,</span> <span class="n">ip_zoh_array</span>
+
+<div class="viewcode-block" id="MZR.set_params">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.MZR.set_params">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate MZR parameters to :attr:`redshift`.&quot;&quot;&quot;</span>
+        <span class="c1"># Fix parameters above z=3.5.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&gt;=</span> <span class="mf">3.5</span><span class="p">:</span>
+            <span class="n">fit_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip_param_array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># Interpolate params below z=3.5.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Get mass-metallicity arrays for interpolation.</span>
+            <span class="n">ip_logm_array</span><span class="p">,</span> <span class="n">ip_zoh_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_ip_arrays</span><span class="p">()</span>
+            <span class="c1"># Get redshift array with the same shape as ip_zoh_array.</span>
+            <span class="n">ip_redshift_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">IP_REDSHIFT_ARRAY</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">IP_ARRAYS_LEN</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+            <span class="n">fitting_zoh_array</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">ip_redshift_array</span><span class="p">,</span>
+                                            <span class="n">ip_zoh_array</span><span class="p">,</span>
+                                            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">])</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">def</span> <span class="nf">fitting_f</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="n">z_a</span><span class="p">,</span> <span class="n">logm_to</span><span class="p">,</span> <span class="n">gamma</span><span class="p">):</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lowredshift_zoh</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="n">z_a</span><span class="p">,</span> <span class="n">logm_to</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+
+            <span class="n">fit_params</span> <span class="o">=</span> <span class="n">curve_fit</span><span class="p">(</span><span class="n">fitting_f</span><span class="p">,</span>
+                                   <span class="n">ip_logm_array</span><span class="p">,</span>
+                                   <span class="n">fitting_zoh_array</span><span class="p">,</span>
+                                   <span class="n">p0</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ip_param_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">3</span><span class="p">],</span>
+                                   <span class="n">bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">fit_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">fit_params</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">z_a</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_to</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz</span> <span class="o">=</span> <span class="n">fit_params</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_lowredshift_zoh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z_a</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">logm_to</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                         <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Z_OH from mass log for redshift &lt;= 3.5.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">z_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">z_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_a</span>
+        <span class="k">if</span> <span class="n">logm_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logm_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_to</span>
+        <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="n">logm</span> <span class="o">-</span> <span class="n">logm_to</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">z_a</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_highredshift_zoh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z_a</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">logm_to</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span>
+                          <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Z_OH from mass log for redshift &gt; 3.5.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">z_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">z_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_a</span>
+        <span class="k">if</span> <span class="n">logm_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logm_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_to</span>
+        <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="k">if</span> <span class="n">dz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz</span>
+        <span class="n">zoh_z35</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lowredshift_zoh</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="n">z_a</span><span class="p">,</span> <span class="n">logm_to</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">zoh_z35</span> <span class="o">+</span> <span class="n">dz</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">-</span> <span class="mf">3.5</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_lowredshift_logm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zoh</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z_a</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">logm_to</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mass log from Z_OG for redshift &lt;= 3.5.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">z_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">z_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_a</span>
+        <span class="k">if</span> <span class="n">logm_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logm_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_to</span>
+        <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="k">return</span> <span class="n">logm_to</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">z_a</span> <span class="o">-</span> <span class="n">zoh</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">gamma</span>
+
+    <span class="k">def</span> <span class="nf">_highredshift_logm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zoh</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z_a</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">logm_to</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                           <span class="n">dz</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mass log from Z_OH for redshift &gt; 3.5.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">z_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">z_a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_a</span>
+        <span class="k">if</span> <span class="n">logm_to</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logm_to</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_to</span>
+        <span class="k">if</span> <span class="n">gamma</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span>
+        <span class="k">if</span> <span class="n">dz</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dz</span>
+        <span class="n">del_z</span> <span class="o">=</span> <span class="n">dz</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">-</span> <span class="mf">3.5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logm_to</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">z_a</span> <span class="o">-</span> <span class="n">zoh</span> <span class="o">+</span> <span class="n">del_z</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">gamma</span>
+
+<div class="viewcode-block" id="MZR.logm">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.MZR.logm">[docs]</a>
+    <span class="nd">@float_or_arr_input</span>
+    <span class="k">def</span> <span class="nf">logm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zoh</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Inverse of the MZR with no scatter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        zoh : array_like</span>
+<span class="sd">            `Z_OH` metallicity. Either a scalar or an array-like</span>
+<span class="sd">            (e.g., list, NDArray).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float or NDArray</span>
+<span class="sd">            Logarithm of the galaxy stellar mass. Either a float or an</span>
+<span class="sd">            array according to input metallicity.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        AttributeError</span>
+<span class="sd">            If :meth:`set_params` has not been called yet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No MZR parameters set. &#39;</span>
+                                 <span class="s1">&#39;Please call set_params() first.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">:</span>
+            <span class="n">logm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lowredshift_logm</span><span class="p">(</span><span class="n">zoh</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_highredshift_logm</span><span class="p">(</span><span class="n">zoh</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">logm</span></div>
+
+
+<div class="viewcode-block" id="MZR.zoh">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.MZR.zoh">[docs]</a>
+    <span class="nd">@float_or_arr_input</span>
+    <span class="k">def</span> <span class="nf">zoh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;MZR with chosen scatter.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        logm : array_like</span>
+<span class="sd">            Logarithm of the galaxy stellar mass. Either a scalar or an</span>
+<span class="sd">            array-like (e.g., list, NDArray).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float or NDArray</span>
+<span class="sd">            Z_OH metallicity. Either a float or array according to input</span>
+<span class="sd">            mass.</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        AttributeError</span>
+<span class="sd">            If :meth:`set_params` has not been called yet.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_a</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No MZR parameters set. &#39;</span>
+                                 <span class="s1">&#39;Please call set_params() first.&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;=</span> <span class="mf">3.5</span><span class="p">:</span>
+            <span class="n">zoh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lowredshift_zoh</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">zoh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_highredshift_zoh</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+        <span class="n">zoh</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">zoh</span></div>
+</div>
+
+
+<div class="viewcode-block" id="GSMF">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.GSMF">[docs]</a>
+<span class="k">class</span> <span class="nc">GSMF</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute the redshift-dependent galaxy stellar mass function.</span>
+
+<span class="sd">    Compute the redshift-dependent galaxy stellar mass function (GSMF)</span>
+<span class="sd">    as a Schechter function at high masses, and as power-law with either</span>
+<span class="sd">    fixed of redshift-dependent slope at low masses. The GSMF returns a</span>
+<span class="sd">    galaxy number density *per stellar mass *.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    redshift : float</span>
+<span class="sd">        Redshift at which to compute the GSMF.</span>
+<span class="sd">    fixed_slope : bool</span>
+<span class="sd">        Whether to use the fixed (True) or the varying (False) low-mass</span>
+<span class="sd">        slope model.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This class implements the GSMF model from Chruslisnka &amp; Nelemans </span>
+<span class="sd">    (2019) [4]_. For galaxy stellar masses (log) greater than</span>
+<span class="sd">    :attr:`logm_break`, it is a Schechter function,</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\Phi(M_\\ast) = \\Phi_\\ast e^{-M/M_\\ast}</span>
+<span class="sd">        \\left(\\frac{M_\\ast}{M_\\mathrm{co}}\\right)^{a}.</span>
+<span class="sd">    </span>
+<span class="sd">    Its three parameters (`phi`, `M_co` and `a`) are redshift-dependent.</span>
+<span class="sd">    The values of `log(phi)`, `log(M_co)` and `a` at 13 redshifts between</span>
+<span class="sd">    0.05 and 9 (corresponding to Table 1 of Chruslinska &amp; Nelemans,</span>
+<span class="sd">    2019) [4]_ are kept in :data:`CHR19_GSMF`.</span>
+
+<span class="sd">    For ``z&lt;= 0.05``, the parameters are assumed to be the same as</span>
+<span class="sd">    at `0.05`. For ``0.05&lt;z&lt;=9``, they are interpolated from</span>
+<span class="sd">    :data:`CHR19_GSMF`. Beyond, `log(M_co)` and `a` retain their `z=9`</span>
+<span class="sd">    values, while `log(phi)` is assumed to increase linearly with its</span>
+<span class="sd">    mean variation rate between `z=8-9`.</span>
+
+<span class="sd">    Below the break, the GSMF is modeled as a power-law, with a slope</span>
+<span class="sd">    :attr:`low_mass_slope`. Depending on :attr:`fixed_slope`, it can</span>
+<span class="sd">    either be fixed to `-1.45`, or increase as</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        f(z) = 7.8 + 0.4 z</span>
+
+<span class="sd">    up to `z=8` and be constant beyond.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">fixed_slope</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        redshift : float</span>
+<span class="sd">            Redshift at which to compute the GSMF.</span>
+<span class="sd">        fixed_slope : bool, default: True</span>
+<span class="sd">            Whether to use the fixed (True) or the varying (False)</span>
+<span class="sd">            low-mass slope model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">=</span> <span class="n">redshift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_slope</span> <span class="o">=</span> <span class="n">fixed_slope</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_low_mass_slope</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># property</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">logm_break</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Break mass log between Schechter and power-law components.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span> <span class="o">=</span> <span class="mf">7.8</span> <span class="o">+</span> <span class="mf">0.4</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span> <span class="o">=</span> <span class="mf">9.8</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logm_break</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">low_mass_slope</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Slope of the simple power law at low masses.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low_mass_slope</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_slope</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_low_mass_slope</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.45</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_low_mass_slope</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">-</span> <span class="mf">1.34</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_low_mass_slope</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.1</span> <span class="o">*</span> <span class="mi">8</span> <span class="o">-</span> <span class="mf">1.34</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_low_mass_slope</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_schechter</span><span class="p">(</span><span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logphi</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logm_co</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log of Schechter function.</span>
+
+<span class="sd">        Receives the log of m and returns the log of a Schechter</span>
+<span class="sd">        function at m. Takes the power-law exponent ,``a``; the</span>
+<span class="sd">        logarithm of the normalization constant, ``logphi``; and the</span>
+<span class="sd">        logarithm of the cut-off mass, ``logm_co``, as arguments.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        logm : float</span>
+<span class="sd">            Logarithm of the value at which to evaluate the function.</span>
+<span class="sd">        a : float</span>
+<span class="sd">            Index of the power law component.</span>
+<span class="sd">        logphi : float</span>
+<span class="sd">            Logarithm of the normalization constant.</span>
+<span class="sd">        logm_co : float</span>
+<span class="sd">            Logarithm of the cut-off mass.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        log_sch : float</span>
+<span class="sd">            Logarithm of the Schechter function at ``10**logm``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">log_sch</span> <span class="o">=</span> <span class="p">(</span><span class="n">logphi</span> <span class="o">+</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">logm</span> <span class="o">-</span> <span class="n">logm_co</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="n">logm</span> <span class="o">-</span> <span class="n">logm_co</span><span class="p">)</span>
+                   <span class="o">/</span> <span class="n">LN10</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">LN10</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">log_sch</span>
+
+    <span class="k">def</span> <span class="nf">_power_law_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sch_params</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalization of the low-mass power-law GSMF component.</span>
+
+<span class="sd">        Computed by continuity with teh Schecther component.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">schechter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schechter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logm_break</span><span class="p">,</span> <span class="o">*</span><span class="n">sch_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">schechter</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low_mass_slope</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_break</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">LN10</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_power_law</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">sch_params</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Power law component of the GSMF.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        logm : float</span>
+<span class="sd">            Log of the mass at which to evaluate the function.</span>
+<span class="sd">        sch_params : float</span>
+<span class="sd">            Parameters of the Schechter component.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Function evaluated at ``10**logm``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_power_law_norm</span><span class="p">(</span><span class="n">sch_params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">low_mass_slope</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">logm</span> <span class="o">+</span> <span class="n">norm</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">LN10</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">schechter_params</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">|</span> <span class="nb">list</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;GSMF for a set of known Schechter component parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        logm : float</span>
+<span class="sd">            Log of the mass at which to evaluate the GSMF.</span>
+<span class="sd">        sch_params : float</span>
+<span class="sd">            Parameters of the Schechter component.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            Galaxy number density per stellar mass at ``10**logm``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">logm</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">logm_break</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_schechter</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="o">*</span><span class="n">schechter_params</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_power_law</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="n">schechter_params</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GSMF.log_gsmf">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.GSMF.log_gsmf">[docs]</a>
+    <span class="k">def</span> <span class="nf">log_gsmf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log of the GSMF as function of log of the mass.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        logm : float</span>
+<span class="sd">            Logarithm of the galaxy stellar mass.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        log_gsmf : float</span>
+<span class="sd">            Logarithm of the GSMF at ``10**logm``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># use parameters at z=0.05 for all z&lt;=0.05</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;=</span> <span class="mf">0.05</span><span class="p">:</span>
+            <span class="c1"># collect params for z=0.05</span>
+            <span class="n">schechter_params</span> <span class="o">=</span> <span class="n">CHR19_GSMF</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">log_gsmf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="n">schechter_params</span><span class="p">)</span>
+
+        <span class="c1"># for 0.05&lt;z&lt;=9, interpolate parameters to the set redshift</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">&lt;=</span> <span class="mi">9</span><span class="p">:</span>
+            <span class="c1"># collect params at all redshifts</span>
+            <span class="n">schechter_params</span> <span class="o">=</span> <span class="n">CHR19_GSMF</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># collect corresponding redshifts</span>
+            <span class="n">ipX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">CHR19_GSMF</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+            <span class="c1"># compute log10(gsmf) for logm</span>
+            <span class="n">ipY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span> <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">schechter_params</span><span class="p">]]</span>
+            <span class="p">)</span>
+            <span class="c1"># interpolate to set redshift</span>
+            <span class="n">log_gsmf</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">ipX</span><span class="p">,</span> <span class="n">ipY</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># for z&gt;9, keep logm_co and a, and assume that logphi increases</span>
+        <span class="c1"># linearly with the same rate as in (8,9)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># logphi variation rate between z=8 and z=9</span>
+            <span class="n">dnorm_dz</span> <span class="o">=</span> <span class="n">CHR19_GSMF</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">CHR19_GSMF</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># corresponding logphi change between z=9 and set redshift</span>
+            <span class="n">dnorm</span> <span class="o">=</span> <span class="n">dnorm_dz</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span> <span class="o">-</span> <span class="mi">9</span><span class="p">)</span>
+            <span class="c1"># new logphi at set redshift</span>
+            <span class="n">norm</span> <span class="o">=</span> <span class="n">CHR19_GSMF</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dnorm</span>
+            <span class="n">schechter_params</span> <span class="o">=</span> <span class="p">(</span><span class="n">CHR19_GSMF</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                                <span class="n">norm</span><span class="p">,</span>
+                                <span class="n">CHR19_GSMF</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">log_gsmf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f</span><span class="p">(</span><span class="n">logm</span><span class="p">,</span> <span class="n">schechter_params</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">log_gsmf</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="Corrections">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.Corrections">[docs]</a>
+<span class="k">class</span> <span class="nc">Corrections</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Corrections to a Kroupa IMF-based star formation rate.</span>
+
+<span class="sd">    Calculates corrections to a star formation rate (SFR) measured</span>
+<span class="sd">    by assuming a Kroupa initial mass function (IMF), from</span>
+<span class="sd">    :class:`imf.Star(invariant=True)`, for the environment-dependent IMF</span>
+<span class="sd">    from :class:`imf.IGIMF`. The corrections are a multiplicative factor</span>
+<span class="sd">    dependent on the SFR and associated [Fe/H].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    metallicity : NDArray</span>
+<span class="sd">        Array of metallicities at which to compute the corrections.</span>
+<span class="sd">    sfr : NDArray</span>
+<span class="sd">        Array of kSFR values for which to compute corrections.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    metallicity : NDArray</span>
+<span class="sd">        Array of metallicities at which to compute the corrections.</span>
+<span class="sd">    sfr_kroupa : NDArray</span>
+<span class="sd">        Array of kSFR values correspondent to each metallicity for</span>
+<span class="sd">         which to compute corrections.</span>
+<span class="sd">    corrections : NDArray</span>
+<span class="sd">        Array of calculated corrections for the given SFR-metallicity</span>
+<span class="sd">        pairs.</span>
+<span class="sd">    metallicity_data : NDArray</span>
+<span class="sd">        Metallicity column from the precalculated grid.</span>
+<span class="sd">    sfr_kroupa_data : NDArray</span>
+<span class="sd">        kSFR column from the precalculated grid.</span>
+<span class="sd">    sfr_correction_data : NDArray</span>
+<span class="sd">        Correction columns from the precalculated grid.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The corrections are obtained for arbitrary values of SFR and</span>
+<span class="sd">    metallicity by interpolation of the SFR density grid from</span>
+<span class="sd">    Chruslinska et al. (2020) [9]_, kindly made available by Martyna</span>
+<span class="sd">    Chruslinska.</span>
+
+<span class="sd">    All metallicities are given as [Fe/H].</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [9] Chruslinska, M., Jerabkova, T., Nelemans, G., Yan, Z. (2020).</span>
+<span class="sd">        The effect of the environment-dependent IMF on the</span>
+<span class="sd">        formation and metallicities of stars over cosmic history. A&amp;A,</span>
+<span class="sd">        636, A10. doi:10.1051/0004-6361/202037688</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metallicity</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">sfr</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metallicity</span> <span class="o">=</span> <span class="n">metallicity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfr_kroupa</span> <span class="o">=</span> <span class="n">sfr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sfr_kroupa</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metallicity_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfr_kroupa_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfr_correction_data</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Corrections.load_data">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.Corrections.load_data">[docs]</a>
+    <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load original correction data.&quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">C20_CORRECTIONS_PATH</span><span class="p">,</span> <span class="n">unpack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">feh_metallicity_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">sfr_kroupa_array</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sfr_correction_array</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">previous_feh</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">feh_count</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># each row holds cols [Fe/H], kSFR, Correction</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="c1"># collect [Fe/H]</span>
+            <span class="n">feh_metallicity_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feh_metallicity_array</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]]]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">previous_feh</span><span class="p">:</span>
+                <span class="n">sfr_kroupa_array</span><span class="p">[</span><span class="n">feh_count</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">sfr_correction_array</span><span class="p">[</span><span class="n">feh_count</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># when [Fe/H] changes in the file, create a new col in</span>
+                <span class="c1"># the sfr_kroupa and sfr_correction lists</span>
+                <span class="n">feh_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">previous_feh</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">sfr_kroupa_array</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
+                <span class="n">sfr_correction_array</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">]])</span>
+
+        <span class="c1"># each col corresponds to a [Fe/H], each row to a correction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfr_kroupa_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sfr_kroupa_array</span><span class="p">)</span>
+        <span class="c1"># each col corresponds to a [Fe/H], each row to an SFR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfr_correction_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sfr_correction_array</span><span class="p">)</span>
+        <span class="c1"># col titles for the two above arrays</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metallicity_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">feh_metallicity_array</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Corrections.get_corrections">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.Corrections.get_corrections">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_corrections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute corrections for :attr:`metallicity`, :attr:`sfr`.</span>
+
+<span class="sd">        Computes a 2D grid of corrections for all SFR-metallicity pairs from</span>
+<span class="sd">        :attr:`sfr` and :attr:`metallicity`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        corrections : NDArray</span>
+<span class="sd">            Correction array of shape</span>
+<span class="sd">            ``(len(`metallicity`), len(`sfr`))``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">metallicity_ip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">metallicity_data</span><span class="p">,</span>
+                                 <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfr_correction_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="c1"># Correction data is a grid of corrections over [Fe/H]-SFR.</span>
+        <span class="c1"># The first interpolation fixes the SFRs and interpolates to the</span>
+        <span class="c1"># set metallicities.</span>
+        <span class="n">metallicity_ip_corrections</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">metallicity_ip</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">sfr_correction_data</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">metallicity</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">sfr_kroupa_ip</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfr_kroupa_data</span><span class="p">)</span>
+        <span class="c1"># The second interpolation interpolates to the desired SFRs.</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">sfr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfr_kroupa</span><span class="p">):</span>
+            <span class="n">correction</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span>
+                <span class="n">sfr_kroupa_ip</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">sfr_kroupa_ip</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="n">metallicity_ip_corrections</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">metallicity_ip_corrections</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                <span class="n">sfr</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">corrections</span><span class="p">,</span> <span class="n">correction</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># A new correction grid is returned for the given [Fe/H]-SFR</span>
+        <span class="c1"># pairs.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">corrections</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ChruslinskaSFRD">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.ChruslinskaSFRD">[docs]</a>
+<span class="k">class</span> <span class="nc">ChruslinskaSFRD</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Star formation rate density grid.</span>
+
+<span class="sd">    Loads the precomputed star formation rate density (SFRD) grid over</span>
+<span class="sd">    redshift (z) and metallicity (Z_OH) and finds the SFRD corresponding</span>
+<span class="sd">    to the (z,Z) pair closest to the (z,Z) provided by the user. Allows</span>
+<span class="sd">    for choosing between the extreme low- and high-metallicity models,</span>
+<span class="sd">    or a moderate-metallicity model.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : {&#39;midmet&#39;, &#39;lowmet&#39;, &#39;highmet&#39;}, default: &#39;midmet&#39;</span>
+<span class="sd">        Option of SFRD grid model.</span>
+<span class="sd">    canon : bool, default : False</span>
+<span class="sd">        Whether to assume an invariant IMF or not.</span>
+<span class="sd">    per_redshift_met_bin : bool, default : False</span>
+<span class="sd">        Alters the SFRD computation. For testing purposes only.</span>
+
+<span class="sd">        .. deprecated:: 1.0</span>
+<span class="sd">           Keep to default value.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : str</span>
+<span class="sd">        Choice of SFRD grid model.</span>
+<span class="sd">    canon : str</span>
+<span class="sd">        Whether to assume an invariant IMF or not.</span>
+<span class="sd">    sfrd_redshift_array : NDArray</span>
+<span class="sd">        Array of redshifts corresponding to the SFRD grid.</span>
+<span class="sd">    sfrd_dtime_array : numpy array</span>
+<span class="sd">        Array of time steps defining the SFRD grid redshifts.</span>
+<span class="sd">    logsfrd_array : numpy array</span>
+<span class="sd">        SFRD log array over the redshift-metallicity grid.</span>
+
+<span class="sd">    Warns</span>
+<span class="sd">    -----</span>
+<span class="sd">    UserWarning</span>
+<span class="sd">        If :meth:`get_logsfrd` is run before :meth:`set_grid`.</span>
+
+<span class="sd">    Warnings</span>
+<span class="sd">    --------</span>
+<span class="sd">    The ``per_redshift_met_bin`` parameter is for testing purposes only</span>
+<span class="sd">    and will result in a wrong computation of the star formation rate.</span>
+<span class="sd">    It should be kept to the default value (False).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The precomputed SFRD grids are by Chruslinska et al. (2020) [9]_ and</span>
+<span class="sd">    were calculated with the same GSMF, SFMR and MZR relations employed</span>
+<span class="sd">    in this module. These grids already take into account the</span>
+<span class="sd">    corrections for the environment-dependent IMF from</span>
+<span class="sd">    :class:`sfh.Corrections`.</span>
+
+<span class="sd">    At the moment only three permutations are included. These correspond</span>
+<span class="sd">    to the high, moderate and low metallicity , defined by Chruslinska &amp;</span>
+<span class="sd">    Nelemans (2019) [4_]. They are,</span>
+
+<span class="sd">    * Low metallicity: combines :class:`sfh.MZR(model=&#39;PP04&#39;)`,</span>
+<span class="sd">      :class:`sfh.SFMR(flattening=&#39;sharp&#39;)` and</span>
+<span class="sd">      :class:`sfh.GSMF(fixed_slope=True)`.</span>
+<span class="sd">    * Moderate metallicity: combines :class:`sfh.MZR(model=&#39;M09&#39;)`,</span>
+<span class="sd">      :class:`sfh.SFMR(flattening=&#39;moderate&#39;)` and</span>
+<span class="sd">      :class:`sfh.GSMF(fixed_slope=True)`.</span>
+<span class="sd">    * High metallicity: combines :class:`sfh.MZR(model=&#39;KK04&#39;)`,</span>
+<span class="sd">      :class:`sfh.SFMR(flattening=&#39;none&#39;)` and</span>
+<span class="sd">      :class:`sfh.GSMF(fixed_slope=True)`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">MODEL_PATH_DICT</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lowmet&#39;</span><span class="p">:</span> <span class="n">LOWMET_SFRD_PATH</span><span class="p">,</span>
+                       <span class="s1">&#39;midmet&#39;</span><span class="p">:</span> <span class="n">MIDMET_SFRD_DATA_PATH</span><span class="p">,</span>
+                       <span class="s1">&#39;highmet&#39;</span><span class="p">:</span> <span class="n">HIGHMET_SFRD_DATA_PATH</span><span class="p">}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict: Paths to variant IMF SFRD model files.&quot;&quot;&quot;</span>
+    <span class="n">CANON_MODEL_PATH_DICT</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;lowmet&#39;</span><span class="p">:</span> <span class="n">LOWMET_CANON_SFRD_PATH</span><span class="p">,</span>
+                             <span class="s1">&#39;midmet&#39;</span><span class="p">:</span> <span class="n">MIDMET_CANON_SFRD_DATA_PATH</span><span class="p">,</span>
+                             <span class="s1">&#39;highmet&#39;</span><span class="p">:</span> <span class="n">HIGHMET_CANON_SFRD_DATA_PATH</span><span class="p">}</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dict: Path to invariant IMF SFRD model files.&quot;&quot;&quot;</span>
+    <span class="n">SFRD_ZOH_ARRAY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">5.3</span><span class="p">,</span> <span class="mf">9.7</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NDArray: SFRD grid Z_OH bin edges.&quot;&quot;&quot;</span>
+    <span class="n">SFRD_ZOH_CENTERS_ARRAY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">5.3</span><span class="p">,</span> <span class="mf">9.7</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NDArray: SFRD grid Z_OH bin centers.&quot;&quot;&quot;</span>
+    <span class="n">SFRD_FEH_ARRAY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ZOH_to_FeH</span><span class="p">(</span><span class="n">zoh</span><span class="p">)</span> <span class="k">for</span> <span class="n">zoh</span> <span class="ow">in</span> <span class="n">SFRD_ZOH_ARRAY</span><span class="p">])</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NDArray: SFRD grid [Fe/H] bin edges.&quot;&quot;&quot;</span>
+    <span class="n">SFRD_Z_ARRAY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">FeH_to_Z</span><span class="p">(</span><span class="n">feh</span><span class="p">)</span> <span class="k">for</span> <span class="n">feh</span> <span class="ow">in</span> <span class="n">SFRD_FEH_ARRAY</span><span class="p">])</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NDArray: SFRD grid Z bin edges.&quot;&quot;&quot;</span>
+    <span class="n">SFRD_Z_CENTERS_ARRAY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">FeH_to_Z</span><span class="p">(</span><span class="n">ZOH_to_FeH</span><span class="p">(</span><span class="n">zoh</span><span class="p">))</span> <span class="k">for</span> <span class="n">zoh</span> <span class="ow">in</span> <span class="n">SFRD_ZOH_CENTERS_ARRAY</span><span class="p">])</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;NDArray: SFRD grid Z bin centers.&quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO: remove per_redshift_met_bin option</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span><span class="s1">&#39;midmet&#39;</span><span class="p">,</span> <span class="n">canon</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">per_redshift_met_bin</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canon</span> <span class="o">=</span> <span class="n">canon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfrd_redshift_array</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfrd_dtime_array</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_per_redshift_met_bin</span> <span class="o">=</span> <span class="n">per_redshift_met_bin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_set_sfrd_redshift_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set redshift and timestep arrays.</span>
+
+<span class="sd">        Arrays corresponding to the SFRD grids from the</span>
+<span class="sd">        redshift/time data file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">redshift_time_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">REDSHIFT_SFRD_DATA_PATH</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfrd_redshift_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">redshift_time_data</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.</span><span class="p">]))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sfrd_dtime_array</span> <span class="o">=</span> <span class="n">redshift_time_data</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_set_sfrd_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set grid SFRD values.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canon</span><span class="p">:</span>
+            <span class="n">sfrd_data_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CANON_MODEL_PATH_DICT</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sfrd_data_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">MODEL_PATH_DICT</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">genfromtxt</span><span class="p">(</span><span class="n">sfrd_data_path</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+                <span class="n">dt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sfrd_dtime_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/=</span> <span class="n">dt</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_per_redshift_met_bin</span><span class="p">:</span>
+                    <span class="n">dz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sfrd_redshift_array</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">sfrd_redshift_array</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dfeh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SFRD_FEH_ARRAY</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">SFRD_FEH_ARRAY</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">/=</span> <span class="n">dz</span><span class="o">*</span><span class="n">dfeh</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ChruslinskaSFRD.set_grid">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.ChruslinskaSFRD.set_grid">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build redshift and SFRD arrays corresponding to SFRD grid.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_sfrd_redshift_array</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_sfrd_array</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ChruslinskaSFRD.get_logsfrd">
+<a class="viewcode-back" href="../../bossa.html#bossa.sfh.ChruslinskaSFRD.get_logsfrd">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_logsfrd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feh</span><span class="p">,</span> <span class="n">redshift</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return SFRD closest to ``(feh, redshift)``.</span>
+
+<span class="sd">        Searches for the closest ``(feh, redshift)`` in the SFRD grid</span>
+<span class="sd">        and returns the corresponding SFRD log value.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        feh : float</span>
+<span class="sd">            The desired [Fe/H].</span>
+<span class="sd">        redshift : float</span>
+<span class="sd">            The desired redshift.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        logsfrd : float</span>
+<span class="sd">            SFRD log corresponding to the closest point in the grid.</span>
+
+<span class="sd">        Warns</span>
+<span class="sd">        -----</span>
+<span class="sd">        UserWarning</span>
+<span class="sd">            If :meth:`load_grid` has not been called yet.</span>
+
+<span class="sd">        Warnings</span>
+<span class="sd">        --------</span>
+<span class="sd">        The user should bear in mind the grids range from -4 to 1.7 in</span>
+<span class="sd">        [Fe/H] and 0 to 10 in redshift. Passing values outside</span>
+<span class="sd">        these ranges will always return the edges of the grid.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sfrd_redshift_array</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;SFRD grid not loaded. &#39;</span>
+                          <span class="s1">&#39;Please run load_grid() first.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">Z_SUN</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">feh</span>
+        <span class="n">redshift_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfrd_redshift_array</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">redshift</span><span class="p">))</span>
+        <span class="n">z_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">SFRD_Z_CENTERS_ARRAY</span> <span class="o">-</span> <span class="n">z</span><span class="p">))</span>
+        <span class="n">logsfrd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logsfrd_array</span><span class="p">[</span><span class="n">redshift_i</span><span class="p">,</span> <span class="n">z_i</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">logsfrd</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lucas de Sá.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

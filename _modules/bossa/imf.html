@@ -427,8 +427,8 @@
 <span class="sd">    star-forming region (embedded cluster, or ECL), with a set [Fe/H],</span>
 <span class="sd">    and a total ECL stellar mass, ``m_tot``. According to the</span>
 <span class="sd">    ``invariant`` attribute, the sIMF might either follow an invariant</span>
-<span class="sd">    Kroupa (2001) [1]_ IMF or a metallicity- and star formation rate-</span>
-<span class="sd">    dependent Jerabkova et al. (2018) [2]_ IMF.</span>
+<span class="sd">    Kroupa (2001) [2]_ IMF or a metallicity- and star formation rate-</span>
+<span class="sd">    dependent Jerabkova et al. (2018) [3]_ IMF.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -463,7 +463,7 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    If invariant is set to False, the sIMF is as given by Jerabkova et al.</span>
-<span class="sd">    (2018) [1]_. ``M_TRUNC_MIN`` is set at the hydrogen burning</span>
+<span class="sd">    (2018) [3]_. ``M_TRUNC_MIN`` is set at the hydrogen burning</span>
 <span class="sd">    threshold of 0.08 Msun. Normalization constants ``k1`` and ``k2``</span>
 <span class="sd">    are found from ``k3`` by continuity. ``k3`` and ``m_max`` are</span>
 <span class="sd">    determined from two constraints.</span>
@@ -488,7 +488,10 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,</span>
+<span class="sd">    .. [2] Kroupa, P. (2001). On the variation of the initial mass </span>
+<span class="sd">        function. MNRAS, 322, 231.</span>
+<span class="sd">        doi:10.1046/j.1365-8711.2001.04022.x</span>
+<span class="sd">    .. [3] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,</span>
 <span class="sd">        Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of</span>
 <span class="sd">        metallicity and star formation rate on the time-dependent,</span>
 <span class="sd">        galaxy-wide stellar initial mass function. A&amp;A, 620, A39.</span>
@@ -762,7 +765,7 @@
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
-<span class="sd">    The eIMF is as given by Jerabkova et al. (2018) [1]_. M_TRUNC_MIN is</span>
+<span class="sd">    The eIMF is as given by Jerabkova et al. (2018) [3]_. M_TRUNC_MIN is</span>
 <span class="sd">     set to the default 5 Msun, and the maximum mass m_max is at most</span>
 <span class="sd">     1e9 Msun. k and m_max are determined from two constraints.</span>
 
@@ -780,14 +783,6 @@
 <span class="sd">    All masses in this class are given in units of solar mass. The SFR</span>
 <span class="sd">    is given in units of solar masses per year. The ECL formation time</span>
 <span class="sd">    is given in years.</span>
-
-<span class="sd">    References</span>
-<span class="sd">    ----------</span>
-<span class="sd">    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,</span>
-<span class="sd">       Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of metallicity</span>
-<span class="sd">       and star formation rate on the time-dependent, galaxy-wide</span>
-<span class="sd">       stellar initial mass function. A&amp;A, 620,</span>
-<span class="sd">       A39. doi:10.1051/0004-6361/20183</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">M_TRUNC_MIN</span> <span class="o">=</span> <span class="mf">5.0</span>
@@ -1002,7 +997,7 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    The IGIMF framework is applied as described in Jerabkova et al.</span>
-<span class="sd">    (2018) [1]_, Yan et al. (2017) [2]_ and references therein.</span>
+<span class="sd">    (2018) [3]_, Yan et al. (2017) [4]_ and references therein.</span>
 <span class="sd">    Explicitly, the gIMF at a given stellar mass `m` is</span>
 
 <span class="sd">    .. math::</span>
@@ -1027,12 +1022,7 @@
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
-<span class="sd">    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,</span>
-<span class="sd">        Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of</span>
-<span class="sd">        metallicity and star formation rate on the time-dependent,</span>
-<span class="sd">        galaxy-wide stellar initial mass function. A&amp;A, 620, A39.</span>
-<span class="sd">        doi:10.1051/0004-6361/20183</span>
-<span class="sd">    .. [2] Yan, Z., Jerabkova, T., Kroupa, P. (2017). The optimally</span>
+<span class="sd">    .. [4] Yan, Z., Jerabkova, T., Kroupa, P. (2017). The optimally</span>
 <span class="sd">        sampled galaxy-wide stellar initial mass function: Observational</span>
 <span class="sd">        tests and the publicly available GalIMF code. A&amp;A, 607, A126.</span>
 <span class="sd">        doi:10.1051/0004-6361/201730987</span>

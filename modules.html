@@ -1,0 +1,418 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bossa &mdash; BOSSA 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            BOSSA
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="bossa.html">bossa package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">BOSSA</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">bossa</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="bossa">
+<h1>bossa<a class="headerlink" href="#bossa" title="Link to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="bossa.html">bossa package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#module-bossa.constants">bossa.constants module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.BINARIES_CORRELATED_TABLE_PATH"><code class="docutils literal notranslate"><span class="pre">BINARIES_CORRELATED_TABLE_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.BINARIES_UNCORRELATED_TABLE_PATH"><code class="docutils literal notranslate"><span class="pre">BINARIES_UNCORRELATED_TABLE_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.C20_CORRECTIONS_PATH"><code class="docutils literal notranslate"><span class="pre">C20_CORRECTIONS_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.C20_DIR_PATH"><code class="docutils literal notranslate"><span class="pre">C20_DIR_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.COMPACT_OBJ_DIR_PATH"><code class="docutils literal notranslate"><span class="pre">COMPACT_OBJ_DIR_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.COMPAS_12XX_GRIDS_PATH"><code class="docutils literal notranslate"><span class="pre">COMPAS_12XX_GRIDS_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.COMPAS_12XX_PROC_OUTPUT_DIR_PATH"><code class="docutils literal notranslate"><span class="pre">COMPAS_12XX_PROC_OUTPUT_DIR_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.COMPAS_21XX_GRIDS_PATH"><code class="docutils literal notranslate"><span class="pre">COMPAS_21XX_GRIDS_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.COMPAS_21XX_PROC_OUTPUT_DIR_PATH"><code class="docutils literal notranslate"><span class="pre">COMPAS_21XX_PROC_OUTPUT_DIR_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.COMPAS_PROC_OUTPUT_DIR_PATH"><code class="docutils literal notranslate"><span class="pre">COMPAS_PROC_OUTPUT_DIR_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.COMPAS_UNPROC_OUTPUT_DIR_PATH"><code class="docutils literal notranslate"><span class="pre">COMPAS_UNPROC_OUTPUT_DIR_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.COMPAS_WORK_PATH"><code class="docutils literal notranslate"><span class="pre">COMPAS_WORK_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.DATA_PATH"><code class="docutils literal notranslate"><span class="pre">DATA_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.GALAXYGRID_DIR_PATH"><code class="docutils literal notranslate"><span class="pre">GALAXYGRID_DIR_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.IGIMF_ZAMS_DIR_PATH"><code class="docutils literal notranslate"><span class="pre">IGIMF_ZAMS_DIR_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.LN10"><code class="docutils literal notranslate"><span class="pre">LN10</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.LOGE"><code class="docutils literal notranslate"><span class="pre">LOGE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.LOG_PATH"><code class="docutils literal notranslate"><span class="pre">LOG_PATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.PHYSICAL_CORE_COUNT"><code class="docutils literal notranslate"><span class="pre">PHYSICAL_CORE_COUNT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.ROOT"><code class="docutils literal notranslate"><span class="pre">ROOT</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.constants.TOTAL_PHYSICAL_MEMORY"><code class="docutils literal notranslate"><span class="pre">TOTAL_PHYSICAL_MEMORY</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#module-bossa.imf">bossa.imf module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.imf.EmbeddedCluster"><code class="docutils literal notranslate"><span class="pre">EmbeddedCluster</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.EmbeddedCluster.M_TRUNC_MAX"><code class="docutils literal notranslate"><span class="pre">EmbeddedCluster.M_TRUNC_MAX</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.EmbeddedCluster.M_TRUNC_MIN"><code class="docutils literal notranslate"><span class="pre">EmbeddedCluster.M_TRUNC_MIN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.EmbeddedCluster.beta"><code class="docutils literal notranslate"><span class="pre">EmbeddedCluster.beta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.EmbeddedCluster.get_mmax_k"><code class="docutils literal notranslate"><span class="pre">EmbeddedCluster.get_mmax_k()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.imf.IGIMF"><code class="docutils literal notranslate"><span class="pre">IGIMF</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.IGIMF.imf"><code class="docutils literal notranslate"><span class="pre">IGIMF.imf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.IGIMF.set_clusters"><code class="docutils literal notranslate"><span class="pre">IGIMF.set_clusters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.breaks"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.breaks</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.exponents"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.exponents</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.imf"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.imf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.integrate"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.integrate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.m_max"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.m_max</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.m_tot"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.m_tot</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.m_trunc_max"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.m_trunc_max</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.m_trunc_min"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.m_trunc_min</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.PowerLawIMF.norms"><code class="docutils literal notranslate"><span class="pre">PowerLawIMF.norms</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.imf.Star"><code class="docutils literal notranslate"><span class="pre">Star</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.BREAKS"><code class="docutils literal notranslate"><span class="pre">Star.BREAKS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.M_TRUNC_MAX"><code class="docutils literal notranslate"><span class="pre">Star.M_TRUNC_MAX</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.M_TRUNC_MIN"><code class="docutils literal notranslate"><span class="pre">Star.M_TRUNC_MIN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.a1"><code class="docutils literal notranslate"><span class="pre">Star.a1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.a2"><code class="docutils literal notranslate"><span class="pre">Star.a2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.a3"><code class="docutils literal notranslate"><span class="pre">Star.a3</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.g1"><code class="docutils literal notranslate"><span class="pre">Star.g1</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.g2"><code class="docutils literal notranslate"><span class="pre">Star.g2</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.get_mmax_k"><code class="docutils literal notranslate"><span class="pre">Star.get_mmax_k()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.imf.Star.x"><code class="docutils literal notranslate"><span class="pre">Star.x</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#module-bossa.postprocessing">bossa.postprocessing module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.BASE_COLS_TOSAVE"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.BASE_COLS_TOSAVE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.DCOTAB_COLS_TOLOAD"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.DCOTAB_COLS_TOLOAD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.PSRTAB_COLS_TOLOAD"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.PSRTAB_COLS_TOLOAD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.PSR_COLS_TOSAVE"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.PSR_COLS_TOSAVE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.PSR_DO_COLS_TOSAVE"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.PSR_DO_COLS_TOSAVE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.PSR_SN_DOUBLE_COLS_TOSAVE"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.PSR_SN_DOUBLE_COLS_TOSAVE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.SNTAB_BASE_COLS_TOLOAD"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.SNTAB_BASE_COLS_TOLOAD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.SNTAB_PSR_COLS_TOLOAD"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.SNTAB_PSR_COLS_TOLOAD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.SYSPARAMTAB_COLS_TOLOAD"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.SYSPARAMTAB_COLS_TOLOAD</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.columns_to_load"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.columns_to_load</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.columns_to_save"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.columns_to_save</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.float32_cols"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.float32_cols</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.gen_subdfs"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.gen_subdfs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.COMPASOutputTrimmer.trim"><code class="docutils literal notranslate"><span class="pre">COMPASOutputTrimmer.trim()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.postprocessing.CompactBinaryPopulation"><code class="docutils literal notranslate"><span class="pre">CompactBinaryPopulation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.CompactBinaryPopulation.compas_grids_folder"><code class="docutils literal notranslate"><span class="pre">CompactBinaryPopulation.compas_grids_folder</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.CompactBinaryPopulation.compas_proc_output_dir_path"><code class="docutils literal notranslate"><span class="pre">CompactBinaryPopulation.compas_proc_output_dir_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.CompactBinaryPopulation.crossmatch_sample"><code class="docutils literal notranslate"><span class="pre">CompactBinaryPopulation.crossmatch_sample()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.postprocessing.LogPFinder"><code class="docutils literal notranslate"><span class="pre">LogPFinder</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.LogPFinder.a_to_logp_table"><code class="docutils literal notranslate"><span class="pre">LogPFinder.a_to_logp_table()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.LogPFinder.get_closest_logp"><code class="docutils literal notranslate"><span class="pre">LogPFinder.get_closest_logp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.LogPFinder.set_m1"><code class="docutils literal notranslate"><span class="pre">LogPFinder.set_m1()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates"><code class="docutils literal notranslate"><span class="pre">MergerRates</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.CATEGORY_COLS"><code class="docutils literal notranslate"><span class="pre">MergerRates.CATEGORY_COLS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.COLS_TO_LOAD_ESSENTIAL"><code class="docutils literal notranslate"><span class="pre">MergerRates.COLS_TO_LOAD_ESSENTIAL</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.COLS_TO_LOAD_EXTENDED"><code class="docutils literal notranslate"><span class="pre">MergerRates.COLS_TO_LOAD_EXTENDED</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.canon_sfrd"><code class="docutils literal notranslate"><span class="pre">MergerRates.canon_sfrd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.cols_to_load"><code class="docutils literal notranslate"><span class="pre">MergerRates.cols_to_load</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.delete_sample_df_from_memory"><code class="docutils literal notranslate"><span class="pre">MergerRates.delete_sample_df_from_memory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.get_mtot_per_ncomp"><code class="docutils literal notranslate"><span class="pre">MergerRates.get_mtot_per_ncomp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.get_starforming_masses"><code class="docutils literal notranslate"><span class="pre">MergerRates.get_starforming_masses()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.load_sample_to_memory"><code class="docutils literal notranslate"><span class="pre">MergerRates.load_sample_to_memory()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.sample_paths"><code class="docutils literal notranslate"><span class="pre">MergerRates.sample_paths</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.set_merger_df"><code class="docutils literal notranslate"><span class="pre">MergerRates.set_merger_df()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.postprocessing.MergerRates.sfrd_model"><code class="docutils literal notranslate"><span class="pre">MergerRates.sfrd_model</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#module-bossa.sampling">bossa.sampling module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sampling.CompositeBinaryPopulation"><code class="docutils literal notranslate"><span class="pre">CompositeBinaryPopulation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.CompositeBinaryPopulation.load_grid"><code class="docutils literal notranslate"><span class="pre">CompositeBinaryPopulation.load_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.CompositeBinaryPopulation.sample_grid"><code class="docutils literal notranslate"><span class="pre">CompositeBinaryPopulation.sample_grid()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid.get_sample"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid.get_sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid.mzr_model"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid.mzr_model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid.sample_redshift"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid.sample_redshift()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid.sampling_mode"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid.sampling_mode</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid.save_grid"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid.save_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid.save_path"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid.save_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid.scatter_model"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid.scatter_model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyGrid.sfmr_flattening"><code class="docutils literal notranslate"><span class="pre">GalaxyGrid.sfmr_flattening</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyStellarMassSampling"><code class="docutils literal notranslate"><span class="pre">GalaxyStellarMassSampling</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyStellarMassSampling.sample"><code class="docutils literal notranslate"><span class="pre">GalaxyStellarMassSampling.sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.GalaxyStellarMassSampling.sampling"><code class="docutils literal notranslate"><span class="pre">GalaxyStellarMassSampling.sampling</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sampling.IMFLike"><code class="docutils literal notranslate"><span class="pre">IMFLike</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sampling.RandomSampling"><code class="docutils literal notranslate"><span class="pre">RandomSampling</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.RandomSampling.compute_imf"><code class="docutils literal notranslate"><span class="pre">RandomSampling.compute_imf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.RandomSampling.discretization_masses"><code class="docutils literal notranslate"><span class="pre">RandomSampling.discretization_masses</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.RandomSampling.get_sample"><code class="docutils literal notranslate"><span class="pre">RandomSampling.get_sample()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation.get_sample"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation.get_sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation.inner_binary_sample_columns"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation.inner_binary_sample_columns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation.outer_pair_columns"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation.outer_pair_columns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation.pairs_table_path"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation.pairs_table_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation.sample_columns"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation.sample_columns</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation.save_path"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation.save_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation.save_sample"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation.save_sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sampling.SimpleBinaryPopulation.set_sampling_pool"><code class="docutils literal notranslate"><span class="pre">SimpleBinaryPopulation.set_sampling_pool()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sampling.powerlaw"><code class="docutils literal notranslate"><span class="pre">powerlaw()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#module-bossa.sfh">bossa.sfh module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sfh.BoogaardSFMR"><code class="docutils literal notranslate"><span class="pre">BoogaardSFMR</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.BoogaardSFMR.A"><code class="docutils literal notranslate"><span class="pre">BoogaardSFMR.A</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.BoogaardSFMR.b"><code class="docutils literal notranslate"><span class="pre">BoogaardSFMR.b</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.BoogaardSFMR.c"><code class="docutils literal notranslate"><span class="pre">BoogaardSFMR.c</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.CANON_MODEL_PATH_DICT"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.CANON_MODEL_PATH_DICT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.MODEL_PATH_DICT"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.MODEL_PATH_DICT</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.SFRD_FEH_ARRAY"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.SFRD_FEH_ARRAY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.SFRD_ZOH_ARRAY"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.SFRD_ZOH_ARRAY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.SFRD_ZOH_CENTERS_ARRAY"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.SFRD_ZOH_CENTERS_ARRAY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.SFRD_Z_ARRAY"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.SFRD_Z_ARRAY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.SFRD_Z_CENTERS_ARRAY"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.SFRD_Z_CENTERS_ARRAY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.get_logsfrd"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.get_logsfrd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.ChruslinskaSFRD.set_grid"><code class="docutils literal notranslate"><span class="pre">ChruslinskaSFRD.set_grid()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sfh.Corrections"><code class="docutils literal notranslate"><span class="pre">Corrections</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.Corrections.get_corrections"><code class="docutils literal notranslate"><span class="pre">Corrections.get_corrections()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.Corrections.load_data"><code class="docutils literal notranslate"><span class="pre">Corrections.load_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sfh.GSMF"><code class="docutils literal notranslate"><span class="pre">GSMF</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.GSMF.log_gsmf"><code class="docutils literal notranslate"><span class="pre">GSMF.log_gsmf()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.GSMF.logm_break"><code class="docutils literal notranslate"><span class="pre">GSMF.logm_break</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.GSMF.low_mass_slope"><code class="docutils literal notranslate"><span class="pre">GSMF.low_mass_slope</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sfh.MZR"><code class="docutils literal notranslate"><span class="pre">MZR</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.IP_ARRAYS_LEN"><code class="docutils literal notranslate"><span class="pre">MZR.IP_ARRAYS_LEN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.IP_REDSHIFT_ARRAY"><code class="docutils literal notranslate"><span class="pre">MZR.IP_REDSHIFT_ARRAY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.LOGM_MAX"><code class="docutils literal notranslate"><span class="pre">MZR.LOGM_MAX</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.LOGM_MIN"><code class="docutils literal notranslate"><span class="pre">MZR.LOGM_MIN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.ip_param_array"><code class="docutils literal notranslate"><span class="pre">MZR.ip_param_array</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.logm"><code class="docutils literal notranslate"><span class="pre">MZR.logm()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.scatter"><code class="docutils literal notranslate"><span class="pre">MZR.scatter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.set_params"><code class="docutils literal notranslate"><span class="pre">MZR.set_params()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.MZR.zoh"><code class="docutils literal notranslate"><span class="pre">MZR.zoh()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sfh.SFMR"><code class="docutils literal notranslate"><span class="pre">SFMR</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SFMR.DISPERSION"><code class="docutils literal notranslate"><span class="pre">SFMR.DISPERSION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SFMR.INTERNAL_DISPERION"><code class="docutils literal notranslate"><span class="pre">SFMR.INTERNAL_DISPERION</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SFMR.logsfr"><code class="docutils literal notranslate"><span class="pre">SFMR.logsfr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SFMR.scatter"><code class="docutils literal notranslate"><span class="pre">SFMR.scatter</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SFMR.sfmr"><code class="docutils literal notranslate"><span class="pre">SFMR.sfmr</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sfh.SpeagleSFMR"><code class="docutils literal notranslate"><span class="pre">SpeagleSFMR</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SpeagleSFMR.LOGM_BREAK"><code class="docutils literal notranslate"><span class="pre">SpeagleSFMR.LOGM_BREAK</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SpeagleSFMR.a"><code class="docutils literal notranslate"><span class="pre">SpeagleSFMR.a</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SpeagleSFMR.b"><code class="docutils literal notranslate"><span class="pre">SpeagleSFMR.b</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.SpeagleSFMR.time"><code class="docutils literal notranslate"><span class="pre">SpeagleSFMR.time</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.sfh.TomczakSFMR"><code class="docutils literal notranslate"><span class="pre">TomczakSFMR</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.TomczakSFMR.GAMMA"><code class="docutils literal notranslate"><span class="pre">TomczakSFMR.GAMMA</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.TomczakSFMR.break_corr"><code class="docutils literal notranslate"><span class="pre">TomczakSFMR.break_corr</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.TomczakSFMR.logm_break"><code class="docutils literal notranslate"><span class="pre">TomczakSFMR.logm_break</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.TomczakSFMR.logm_to"><code class="docutils literal notranslate"><span class="pre">TomczakSFMR.logm_to</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.sfh.TomczakSFMR.s0"><code class="docutils literal notranslate"><span class="pre">TomczakSFMR.s0</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#module-bossa.utils">bossa.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.FeH_to_OFe"><code class="docutils literal notranslate"><span class="pre">FeH_to_OFe()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.FeH_to_Z"><code class="docutils literal notranslate"><span class="pre">FeH_to_Z()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.Length"><code class="docutils literal notranslate"><span class="pre">Length</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.utils.Length.length"><code class="docutils literal notranslate"><span class="pre">Length.length</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.ZOH_from_FeH"><code class="docutils literal notranslate"><span class="pre">ZOH_from_FeH()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.ZOH_to_FeH"><code class="docutils literal notranslate"><span class="pre">ZOH_to_FeH()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.ZOH_to_FeH2"><code class="docutils literal notranslate"><span class="pre">ZOH_to_FeH2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.a_to_logp"><code class="docutils literal notranslate"><span class="pre">a_to_logp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.bintype"><code class="docutils literal notranslate"><span class="pre">bintype()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.chirp_mass"><code class="docutils literal notranslate"><span class="pre">chirp_mass()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.create_logger"><code class="docutils literal notranslate"><span class="pre">create_logger()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.enumerate_bin_edges"><code class="docutils literal notranslate"><span class="pre">enumerate_bin_edges()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.fix_unit"><code class="docutils literal notranslate"><span class="pre">fix_unit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.float_or_arr_input"><code class="docutils literal notranslate"><span class="pre">float_or_arr_input()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.format_time"><code class="docutils literal notranslate"><span class="pre">format_time()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.get_bin_centers"><code class="docutils literal notranslate"><span class="pre">get_bin_centers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.get_bin_frequency_heights"><code class="docutils literal notranslate"><span class="pre">get_bin_frequency_heights()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.get_linear_fit"><code class="docutils literal notranslate"><span class="pre">get_linear_fit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.get_linear_fit_area"><code class="docutils literal notranslate"><span class="pre">get_linear_fit_area()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.get_uniform_bin_edges"><code class="docutils literal notranslate"><span class="pre">get_uniform_bin_edges()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.input_unit"><code class="docutils literal notranslate"><span class="pre">input_unit()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.interpolate"><code class="docutils literal notranslate"><span class="pre">interpolate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.logp_from_row"><code class="docutils literal notranslate"><span class="pre">logp_from_row()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.logp_to_a"><code class="docutils literal notranslate"><span class="pre">logp_to_a()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.mass_ratio"><code class="docutils literal notranslate"><span class="pre">mass_ratio()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.pull_snmass"><code class="docutils literal notranslate"><span class="pre">pull_snmass()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.pull_snmass1"><code class="docutils literal notranslate"><span class="pre">pull_snmass1()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.pull_snmass2"><code class="docutils literal notranslate"><span class="pre">pull_snmass2()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.sample_histogram"><code class="docutils literal notranslate"><span class="pre">sample_histogram()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.step"><code class="docutils literal notranslate"><span class="pre">step()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.symmetrize_masses"><code class="docutils literal notranslate"><span class="pre">symmetrize_masses()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.utils.valley_minimum"><code class="docutils literal notranslate"><span class="pre">valley_minimum()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#module-bossa.zams">bossa.zams module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistribution"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistribution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistribution.companion_frequency_q01"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistribution.companion_frequency_q01()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.A"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.A</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.DELTA_LOGP"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.DELTA_LOGP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.LOGP_BREAKS"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.LOGP_BREAKS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.LOGP_MAX"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.LOGP_MAX</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.LOGP_MIN"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.LOGP_MIN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.M1_MAX"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.M1_MAX</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.M1_MIN"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.M1_MIN</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.companion_frequency_q03"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.companion_frequency_q03()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.f_logp1_q03"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.f_logp1_q03</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.f_logp27_q03"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.f_logp27_q03</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.f_logp55_q03"><code class="docutils literal notranslate"><span class="pre">CompanionFrequencyDistributionHighQ.f_logp55_q03</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.zams.EccentricityDistribution"><code class="docutils literal notranslate"><span class="pre">EccentricityDistribution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.EccentricityDistribution.prob"><code class="docutils literal notranslate"><span class="pre">EccentricityDistribution.prob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.EccentricityDistribution.set_parameters"><code class="docutils literal notranslate"><span class="pre">EccentricityDistribution.set_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.zams.MassRatioDistribution"><code class="docutils literal notranslate"><span class="pre">MassRatioDistribution</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.MassRatioDistribution.prob"><code class="docutils literal notranslate"><span class="pre">MassRatioDistribution.prob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.MassRatioDistribution.set_parameters"><code class="docutils literal notranslate"><span class="pre">MassRatioDistribution.set_parameters()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.zams.MultipleFraction"><code class="docutils literal notranslate"><span class="pre">MultipleFraction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.MultipleFraction.get_multiple_fraction"><code class="docutils literal notranslate"><span class="pre">MultipleFraction.get_multiple_fraction()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.MultipleFraction.ncomp_mean"><code class="docutils literal notranslate"><span class="pre">MultipleFraction.ncomp_mean()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.MultipleFraction.prob"><code class="docutils literal notranslate"><span class="pre">MultipleFraction.prob()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.MultipleFraction.solve"><code class="docutils literal notranslate"><span class="pre">MultipleFraction.solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.zams.ZAMSSystemGenerator"><code class="docutils literal notranslate"><span class="pre">ZAMSSystemGenerator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.ZAMSSystemGenerator.close_pairs_table"><code class="docutils literal notranslate"><span class="pre">ZAMSSystemGenerator.close_pairs_table()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.ZAMSSystemGenerator.open_m1group"><code class="docutils literal notranslate"><span class="pre">ZAMSSystemGenerator.open_m1group()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.ZAMSSystemGenerator.sample_system"><code class="docutils literal notranslate"><span class="pre">ZAMSSystemGenerator.sample_system()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="bossa.html#bossa.zams.ZAMSSystemGenerator.setup_sampler"><code class="docutils literal notranslate"><span class="pre">ZAMSSystemGenerator.setup_sampler()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="bossa.html#bossa.zams.gen_seed"><code class="docutils literal notranslate"><span class="pre">gen_seed()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="bossa.html#module-bossa">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lucas de Sá.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
