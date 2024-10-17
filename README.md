@@ -6,12 +6,12 @@ This repository is under construction. The current version of the code (1.0.0) c
 
 ### Data
 
-The ```data/C20_Results``` contains data from [Chruślińska & Nelemans (2019)](https://academic.oup.com/mnras/article/488/4/5300/5538863) and [Chruślińska, Jeřábková, Nelemans & Yan (2020)](https://www.aanda.org/articles/aa/full_html/2020/04/aa37688-20/aa37688-20.html). It is read by the `sfh.Corrections` class.
+The ```data/C20_Results``` folder contains data from [Chruślińska & Nelemans (2019)](https://academic.oup.com/mnras/article/488/4/5300/5538863) and [Chruślińska, Jeřábková, Nelemans & Yan (2020)](https://www.aanda.org/articles/aa/full_html/2020/04/aa37688-20/aa37688-20.html). It is read by the `sfh.Corrections` class.
 
 Data from the BOSSA methods paper and from [de Sá et al. (2024b)](https://arxiv.org/abs/2410.01451) is available at https://zenodo.org/records/13909307.
 
 ### Documentation
-Please find BOSSA's documentation at [https://lmdesa.github.io/BOSSA/].
+Please find BOSSA's documentation at (https://lmdesa.github.io/BOSSA/)[https://lmdesa.github.io/BOSSA/].
 Documentation and comments are gradually being added to the code. Progress:
 * `constants`: partially documented,
 * `utils`: not documented,
