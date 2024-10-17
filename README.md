@@ -11,7 +11,7 @@ The ```data/C20_Results``` folder contains data from [Chruślińska & Nelemans (
 Data from the BOSSA methods paper and from [de Sá et al. (2024b)](https://arxiv.org/abs/2410.01451) is available at https://zenodo.org/records/13909307.
 
 ### Documentation
-Please find BOSSA's documentation at (https://lmdesa.github.io/BOSSA/)[https://lmdesa.github.io/BOSSA/].
+Please find BOSSA's documentation at [https://lmdesa.github.io/BOSSA/](https://lmdesa.github.io/BOSSA/).
 Documentation and comments are gradually being added to the code. Progress:
 * `constants`: partially documented,
 * `utils`: not documented,
