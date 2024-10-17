@@ -28,7 +28,7 @@ TOTAL_PHYSICAL_MEMORY = virtual_memory().total
 
 ### Paths
 
-ROOT = Path(os.path.dirname(__file__)).resolve().parent
+ROOT = Path(os.path.dirname(__file__)).resolve().parent.parent
 """path_like : Path to root folder."""
 DATA_PATH = Path(ROOT, 'data')
 """path_like: Path to the Data folder."""
