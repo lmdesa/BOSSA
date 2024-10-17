@@ -3,7 +3,7 @@ name: gen_docs
 on: [push, pull_request, workflow_dispatch]
 
 permissions:
-  content: write
+  contents: write
 
 jobs:
   docs:
