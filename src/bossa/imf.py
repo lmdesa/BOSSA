@@ -345,8 +345,8 @@ class Star(PowerLawIMF):
     star-forming region (embedded cluster, or ECL), with a set [Fe/H],
     and a total ECL stellar mass, ``m_tot``. According to the
     ``invariant`` attribute, the sIMF might either follow an invariant
-    Kroupa (2001) [1]_ IMF or a metallicity- and star formation rate-
-    dependent Jerabkova et al. (2018) [2]_ IMF.
+    Kroupa (2001) [2]_ IMF or a metallicity- and star formation rate-
+    dependent Jerabkova et al. (2018) [3]_ IMF.
 
     Attributes
     ----------
@@ -381,7 +381,7 @@ class Star(PowerLawIMF):
     Notes
     -----
     If invariant is set to False, the sIMF is as given by Jerabkova et al.
-    (2018) [1]_. ``M_TRUNC_MIN`` is set at the hydrogen burning
+    (2018) [3]_. ``M_TRUNC_MIN`` is set at the hydrogen burning
     threshold of 0.08 Msun. Normalization constants ``k1`` and ``k2``
     are found from ``k3`` by continuity. ``k3`` and ``m_max`` are
     determined from two constraints.
@@ -406,7 +406,10 @@ class Star(PowerLawIMF):
 
     References
     ----------
-    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
+    .. [2] Kroupa, P. (2001). On the variation of the initial mass 
+        function. MNRAS, 322, 231.
+        doi:10.1046/j.1365-8711.2001.04022.x
+    .. [3] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
         Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
         metallicity and star formation rate on the time-dependent,
         galaxy-wide stellar initial mass function. A&A, 620, A39.
@@ -674,7 +677,7 @@ class EmbeddedCluster(PowerLawIMF):
 
     Notes
     -----
-    The eIMF is as given by Jerabkova et al. (2018) [1]_. M_TRUNC_MIN is
+    The eIMF is as given by Jerabkova et al. (2018) [3]_. M_TRUNC_MIN is
      set to the default 5 Msun, and the maximum mass m_max is at most
      1e9 Msun. k and m_max are determined from two constraints.
 
@@ -692,14 +695,6 @@ class EmbeddedCluster(PowerLawIMF):
     All masses in this class are given in units of solar mass. The SFR
     is given in units of solar masses per year. The ECL formation time
     is given in years.
-
-    References
-    ----------
-    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
-       Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of metallicity
-       and star formation rate on the time-dependent, galaxy-wide
-       stellar initial mass function. A&A, 620,
-       A39. doi:10.1051/0004-6361/20183
     """
 
     M_TRUNC_MIN = 5.0
@@ -908,7 +903,7 @@ class IGIMF:
     Notes
     -----
     The IGIMF framework is applied as described in Jerabkova et al.
-    (2018) [1]_, Yan et al. (2017) [2]_ and references therein.
+    (2018) [3]_, Yan et al. (2017) [4]_ and references therein.
     Explicitly, the gIMF at a given stellar mass `m` is
 
     .. math::
@@ -933,12 +928,7 @@ class IGIMF:
 
     References
     ----------
-    .. [1] Jerabkova, T., Zonoozi, A. H., Kroupa, P., Beccari, G.,
-        Yan, Z., Vazdekis, A., Zhang, Z.-Y. (2018). Impact of
-        metallicity and star formation rate on the time-dependent,
-        galaxy-wide stellar initial mass function. A&A, 620, A39.
-        doi:10.1051/0004-6361/20183
-    .. [2] Yan, Z., Jerabkova, T., Kroupa, P. (2017). The optimally
+    .. [4] Yan, Z., Jerabkova, T., Kroupa, P. (2017). The optimally
         sampled galaxy-wide stellar initial mass function: Observational
         tests and the publicly available GalIMF code. A&A, 607, A126.
         doi:10.1051/0004-6361/201730987
