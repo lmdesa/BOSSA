@@ -4,6 +4,10 @@ The Binary Object environment-Sensitive Sampling Algorithm (BOSSA) generates sam
 
 This repository is under construction. The current version of the code (1.0.0) corresponds to that used in [de Sá et al. (2024a)](https://github.com/lmdesa/BOSSA). Tutorial notebooks are still being completed. 
 
+### Running BOSSA
+
+If you intend to run one of the notebooks or use the code on your own, make sure to unpack the two tar.gz files in the ```data``` folder. They each contain a table of preset initial parameter values that ZAMS populations are generated from (see [zams.ZAMSSystemGenerator](https://lmdesa.github.io/BOSSA/bossa.html#bossa.zams.ZAMSSystemGenerator) in the docs). This process will be streamlined in the future.
+
 ### Data
 
 The ```data/C20_Results``` folder contains data from [Chruślińska & Nelemans (2019)](https://academic.oup.com/mnras/article/488/4/5300/5538863) and [Chruślińska, Jeřábková, Nelemans & Yan (2020)](https://www.aanda.org/articles/aa/full_html/2020/04/aa37688-20/aa37688-20.html). It is read by the `sfh.Corrections` class.
