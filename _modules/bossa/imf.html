@@ -409,8 +409,8 @@
         <span class="c1"># With limits, exponents and norms properly set up according to</span>
         <span class="c1"># the class docstring, this should work for both simple and</span>
         <span class="c1"># broken power-laws.</span>
-        <span class="n">index</span><span class="p">,</span> <span class="n">m_break</span> <span class="o">=</span> <span class="p">(</span><span class="nb">next</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">break_</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">break_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">)</span> <span class="k">if</span> <span class="n">break_</span> <span class="o">&gt;</span> <span class="n">m</span><span class="p">),</span>
-                          <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_max</span><span class="p">))</span>
+        <span class="n">index</span><span class="p">,</span> <span class="n">m_break</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(((</span><span class="n">i</span><span class="p">,</span> <span class="n">break_</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">break_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">)</span> <span class="k">if</span> <span class="n">break_</span> <span class="o">&gt;</span> <span class="n">m</span><span class="p">),</span>
+                              <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">breaks</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_max</span><span class="p">))</span>
         <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norms</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exponents</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="n">m</span> <span class="o">**</span> <span class="n">a</span></div>
@@ -518,7 +518,7 @@
 <span class="sd">        invariant : bool, default : False</span>
 <span class="sd">            Whether to use an invariant IMF.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">m_tot</span> <span class="o">=</span> <span class="n">m_ecl</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">invariant</span> <span class="o">=</span> <span class="n">invariant</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m_ecl_min</span> <span class="o">=</span> <span class="n">m_ecl_min</span>
