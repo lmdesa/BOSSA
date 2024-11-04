@@ -331,8 +331,8 @@ class PowerLawIMF:
         # With limits, exponents and norms properly set up according to
         # the class docstring, this should work for both simple and
         # broken power-laws.
-        index, m_break = (next((i, break_) for i, break_ in enumerate(self.breaks) if break_ > m),
-                          (len(self.breaks), self.m_trunc_max))
+        index, m_break = next(((i, break_) for i, break_ in enumerate(self.breaks) if break_ > m),
+                              (len(self.breaks), self.m_trunc_max))
         k = self.norms[index]
         a = self.exponents[index]
         return k * m ** a
@@ -436,7 +436,7 @@ class Star(PowerLawIMF):
         invariant : bool, default : False
             Whether to use an invariant IMF.
         """
-
+        
         self.m_tot = m_ecl
         self.invariant = invariant
         self.m_ecl_min = m_ecl_min
