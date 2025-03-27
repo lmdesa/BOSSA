@@ -2,7 +2,7 @@
 
 The Binary Object environment-Sensitive Sampling Algorithm (BOSSA) generates samples of ZAMS binaries (or higher-order multiples) consistent with the metallicity- and star formation rate-dependent IMF by [Jeřábková et al. (2018)](https://www.aanda.org/articles/aa/full_html/2018/12/aa33055-18/aa33055-18.html), the cosmic star-formation history by [Chruślińska & Nelemans (2019)](https://academic.oup.com/mnras/article/488/4/5300/5538863) and [Chruślińska, Jeřábková, Nelemans & Yan (2020)](https://www.aanda.org/articles/aa/full_html/2020/04/aa37688-20/aa37688-20.html); and the correlated orbital parameter distributions by [Moe & Di Stefano (2017)](https://iopscience.iop.org/article/10.3847/1538-4365/aa6fb6). Although the ouput is written with COMPAS in mind, it does not depend on it.
 
-This repository is under construction. The current version of the code (1.0.0) corresponds to that used in [de Sá et al. (2024a)](https://github.com/lmdesa/BOSSA). Tutorial notebooks are still being completed. 
+This repository is under construction. The current version of the code (1.0.0) corresponds to that used in [de Sá et al. (2024a)](https://academic.oup.com/mnras/article/535/3/2019/7825861?login=false). Tutorial notebooks are still being completed. 
 
 ### Running BOSSA
 
