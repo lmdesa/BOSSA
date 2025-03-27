@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>bossa.sampling &mdash; BOSSA 1.0.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -73,37 +73,37 @@
 <span class="c1"># TODO: Complete documentation</span>
 
 <span class="sd">&quot;&quot;&quot;Sampling of arbitrary distributions, galaxy parameters and binary populations.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">gc</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">cached_property</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pathlib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">cached_property</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">from</span> <span class="nn">astropy.cosmology</span> <span class="kn">import</span> <span class="n">WMAP9</span> <span class="k">as</span> <span class="n">cosmo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">WMAP9</span> <span class="k">as</span> <span class="n">cosmo</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">numpy._typing</span> <span class="kn">import</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">ArrayLike</span>
-<span class="kn">from</span> <span class="nn">numpy.lib.recfunctions</span> <span class="kn">import</span> <span class="n">unstructured_to_structured</span>
-<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">quad</span>
-<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">fsolve</span><span class="p">,</span> <span class="n">fmin</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">UnivariateSpline</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ProcessPoolExecutor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span><span class="p">,</span> <span class="n">ArrayLike</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.lib.recfunctions</span><span class="w"> </span><span class="kn">import</span> <span class="n">unstructured_to_structured</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">quad</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">fsolve</span><span class="p">,</span> <span class="n">fmin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">UnivariateSpline</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessPoolExecutor</span>
 
 <span class="c1">#import sys</span>
 <span class="c1">#sys.path.append(&#39;..&#39;)</span>
-<span class="kn">import</span> <span class="nn">bossa.imf</span> <span class="k">as</span> <span class="nn">imf</span>
-<span class="kn">import</span> <span class="nn">bossa.sfh</span> <span class="k">as</span> <span class="nn">sfh</span>
-<span class="kn">from</span> <span class="nn">bossa.imf</span> <span class="kn">import</span> <span class="n">Star</span><span class="p">,</span> <span class="n">IGIMF</span>
-<span class="kn">from</span> <span class="nn">bossa.sfh</span> <span class="kn">import</span> <span class="n">MZR</span><span class="p">,</span> <span class="n">SFMR</span><span class="p">,</span> <span class="n">Corrections</span><span class="p">,</span> <span class="n">GSMF</span>
-<span class="kn">from</span> <span class="nn">bossa.zams</span> <span class="kn">import</span> <span class="n">ZAMSSystemGenerator</span><span class="p">,</span> <span class="n">MultipleFraction</span>
-<span class="kn">from</span> <span class="nn">bossa.utils</span> <span class="kn">import</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">ZOH_to_FeH</span><span class="p">,</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">format_time</span><span class="p">,</span> <span class="n">Length</span><span class="p">,</span> <span class="n">get_bin_centers</span><span class="p">,</span> \
+<span class="kn">import</span><span class="w"> </span><span class="nn">bossa.imf</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">imf</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">bossa.sfh</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sfh</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.imf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Star</span><span class="p">,</span> <span class="n">IGIMF</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.sfh</span><span class="w"> </span><span class="kn">import</span> <span class="n">MZR</span><span class="p">,</span> <span class="n">SFMR</span><span class="p">,</span> <span class="n">Corrections</span><span class="p">,</span> <span class="n">GSMF</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.zams</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZAMSSystemGenerator</span><span class="p">,</span> <span class="n">MultipleFraction</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">ZOH_to_FeH</span><span class="p">,</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">format_time</span><span class="p">,</span> <span class="n">Length</span><span class="p">,</span> <span class="n">get_bin_centers</span><span class="p">,</span> \
     <span class="n">enumerate_bin_edges</span>
-<span class="kn">from</span> <span class="nn">bossa.constants</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.constants</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Z_SUN</span><span class="p">,</span> <span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">BINARIES_CORRELATED_TABLE_PATH</span><span class="p">,</span> <span class="n">BINARIES_UNCORRELATED_TABLE_PATH</span><span class="p">,</span>
     <span class="n">IGIMF_ZAMS_DIR_PATH</span><span class="p">,</span> <span class="n">GALAXYGRID_DIR_PATH</span><span class="p">,</span> <span class="n">PHYSICAL_CORE_COUNT</span><span class="p">,</span> <span class="n">TOTAL_PHYSICAL_MEMORY</span>
 <span class="p">)</span>
@@ -115,7 +115,7 @@
 
 <div class="viewcode-block" id="powerlaw">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.powerlaw">[docs]</a>
-<span class="k">def</span> <span class="nf">powerlaw</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">powerlaw</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">a</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return power-law with norm ``k`` and index ``a`` at ``x``.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">k</span> <span class="o">*</span> <span class="n">x</span> <span class="o">**</span> <span class="n">a</span></div>
 
@@ -123,7 +123,7 @@
 
 <div class="viewcode-block" id="RandomSampling">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.RandomSampling">[docs]</a>
-<span class="k">class</span> <span class="nc">RandomSampling</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">RandomSampling</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Randomly sample an arbitrary IMF.</span>
 
 <span class="sd">    This class is meant to speed up the sampling of an IMF defined as a</span>
@@ -149,7 +149,7 @@
 <span class="sd">        Last drawn sample.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imf</span><span class="p">:</span> <span class="n">IMFLike</span><span class="p">,</span> <span class="n">discretization_points</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imf</span><span class="p">:</span> <span class="n">IMFLike</span><span class="p">,</span> <span class="n">discretization_points</span><span class="p">:</span><span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">imf</span> <span class="o">=</span> <span class="n">imf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_min</span> <span class="o">=</span> <span class="n">imf</span><span class="o">.</span><span class="n">m_trunc_min</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m_trunc_max</span> <span class="o">=</span> <span class="n">imf</span><span class="o">.</span><span class="n">m_trunc_max</span>
@@ -160,7 +160,7 @@
 
     <span class="c1"># TODO: set discretization_masses with np.logspace</span>
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">discretization_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">discretization_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;NDArray: Masses on which to compute the IMF.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discretization_masses</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_discretization_points</span> <span class="o">//</span> <span class="mi">5</span>
@@ -179,7 +179,7 @@
 
 <div class="viewcode-block" id="RandomSampling.compute_imf">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.RandomSampling.compute_imf">[docs]</a>
-    <span class="k">def</span> <span class="nf">compute_imf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_imf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the IMF for interpolation.</span>
 
 <span class="sd">        Computes the IMF at :attr:`discretization_points` mass values</span>
@@ -192,7 +192,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">discrete_imf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">discrete_imf</span><span class="p">,</span> <span class="n">imf</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_get_probabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling_masses</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_probabilities</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling_masses</span><span class="p">:</span> <span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArrayLike</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return probabilities at ``sampling_masses``.</span>
 
 <span class="sd">        Parameters</span>
@@ -222,7 +222,7 @@
 
 <div class="viewcode-block" id="RandomSampling.get_sample">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.RandomSampling.get_sample">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">m_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">m_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a sample of size ``n`` from ``m_min`` to ``m_max``.</span>
 
 <span class="sd">        Returns a sample of size ``n`` between ``mmin`` and ``m_max``</span>
@@ -253,7 +253,7 @@
 
 <div class="viewcode-block" id="GalaxyStellarMassSampling">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.GalaxyStellarMassSampling">[docs]</a>
-<span class="k">class</span> <span class="nc">GalaxyStellarMassSampling</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GalaxyStellarMassSampling</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample galaxy stellar masses from a GSMF.</span>
 
 <span class="sd">    This class performs a number- or mass-weighted sampling of galaxy</span>
@@ -330,7 +330,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gsmf</span><span class="p">:</span> <span class="n">sfh</span><span class="o">.</span><span class="n">GSMF</span><span class="p">,</span> <span class="n">logm_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">7.</span><span class="p">,</span> <span class="n">logm_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">12.</span><span class="p">,</span> <span class="n">size</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gsmf</span><span class="p">:</span> <span class="n">sfh</span><span class="o">.</span><span class="n">GSMF</span><span class="p">,</span> <span class="n">logm_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">7.</span><span class="p">,</span> <span class="n">logm_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">12.</span><span class="p">,</span> <span class="n">size</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
                  <span class="n">sampling</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;number&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gsmf</span> <span class="o">=</span> <span class="n">gsmf</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logm_min</span> <span class="o">=</span> <span class="n">logm_min</span>
@@ -343,12 +343,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">grid_logmasses</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;str: Whether to sample by galaxy number or stellar mass.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sampling</span>
 
     <span class="nd">@sampling</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">sampling</span> <span class="o">==</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sampling</span> <span class="o">=</span> <span class="s1">&#39;number&#39;</span>
         <span class="k">elif</span> <span class="n">sampling</span> <span class="o">==</span> <span class="s1">&#39;mass&#39;</span><span class="p">:</span>
@@ -359,7 +359,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Parameter &quot;sampling&quot; must be one of &#39;</span>
                              <span class="s1">&#39;&quot;number&quot;, &quot;mass&quot;.&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm_im1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logm_i</span> <span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">logm_ip1</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm_im1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">logm_i</span> <span class="p">:</span><span class="nb">int</span><span class="p">,</span> <span class="n">logm_ip1</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the ratio of the GSMF integral in a bin.</span>
 
 <span class="sd">        Integrate either ``GSMF(m)`` or ``m*GSMF(m)`` according to</span>
@@ -391,7 +391,7 @@
             <span class="n">int2</span> <span class="o">=</span> <span class="n">quad</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">gsmf</span><span class="o">.</span><span class="n">log_gsmf</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">logm_i</span><span class="p">,</span> <span class="n">logm_im1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">int1</span> <span class="o">/</span> <span class="n">int2</span>
 
-    <span class="k">def</span> <span class="nf">_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vec</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vec</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a vector to be minimized during sampling.</span>
 
 <span class="sd">        Vector containing the (ratios - 1) between the integrals within</span>
@@ -434,7 +434,7 @@
                 <span class="n">bin_density_ratios</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="n">bin_density_ratios</span>
 
-    <span class="k">def</span> <span class="nf">_set_grid_density</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_grid_density</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Integrates within each bin for mass and number densities.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">m2</span><span class="p">,</span> <span class="n">m1</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bin_limits</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">bin_limits</span><span class="p">[</span><span class="mi">1</span><span class="p">:])):</span>
             <span class="n">ndens</span> <span class="o">=</span> <span class="n">quad</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">10</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">gsmf</span><span class="o">.</span><span class="n">log_gsmf</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -444,7 +444,7 @@
 
 <div class="viewcode-block" id="GalaxyStellarMassSampling.sample">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.GalaxyStellarMassSampling.sample">[docs]</a>
-    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample galaxy stellar masses from the GSMF.</span>
 
 <span class="sd">        Generates the galaxy stellar mass samples according to</span>
@@ -483,7 +483,7 @@
 
 <div class="viewcode-block" id="GalaxyGrid">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.GalaxyGrid">[docs]</a>
-<span class="k">class</span> <span class="nc">GalaxyGrid</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">GalaxyGrid</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a grid of galaxy properties over redshift.</span>
 
 <span class="sd">    This class uses the galaxy stellar mass function (GSMF), star</span>
@@ -626,7 +626,7 @@
 <span class="sd">       doi:10.1051/0004-6361/20183</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_redshift</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">redshift_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">redshift_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_redshift</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">redshift_min</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">redshift_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.</span><span class="p">,</span>
                  <span class="n">force_boundary_redshift</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">logm_per_redshift</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
                  <span class="n">logm_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">6.</span><span class="p">,</span> <span class="n">logm_max</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">12.</span><span class="p">,</span> <span class="n">mzr_model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;KK04&#39;</span><span class="p">,</span>
                  <span class="n">sfmr_flattening</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="n">gsmf_slope_fixed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
@@ -691,7 +691,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">random_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">random_state</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_sample_redshift_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_sample_redshift_array</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return initial uniform redshift array.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">force_boundary_redshift</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_redshift</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span>
@@ -699,55 +699,55 @@
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">redshift_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_redshift</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">mzr_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mzr_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Mass-(gas) metallicity relation model choice.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mzr_model</span>
 
     <span class="nd">@mzr_model</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">mzr_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">mzr_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;KK04&#39;</span><span class="p">,</span> <span class="s1">&#39;T04&#39;</span><span class="p">,</span> <span class="s1">&#39;M09&#39;</span><span class="p">,</span> <span class="s1">&#39;PP04&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;mzr_model must be one of </span><span class="si">{</span><span class="n">models</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mzr_model</span> <span class="o">=</span> <span class="n">model</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">sfmr_flattening</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sfmr_flattening</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Star formation-mass relation model choice.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfmr_flattening</span>
 
     <span class="nd">@sfmr_flattening</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">sfmr_flattening</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flattening</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sfmr_flattening</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flattening</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;moderate&#39;</span><span class="p">,</span> <span class="s1">&#39;sharp&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">flattening</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sfmr_flattening must be one of </span><span class="si">{</span><span class="n">models</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sfmr_flattening</span> <span class="o">=</span> <span class="n">flattening</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">sampling_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sampling_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sampling mode choice.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_mode</span>
 
     <span class="nd">@sampling_mode</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">sampling_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sampling_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">modes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sfr&#39;</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">,</span> <span class="s1">&#39;uniform&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">mode</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">modes</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sampling mode must be one of </span><span class="si">{</span><span class="n">modes</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sampling_mode</span> <span class="o">=</span> <span class="n">mode</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">scatter_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scatter_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Scattering model choice for the SFMR and the MZR.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scatter_model</span>
 
     <span class="nd">@scatter_model</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">scatter_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scatter_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;normal&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sampling mode must be one of </span><span class="si">{</span><span class="n">models</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_scatter_model</span> <span class="o">=</span> <span class="n">model</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">save_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_path</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;pathlib.Path: Path which to save the grid to.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fname</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s1">&#39;galgrid_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">mzr_model</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sfmr_flattening</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gsmf_slope_fixed</span><span class="si">}</span><span class="s1">_&#39;</span>
@@ -756,7 +756,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_save_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">GALAXYGRID_DIR_PATH</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_path</span>
 
-    <span class="k">def</span> <span class="nf">_discrete_redshift_probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_discrete_redshift_probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_z</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return probabilities for a uniform redshift pool.</span>
 
@@ -779,7 +779,7 @@
                 <span class="n">sfmr</span> <span class="o">=</span> <span class="n">SFMR</span><span class="p">(</span><span class="n">redshift</span><span class="o">=</span><span class="n">pool</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                             <span class="n">flattening</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sfmr_flattening</span><span class="p">,</span>
                             <span class="n">scatter_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="p">)</span>
-                <span class="k">def</span> <span class="nf">sfrd_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">sfrd_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
                     <span class="c1"># Return the star formation rate density per</span>
                     <span class="c1"># logarithmic galaxy stellar mass bin.</span>
                     <span class="k">return</span> <span class="mf">10.</span><span class="o">**</span><span class="n">gsmf</span><span class="o">.</span><span class="n">log_gsmf</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span> <span class="o">*</span> <span class="mf">10.</span><span class="o">**</span><span class="n">sfmr</span><span class="o">.</span><span class="n">logsfr</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
@@ -788,7 +788,7 @@
                 <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sfrd</span>
 
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_mode</span> <span class="o">==</span> <span class="s1">&#39;mass&#39;</span><span class="p">:</span>
-                <span class="k">def</span> <span class="nf">density_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">density_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
                     <span class="c1"># Return the (stellar) mass density of galaxies</span>
                     <span class="c1"># of (stellar) mass logm per logarithmic galaxy</span>
                     <span class="c1"># stellar mass bin.</span>
@@ -801,7 +801,7 @@
                 <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span> <span class="o">*</span> <span class="n">c_vol</span>
 
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_mode</span> <span class="o">==</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span>
-                <span class="k">def</span> <span class="nf">ndensity_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">ndensity_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
                     <span class="c1"># Return the number density of galaxies of (stellar)</span>
                     <span class="c1"># mass logm per logarithmic galaxy stellar mass bin.</span>
                     <span class="k">return</span> <span class="mf">10.</span><span class="o">**</span><span class="n">gsmf</span><span class="o">.</span><span class="n">log_gsmf</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
@@ -817,7 +817,7 @@
         <span class="n">probs</span> <span class="o">/=</span> <span class="n">probs</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">pool</span><span class="p">,</span> <span class="n">probs</span>
 
-    <span class="k">def</span> <span class="nf">_gsmf_sample_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GalaxyStellarMassSampling</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_gsmf_sample_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">GalaxyStellarMassSampling</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample masses from the GSMF at ``redshift``.</span>
 
 <span class="sd">        Returns a :class:`sfh.GSMF` object which holds the sampled</span>
@@ -835,7 +835,7 @@
         <span class="n">sample</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">sample</span>
 
-    <span class="k">def</span> <span class="nf">_discrete_mass_probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_discrete_mass_probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_logm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
                                  <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return probabilities for a uniform mass pool at a redshift.</span>
 
@@ -857,14 +857,14 @@
             <span class="n">pool</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">logm0</span> <span class="o">+</span> <span class="n">logm1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_mode</span> <span class="o">==</span> <span class="s1">&#39;sfr&#39;</span><span class="p">:</span>
-                <span class="k">def</span> <span class="nf">sfrd_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">sfrd_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
                     <span class="c1"># Return the star formation rate density per</span>
                     <span class="c1"># logarithmic galaxy stellar mass bin.</span>
                     <span class="k">return</span> <span class="mf">10.</span> <span class="o">**</span> <span class="n">gsmf</span><span class="o">.</span><span class="n">log_gsmf</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span> <span class="o">*</span> <span class="mf">10.</span> <span class="o">**</span> <span class="n">sfmr</span><span class="o">.</span><span class="n">logsfr</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
                 <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">sfrd_dlogm</span><span class="p">(</span><span class="n">pool</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_mode</span> <span class="o">==</span> <span class="s1">&#39;mass&#39;</span><span class="p">:</span>
-                <span class="k">def</span> <span class="nf">density_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">density_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
                     <span class="c1"># Return the (stellar) mass density of galaxies</span>
                     <span class="c1"># of (stellar) mass logm per logarithmic galaxy</span>
                     <span class="c1"># stellar mass bin.</span>
@@ -876,7 +876,7 @@
                 <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">density</span> <span class="o">*</span> <span class="n">c_vol</span>
 
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_mode</span> <span class="o">==</span> <span class="s1">&#39;number&#39;</span><span class="p">:</span>
-                <span class="k">def</span> <span class="nf">ndensity_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
+                <span class="k">def</span><span class="w"> </span><span class="nf">ndensity_dlogm</span><span class="p">(</span><span class="n">logm</span><span class="p">):</span>
                     <span class="c1"># Return the number density of galaxies of (stellar)</span>
                     <span class="c1"># mass logm per logarithmic galaxy stellar mass bin.</span>
                     <span class="k">return</span> <span class="mf">10.</span> <span class="o">**</span> <span class="n">gsmf</span><span class="o">.</span><span class="n">log_gsmf</span><span class="p">(</span><span class="n">logm</span><span class="p">)</span>
@@ -893,7 +893,7 @@
         <span class="k">return</span> <span class="n">pool</span><span class="p">,</span> <span class="n">probs</span>
 
     <span class="c1"># TODO: implement density-weighted sampling within this method</span>
-    <span class="k">def</span> <span class="nf">_sample_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample galaxy stellar mass at ``redshift``.</span>
 
 <span class="sd">        Depending on ``sampling_mode``, sample galaxy stellar mass with</span>
@@ -940,7 +940,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">sample_logm_array</span><span class="p">[</span><span class="n">redshift_i</span><span class="p">,</span> <span class="n">logm_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">average_logm</span>
                 <span class="n">logm_i</span> <span class="o">+=</span> <span class="mi">1</span>
 
-    <span class="k">def</span> <span class="nf">_sample_galaxies</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sample_galaxies</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">:</span> <span class="nb">float</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
                <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">bool</span><span class="p">]]:</span>
@@ -1041,7 +1041,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">ndensity_array</span><span class="p">,</span> <span class="n">density_array</span><span class="p">,</span> <span class="n">logm_array</span><span class="p">,</span> <span class="n">log_gsmf_array</span><span class="p">,</span> <span class="n">zoh_array</span><span class="p">,</span>
                 <span class="n">zoh_bins</span><span class="p">,</span> <span class="n">feh_array</span><span class="p">,</span> <span class="n">feh_mask</span><span class="p">,</span> <span class="n">log_sfr_array</span><span class="p">,</span> <span class="n">sfr_mask</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_correct_sample</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_correct_sample</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span> <span class="n">mass_array</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">log_gsmf_array</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
             <span class="n">zoh_array</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">feh_array</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">sfr_array</span><span class="p">:</span><span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
             <span class="n">mask_array</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span>
@@ -1137,7 +1137,7 @@
 
 <div class="viewcode-block" id="GalaxyGrid.sample_redshift">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.GalaxyGrid.sample_redshift">[docs]</a>
-    <span class="k">def</span> <span class="nf">sample_redshift</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_redshift</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample redshifts from the GSMF integrated over mass.</span>
 
 <span class="sd">        Integrating the GSMF over mass yields a star forming mass-over-</span>
@@ -1194,7 +1194,7 @@
                                                             <span class="p">[</span><span class="n">max_redshift_bin_lower_edge</span><span class="p">])))</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_get_sfr_zoh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">,</span> <span class="n">redshift</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_sfr_zoh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logm</span><span class="p">,</span> <span class="n">redshift</span><span class="p">):</span>
         <span class="n">sfmr</span> <span class="o">=</span> <span class="n">SFMR</span><span class="p">(</span><span class="n">redshift</span><span class="o">=</span><span class="n">redshift</span><span class="p">,</span>
                     <span class="n">flattening</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sfmr_flattening</span><span class="p">,</span>
                     <span class="n">scatter_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span><span class="p">)</span>
@@ -1222,7 +1222,7 @@
 
         <span class="k">return</span> <span class="n">sfr</span><span class="p">,</span> <span class="n">zoh</span>
 
-    <span class="k">def</span> <span class="nf">_set_redshift_logm_sampling_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_redshift_logm_sampling_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># First 2d bins on the redshift-logm plane are set.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sampling_grid_redshift_bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift_min</span><span class="p">,</span>
                                                        <span class="bp">self</span><span class="o">.</span><span class="n">redshift_max</span><span class="p">,</span>
@@ -1318,7 +1318,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;SAMPLING GRID CREATED WITH SHAPE </span><span class="si">{self.sampling_grid.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
 
     <span class="c1"># TODO: Initialize arrays in get_grid with the appropriate shape</span>
-    <span class="k">def</span> <span class="nf">_scatterless_get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_scatterless_get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the (redshift, mass, metallicity, SFR) grid.</span>
 
 <span class="sd">        For each redshift in :attr:`sample_redshift_array`, samples</span>
@@ -1390,7 +1390,7 @@
 
     <span class="c1"># TODO: complete scatter_get_sample()</span>
     <span class="c1"># TODO: document scatter_get_sample()</span>
-    <span class="k">def</span> <span class="nf">_set_zoh_logsfr_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_zoh_logsfr_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># First set up the bins to be used when sampling &quot;galaxies&quot;.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_redshift_logm_sampling_grid</span><span class="p">()</span>
 
@@ -1431,7 +1431,7 @@
         <span class="k">return</span>
 
     <span class="c1"># TODO: have _scatter_get_sample() set the same arrays as _scatterless_get_sample()</span>
-    <span class="k">def</span> <span class="nf">_scatter_get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_scatter_get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Compute the SFRD on the metallicity-log SFR plane. This will</span>
         <span class="c1"># set the sampling weights.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_zoh_logsfr_grid</span><span class="p">()</span>
@@ -1496,7 +1496,7 @@
 
 <div class="viewcode-block" id="GalaxyGrid.get_sample">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.GalaxyGrid.get_sample">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_model</span> <span class="o">==</span> <span class="s1">&#39;normal&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_scatter_get_sample</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1505,7 +1505,7 @@
 
 <div class="viewcode-block" id="GalaxyGrid.save_grid">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.GalaxyGrid.save_grid">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save :attr:`grid_array` to disk.&quot;&quot;&quot;</span>
         <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Redshift&#39;</span><span class="p">,</span> <span class="s1">&#39;Log(Mgal/Msun)&#39;</span><span class="p">,</span> <span class="s1">&#39;Log(Number density [Mpc-3 Msun-1])&#39;</span><span class="p">,</span>
                    <span class="s1">&#39;Log(SFR [Msun yr-1])&#39;</span><span class="p">,</span> <span class="s1">&#39;12+log(O/H)&#39;</span><span class="p">,</span> <span class="s1">&#39;[Fe/H]&#39;</span><span class="p">]</span>
@@ -1517,7 +1517,7 @@
 
 <div class="viewcode-block" id="SimpleBinaryPopulation">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.SimpleBinaryPopulation">[docs]</a>
-<span class="k">class</span> <span class="nc">SimpleBinaryPopulation</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SimpleBinaryPopulation</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a sample of zero-age main sequence binaries.</span>
 
 <span class="sd">    For a given redshift, star formation rate (SFR) and [Fe/H], generate a sample of multiple systems with component</span>
@@ -1635,7 +1635,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Columns saved for each further outer companion.&quot;&quot;&quot;</span>
 
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">,</span> <span class="n">sfr</span><span class="p">,</span> <span class="n">feh</span><span class="p">,</span> <span class="n">m_min</span><span class="p">,</span> <span class="n">m_max</span><span class="p">,</span> <span class="n">max_comp_number</span><span class="p">,</span> <span class="n">poolsize</span><span class="p">,</span> <span class="n">qe_max_tries</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">only_binaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">,</span> <span class="n">sfr</span><span class="p">,</span> <span class="n">feh</span><span class="p">,</span> <span class="n">m_min</span><span class="p">,</span> <span class="n">m_max</span><span class="p">,</span> <span class="n">max_comp_number</span><span class="p">,</span> <span class="n">poolsize</span><span class="p">,</span> <span class="n">qe_max_tries</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">only_binaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">invariant_imf</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">correlated_orbital_parameters</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">galaxy_descriptor</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">parent_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">prioritize_high_masses</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">print_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1695,7 +1695,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">pairs_table_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pairs_table_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Path to the orbital parameter sampling table.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">correlated_orbital_parameters</span><span class="p">:</span>
             <span class="n">pairs_table_path</span> <span class="o">=</span> <span class="n">BINARIES_CORRELATED_TABLE_PATH</span>
@@ -1704,7 +1704,7 @@
         <span class="k">return</span> <span class="n">pairs_table_path</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">save_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Path to which to save the sample as a parquet file.&quot;&quot;&quot;</span>
         <span class="n">fname</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;z=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">redshift</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">_feh=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">feh</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">_logsfr=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfr</span><span class="p">)</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">_&#39;</span> \
                 <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">galaxy_descriptor</span><span class="si">}</span><span class="s1">_logpool=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">poolsize</span><span class="p">)</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">_igimf_zams_sample.parquet&#39;</span>
@@ -1716,7 +1716,7 @@
         <span class="k">return</span> <span class="n">save_path</span>
 
     <span class="nd">@cached_property</span>
-    <span class="k">def</span> <span class="nf">sample_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample column titles.&quot;&quot;&quot;</span>
         <span class="n">outer_pair_columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">cp_order</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_comp_number</span><span class="o">+</span><span class="mi">2</span><span class="p">):</span>
@@ -1727,7 +1727,7 @@
         <span class="n">sample_columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">inner_binary_sample_columns</span> <span class="o">+</span> <span class="n">outer_pair_columns</span>
         <span class="k">return</span> <span class="n">sample_columns</span>
 
-    <span class="k">def</span> <span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create and return a class logger, as a child of a parent logger if provided.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">parent_logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loggername</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">])</span>
@@ -1740,11 +1740,11 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">logger</span>
 
-    <span class="k">def</span> <span class="nf">_lowmass_powerlaw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_lowmass_powerlaw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the low-mass power law at m.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">powerlaw</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowmass_powerlaw_norm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lowmass_powerlaw_index</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_imf_random_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_min</span><span class="p">,</span> <span class="n">m_max</span><span class="p">,</span> <span class="n">samplesize</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_imf_random_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m_min</span><span class="p">,</span> <span class="n">m_max</span><span class="p">,</span> <span class="n">samplesize</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a random sampling of the IMF of size samplesize, between m_min and m_max.</span>
 
 <span class="sd">        Compute the values imf_arr of the IMF at masses imf_mass_arr, then take a random sample randomsample from</span>
@@ -1791,7 +1791,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;IMF random sampling completed in </span><span class="si">{</span><span class="n">time1</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">imf_mass_arr</span><span class="p">,</span> <span class="n">imf_arr</span><span class="p">,</span> <span class="n">randomsample</span>
 
-    <span class="k">def</span> <span class="nf">_low_high_mass_area_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lowmass_index</span><span class="p">,</span> <span class="n">highmass_spline</span><span class="p">,</span> <span class="n">highmass_area</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_low_high_mass_area_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lowmass_index</span><span class="p">,</span> <span class="n">highmass_spline</span><span class="p">,</span> <span class="n">highmass_area</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the difference in area between the power law IMF at low masses and the IGIMF at high masses.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">lowmass_index</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">lowmass_index</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">area_diff</span> <span class="o">=</span> <span class="mf">1e7</span>
@@ -1801,7 +1801,7 @@
             <span class="n">area_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">highmass_area</span> <span class="o">-</span> <span class="n">lowmass_area</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">area_diff</span>
 
-    <span class="k">def</span> <span class="nf">_set_lowmass_powerlaw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">highmass_mass_arr</span><span class="p">,</span> <span class="n">highmass_igimf_arr</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_lowmass_powerlaw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">highmass_mass_arr</span><span class="p">,</span> <span class="n">highmass_igimf_arr</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets the power law IMF at low masses such that its area is the same as the IGIMF&#39;s at high masses.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Fitting IMF m &lt; 0.8 power law.&#39;</span><span class="p">)</span>
         <span class="n">time0</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
@@ -1818,7 +1818,7 @@
 
 <div class="viewcode-block" id="SimpleBinaryPopulation.set_sampling_pool">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.SimpleBinaryPopulation.set_sampling_pool">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_sampling_pool</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_sampling_pool</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the mass pool from which to draw the sample.</span>
 
 <span class="sd">        Set the mass pool from which to draw the final sample as a random sampling of poolsize/2 from the IGIMF, above</span>
@@ -1857,7 +1857,7 @@
 
 <div class="viewcode-block" id="SimpleBinaryPopulation.get_sample">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.SimpleBinaryPopulation.get_sample">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the binary sample.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_pool</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Sampling pool not set up. Please run set_sampling_pool() first.&#39;</span><span class="p">)</span>
@@ -1988,7 +1988,7 @@
 
 <div class="viewcode-block" id="SimpleBinaryPopulation.save_sample">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.SimpleBinaryPopulation.save_sample">[docs]</a>
-    <span class="k">def</span> <span class="nf">save_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;No sample to save.&#39;</span><span class="p">)</span>
             <span class="k">return</span>
@@ -2002,10 +2002,10 @@
 
 <div class="viewcode-block" id="CompositeBinaryPopulation">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.CompositeBinaryPopulation">[docs]</a>
-<span class="k">class</span> <span class="nc">CompositeBinaryPopulation</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CompositeBinaryPopulation</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample binary populations for a grid of galaxies.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">galaxy_grid_path</span><span class="p">,</span> <span class="n">mmin</span><span class="p">,</span> <span class="n">mmax</span><span class="p">,</span> <span class="n">max_comp_number</span><span class="p">,</span> <span class="n">mass_poolsize</span><span class="p">,</span> <span class="n">qe_max_tries</span><span class="p">,</span> <span class="n">only_binaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">galaxy_grid_path</span><span class="p">,</span> <span class="n">mmin</span><span class="p">,</span> <span class="n">mmax</span><span class="p">,</span> <span class="n">max_comp_number</span><span class="p">,</span> <span class="n">mass_poolsize</span><span class="p">,</span> <span class="n">qe_max_tries</span><span class="p">,</span> <span class="n">only_binaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">invariant_imf</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">correlated_orbital_parameters</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parent_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">n_parallel_processes</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="mf">0.9</span> <span class="o">*</span> <span class="n">PHYSICAL_CORE_COUNT</span><span class="p">),</span> <span class="n">memory_limit</span><span class="o">=</span><span class="mf">0.8</span><span class="o">*</span><span class="n">TOTAL_PHYSICAL_MEMORY</span><span class="p">,</span>
                  <span class="n">save_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -2024,7 +2024,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">grid_arr</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
 
-    <span class="k">def</span> <span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">parent_logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loggername</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">])</span>
             <span class="n">log_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">loggername</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-%m-%Y_%H:%M:%S.log&#39;</span><span class="p">))</span>
@@ -2036,7 +2036,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">logger</span>
 
-    <span class="k">def</span> <span class="nf">_get_zams_sampler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">,</span> <span class="n">logsfr</span><span class="p">,</span> <span class="n">feh</span><span class="p">,</span> <span class="n">zoh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mgal</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logn_gal</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_zams_sampler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift</span><span class="p">,</span> <span class="n">logsfr</span><span class="p">,</span> <span class="n">feh</span><span class="p">,</span> <span class="n">zoh</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mgal</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logn_gal</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">galaxy_descr_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">if</span> <span class="n">zoh</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">zoh_descr</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;1e4ZOH=</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="mf">1e4</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">zoh</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span>
@@ -2067,7 +2067,7 @@
 
 <div class="viewcode-block" id="CompositeBinaryPopulation.load_grid">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.CompositeBinaryPopulation.load_grid">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">grid_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">galaxy_grid_path</span><span class="p">)</span>
         <span class="n">grid_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">grid_df</span><span class="p">),</span> <span class="mi">6</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="n">grid_arr</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">grid_df</span><span class="p">[</span><span class="s1">&#39;Redshift&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
@@ -2080,7 +2080,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Loaded grid </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">galaxy_grid_path</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampler_tuple</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampler_tuple</span><span class="p">):</span>
         <span class="n">sampler_id</span><span class="p">,</span> <span class="n">sampler_param_arr</span> <span class="o">=</span> <span class="n">sampler_tuple</span>
         <span class="c1"># Sampler_id is an int denoting the line number of the sample in the original galaxygrid file. While at present</span>
         <span class="c1"># it is not used for anything, it could be employed as way to keep track of which galaxy is being sampled.</span>
@@ -2095,7 +2095,7 @@
 
 <div class="viewcode-block" id="CompositeBinaryPopulation.sample_grid">
 <a class="viewcode-back" href="../../bossa.html#bossa.sampling.CompositeBinaryPopulation.sample_grid">[docs]</a>
-    <span class="k">def</span> <span class="nf">sample_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Calling ProcessPoolExecutor with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_parallel_processes</span><span class="si">}</span><span class="s1"> workers.&#39;</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_parallel_processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
             <span class="n">futures</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_sample</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">)</span>

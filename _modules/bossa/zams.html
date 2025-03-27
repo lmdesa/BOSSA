@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>bossa.zams &mdash; BOSSA 1.0.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -74,35 +74,35 @@
 
 <span class="sd">&quot;&quot;&quot;Orbital parameter distributions for zero-age main sequence multiple systems.&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">PathLike</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Annotated</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">os</span><span class="w"> </span><span class="kn">import</span> <span class="n">PathLike</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
  <span class="c1"># for now tables is imported twice; tables is used for typing, tb for</span>
  <span class="c1"># everything else</span>
-<span class="kn">import</span> <span class="nn">tables</span> 
-<span class="kn">import</span> <span class="nn">tables</span> <span class="k">as</span> <span class="nn">tb</span>
-<span class="kn">import</span> <span class="nn">scipy</span>
-<span class="kn">from</span> <span class="nn">numpy._typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">quad</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
-<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">poisson</span><span class="p">,</span> <span class="n">uniform</span>
-<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">fmin</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span> 
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tb</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy._typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">quad</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">poisson</span><span class="p">,</span> <span class="n">uniform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">fmin</span>
 
 <span class="c1">#import sys</span>
 <span class="c1">#sys.path.append(&#39;..&#39;)</span>
-<span class="kn">from</span> <span class="nn">bossa.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">valley_minimum</span><span class="p">,</span> <span class="n">Length</span>
-<span class="kn">from</span> <span class="nn">bossa.constants</span> <span class="kn">import</span> <span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">BINARIES_UNCORRELATED_TABLE_PATH</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">valley_minimum</span><span class="p">,</span> <span class="n">Length</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">BINARIES_UNCORRELATED_TABLE_PATH</span>
 
 
 <div class="viewcode-block" id="gen_seed">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.gen_seed">[docs]</a>
-<span class="k">def</span> <span class="nf">gen_seed</span><span class="p">(</span><span class="n">logp</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">gen_seed</span><span class="p">(</span><span class="n">logp</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">e</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate an unique system identifier from its logp, q and e parameters.&quot;&quot;&quot;</span>
     <span class="n">binary_seed</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
         <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">trunc</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">logp</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1e6</span><span class="p">)))),</span>
@@ -115,7 +115,7 @@
 
 <div class="viewcode-block" id="EccentricityDistribution">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.EccentricityDistribution">[docs]</a>
-<span class="k">class</span> <span class="nc">EccentricityDistribution</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">EccentricityDistribution</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Eccentricity probability distribution for a ZAMS star pair.</span>
 
 <span class="sd">    For a given primary of mass ``m1`` and a companion orbit of</span>
@@ -192,7 +192,7 @@
 <span class="sd">       Horvath, J. E. (submitted).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canonical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canonical</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e_max</span> <span class="o">=</span> <span class="mi">0</span>
@@ -206,16 +206,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">canonical</span> <span class="o">=</span> <span class="n">canonical</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_eta_lowmass</span><span class="p">(</span><span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eta_lowmass</span><span class="p">(</span><span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the power-law index for ``logp``and ``m1 &lt;= 3``.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mf">0.6</span> <span class="o">-</span> <span class="mf">0.7</span> <span class="o">/</span> <span class="p">(</span><span class="n">logp</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_eta_highmass</span><span class="p">(</span><span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eta_highmass</span><span class="p">(</span><span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the power-law index for ``logp`` and ``m1 &gt;= 7``.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mf">0.9</span> <span class="o">-</span> <span class="mf">0.2</span> <span class="o">/</span> <span class="p">(</span><span class="n">logp</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_set_e_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_e_max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the maximum eccentricity :attr:`e_max`.</span>
 
 <span class="sd">        The maximum eccentricity is set by the condition that the Roche</span>
@@ -225,7 +225,7 @@
         <span class="n">p</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="n">logp</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">e_max</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_eta_midmass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_eta_midmass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the power-law index for the ``logp`` and ``3&lt;m1&lt;7``.</span>
 
 <span class="sd">        The index is given by a linear interpolation between the eta</span>
@@ -240,7 +240,7 @@
 
 <div class="viewcode-block" id="EccentricityDistribution.set_parameters">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.EccentricityDistribution.set_parameters">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set power-law parameters at ``m1``, ``logp``.</span>
 
 <span class="sd">        Sets :attr:`eta`, :attr:`k` and :attr:`e_max` at ``m1`` and</span>
@@ -273,7 +273,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_force_circular_orbit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_force_circular_orbit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Eccentricity distribution forcing circular orbits.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">e</span> <span class="o">&lt;=</span> <span class="mf">1e-4</span><span class="p">:</span>
             <span class="n">prob</span> <span class="o">=</span> <span class="mf">1e4</span>
@@ -283,7 +283,7 @@
 
 <div class="viewcode-block" id="EccentricityDistribution.prob">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.EccentricityDistribution.prob">[docs]</a>
-    <span class="k">def</span> <span class="nf">prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the eccentricity PDF value at the given e.</span>
 
 <span class="sd">        Parameters</span>
@@ -333,7 +333,7 @@
 
 <div class="viewcode-block" id="MassRatioDistribution">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.MassRatioDistribution">[docs]</a>
-<span class="k">class</span> <span class="nc">MassRatioDistribution</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MassRatioDistribution</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mass ratio probability distribution for a ZAMS star pair.</span>
 
 <span class="sd">    For a given primary of mass ``m1`` and a companion orbit of</span>
@@ -414,7 +414,7 @@
 <span class="sd">    `0.1` as in the original work.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canonical</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">canonical</span><span class="p">:</span> <span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">solar_llim</span> <span class="o">=</span> <span class="mf">0.8</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">solar_ulim</span> <span class="o">=</span> <span class="mf">1.2</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">a_point</span> <span class="o">=</span> <span class="mf">3.5</span>
@@ -435,7 +435,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_canonical_prob_distribution</span> <span class="o">=</span> <span class="n">uniform</span><span class="p">()</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_logp_twin</span><span class="p">(</span><span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_logp_twin</span><span class="p">(</span><span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return maximum ``logp`` of the twin excess for ``m1``.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">m1</span> <span class="o">&lt;=</span> <span class="mf">6.5</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">8.0</span> <span class="o">-</span> <span class="n">m1</span>
@@ -443,11 +443,11 @@
             <span class="k">return</span> <span class="mf">1.5</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_f_twin_logp_small</span><span class="p">(</span><span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_f_twin_logp_small</span><span class="p">(</span><span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return twin fraction at ``logp &lt; 1``, for ``m1``.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mf">0.3</span> <span class="o">-</span> <span class="mf">0.15</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_f_twin_logp_large</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_f_twin_logp_large</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return twin fraction at ``logp &gt;= 1``, for ``m1``.&quot;&quot;&quot;</span>
         <span class="n">logp_twin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logp_twin</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
         <span class="n">f_twin_logp_small</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_f_twin_logp_small</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
@@ -456,7 +456,7 @@
         <span class="k">return</span> <span class="n">f_twin_logp_large</span>
 
     <span class="c1"># TODO: make f_twin 0 if m1 or logp is out of bounds</span>
-    <span class="k">def</span> <span class="nf">_get_f_twin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_f_twin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return twin fraction at ``m1``, ``logp``.&quot;&quot;&quot;</span>
         <span class="n">logp_twin</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logp_twin</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">logp</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
@@ -467,7 +467,7 @@
             <span class="n">ftwin</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="n">ftwin</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_largeq_solar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_largeq_solar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return solar-type :attr:`gamma_largeq` at ``logp``.</span>
 
 <span class="sd">        Returns the power-law index at ``0.3 &lt;= q &lt;= 1.0`` for</span>
@@ -484,7 +484,7 @@
             <span class="n">g</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="n">g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_largeq_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_largeq_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return A/B :attr:`gamma_largeq` at ``logp``.</span>
 
 <span class="sd">        Returns the power-law index at ``0.3 &lt;= q &lt;= 1.0`` for midpoint</span>
@@ -505,7 +505,7 @@
             <span class="n">g</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="n">g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_largeq_ob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_largeq_ob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return B/O :attr:`gamma_largeq` at ``logp``.</span>
 
 <span class="sd">        Returns the power-law index at ``0.3 &lt;= q &lt;= 1.0`` for mid B,</span>
@@ -526,7 +526,7 @@
             <span class="n">g</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="n">g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_smallq_solar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_smallq_solar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return solar-type :attr:`gamma_smallq` at ``logp``.</span>
 
 <span class="sd">        Returns the power-law index at ``0.1 &lt;= q &lt; 0.3`` for solar-type</span>
@@ -541,7 +541,7 @@
             <span class="n">g</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="n">g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_smallq_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_smallq_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return A/B :attr:`gamma_smallq` at ``logp``.</span>
 
 <span class="sd">        Returns the power-law index at ``0.1 &lt;= q &lt; 0.3`` for midpoint</span>
@@ -560,7 +560,7 @@
             <span class="n">g</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">return</span> <span class="n">g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_smallq_ob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_smallq_ob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return B/O :attr:`gamma_smallq` at ``logp``.</span>
 
 <span class="sd">        Returns the power-law index at ``0.1 &lt;= q &lt; 0.3`` for mid B-,</span>
@@ -581,7 +581,7 @@
             <span class="n">g</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="n">g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_largeq_solar_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_largeq_solar_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return solar-A/B :attr:`gamma_largeq` at ``m1``, ``logp``.</span>
 
 <span class="sd">        Compute the power-law index at 0.3 &lt;= q &lt;= 1.0 for primaries of</span>
@@ -597,7 +597,7 @@
         <span class="n">midmass_g</span> <span class="o">=</span> <span class="p">(</span><span class="n">m1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">solar_ulim</span><span class="p">)</span> <span class="o">*</span> <span class="n">slope</span> <span class="o">+</span> <span class="n">lowmass_g</span>
         <span class="k">return</span> <span class="n">midmass_g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_largeq_a_ob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_largeq_a_ob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return A/B-B/O :attr:`gamma_largeq` at ``m1``, ``logp``.</span>
 
 <span class="sd">        Compute the power-law index at 0.3 &lt;= q &lt;= 1.0 for primaries of</span>
@@ -613,7 +613,7 @@
         <span class="n">midmass_g</span> <span class="o">=</span> <span class="p">(</span><span class="n">m1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_point</span><span class="p">)</span> <span class="o">*</span> <span class="n">slope</span> <span class="o">+</span> <span class="n">lowmass_g</span>
         <span class="k">return</span> <span class="n">midmass_g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_smallq_solar_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_smallq_solar_a</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return solar-A/B :attr:`gamma_smallq` at ``m1``, ``logp``.</span>
 
 <span class="sd">        Compute the power-law index at 0.1 &lt;= q &lt; 0.3 for primaries of</span>
@@ -629,7 +629,7 @@
         <span class="n">midmass_g</span> <span class="o">=</span> <span class="p">(</span><span class="n">m1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">solar_ulim</span><span class="p">)</span> <span class="o">*</span> <span class="n">slope</span> <span class="o">+</span> <span class="n">lowmass_g</span>
         <span class="k">return</span> <span class="n">midmass_g</span>
 
-    <span class="k">def</span> <span class="nf">_get_gamma_smallq_a_ob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_gamma_smallq_a_ob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return A/B-B/O :attr:`gamma_smallq` at ``m1``, ``logp``.</span>
 
 <span class="sd">        Compute the power-law index at 0.1 &lt;= q &lt; 0.3 for primaries of</span>
@@ -647,7 +647,7 @@
 
 <div class="viewcode-block" id="MassRatioDistribution.set_parameters">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.MassRatioDistribution.set_parameters">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set distribution power-law parameters at ``m1``, ``logp``.</span>
 
 <span class="sd">        Sets :attr:`gamma_largeq`, :attr:`gamma_smallq`, :attr:`k` and</span>
@@ -684,14 +684,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_k</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="nf">_set_k</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_k</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set :attr:`k` so that the PDF integrates to 1.&quot;&quot;&quot;</span>
         <span class="n">norm</span> <span class="o">=</span> <span class="n">quad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prob</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_max</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">k</span> <span class="o">/=</span> <span class="n">norm</span>
 
 <div class="viewcode-block" id="MassRatioDistribution.prob">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.MassRatioDistribution.prob">[docs]</a>
-    <span class="k">def</span> <span class="nf">prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the mass ratio PDF value at the given e.</span>
 
 <span class="sd">        Parameters</span>
@@ -736,7 +736,7 @@
 
 <div class="viewcode-block" id="CompanionFrequencyDistributionHighQ">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ">[docs]</a>
-<span class="k">class</span> <span class="nc">CompanionFrequencyDistributionHighQ</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CompanionFrequencyDistributionHighQ</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Orbital period distribution for a ``0.3&lt;=q&lt;=1`` ZAMS star pair.</span>
 
 <span class="sd">    For a primary of mass ``m1``, compute the log orbital period</span>
@@ -808,14 +808,14 @@
                    <span class="n">LOGP_MAX</span><span class="p">]</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;list: Distribution `logp` breaks.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m1</span> <span class="o">=</span> <span class="n">m1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_f_logp1_q03</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_f_logp27_q03</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_f_logp55_q03</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">f_logp1_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">f_logp1_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;First companion frequency constant.</span>
 
 <span class="sd">        Frequency of companions with ``0.2 &lt;= logp &lt; 1`` and</span>
@@ -829,7 +829,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f_logp1_q03</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">f_logp27_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">f_logp27_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Second companion frequency constant.</span>
 
 <span class="sd">        Frequency of companions with ``logp = 2.7`` and</span>
@@ -843,7 +843,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f_logp27_q03</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">f_logp55_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">f_logp55_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Third companion frequency constant.</span>
 
 <span class="sd">        Frequency of companions with ``logp = 5.5`` and</span>
@@ -856,7 +856,7 @@
                                   <span class="o">+</span> <span class="mf">0.04</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_f_logp55_q03</span>
 
-    <span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_f1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return companion frequency in the first interval.</span>
 
 <span class="sd">        In the ``0.2 &lt;= logp &lt; 1`` interval, the companion frequency is</span>
@@ -865,7 +865,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_logp1_q03</span>
 
-    <span class="k">def</span> <span class="nf">_f2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_f2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return companion frequency in the second interval.</span>
 
 <span class="sd">        In the ``1&lt;=logp&lt;2.7-DELTA_LOGP`` interval, the companion</span>
@@ -876,7 +876,7 @@
         <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_logp27_q03</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_logp1_q03</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DELTA_LOGP</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_logp1_q03</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
 
-    <span class="k">def</span> <span class="nf">_f3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_f3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return companion frequency in the third interval.</span>
 
 <span class="sd">        In the ``2.7-``:const:`DELTA_LOGP```&lt;=logp&lt;2.7+``</span>
@@ -886,7 +886,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_logp27_q03</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="p">(</span><span class="n">logp</span> <span class="o">-</span> <span class="mf">2.7</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_f4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_f4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return companion frequency in the fourth interval.</span>
 
 <span class="sd">        In the ``2.7 +``:const:`DELTA_LOGP```&lt;= logp &lt; 5.5`` interval,</span>
@@ -896,7 +896,7 @@
         <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_logp55_q03</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_logp27_q03</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DELTA_LOGP</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_logp27_q03</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">A</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">DELTA_LOGP</span> <span class="o">+</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span>
 
-    <span class="k">def</span> <span class="nf">_f5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_f5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Companion frequency in the fifth interval.</span>
 
 <span class="sd">        In the ``5.5 &lt;= logp &lt;= 8.0`` interval, the companion frequency</span>
@@ -908,7 +908,7 @@
 
 <div class="viewcode-block" id="CompanionFrequencyDistributionHighQ.companion_frequency_q03">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.CompanionFrequencyDistributionHighQ.companion_frequency_q03">[docs]</a>
-    <span class="k">def</span> <span class="nf">companion_frequency_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">companion_frequency_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns companion frequency at ``0.3&lt;=q&lt;=1.0``, ``logp``.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">logp</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">LOGP_BREAKS</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="n">f</span> <span class="o">=</span> <span class="mi">0</span>
@@ -932,7 +932,7 @@
 <span class="c1"># TODO : Add Sana+2012 orbital period distribution</span>
 <div class="viewcode-block" id="CompanionFrequencyDistribution">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.CompanionFrequencyDistribution">[docs]</a>
-<span class="k">class</span> <span class="nc">CompanionFrequencyDistribution</span><span class="p">(</span><span class="n">CompanionFrequencyDistributionHighQ</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CompanionFrequencyDistribution</span><span class="p">(</span><span class="n">CompanionFrequencyDistributionHighQ</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Orbital period distribution for a ``0.1&lt;=q&lt;=1`` ZAMS star pair.</span>
 
 <span class="sd">    For a primary of mass ``m1``, compute the log orbital period</span>
@@ -1003,7 +1003,7 @@
 <span class="sd">       -31°. Publications of the Tartu Astrofizica Observatory, 25, 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">q_distr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">uncorrelated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">q_distr</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">uncorrelated</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">extrapolate_uncorrelated_distribution</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">q_distr</span> <span class="o">=</span> <span class="n">q_distr</span>
@@ -1014,27 +1014,27 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_uncorrelated_prob_distribution</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_uncorrelated_distribution</span><span class="p">()</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_h1</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_h1</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return integral of x**a between x1 and x2.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">a</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x2</span> <span class="o">/</span> <span class="n">x1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">x2</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="o">-</span> <span class="n">x1</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">a</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_uncorrelated_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">uniform</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_uncorrelated_distribution</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">uniform</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the uncorrelated distribution.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extrapolate_uncorrelated_distribution</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">uniform</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">8</span><span class="o">-</span><span class="mf">0.2</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">uniform</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">3</span><span class="o">-</span><span class="mf">0.4</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_set_n_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_n_q03</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the relative number of ``0.3&lt;=q&lt;=1.0`` star pairs.&quot;&quot;&quot;</span>
         <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_distr</span><span class="o">.</span><span class="n">gamma_largeq</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">)</span>
         <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_distr</span><span class="o">.</span><span class="n">gamma_largeq</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">n_q03</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">q_distr</span><span class="o">.</span><span class="n">f_twin</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span>
 
-    <span class="k">def</span> <span class="nf">_set_n_q01</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_n_q01</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the relative number of ``0.1&lt;=q&lt;0.3`` star pairs.&quot;&quot;&quot;</span>
         <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_distr</span><span class="o">.</span><span class="n">gamma_smallq</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
         <span class="n">continuity_factor</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="o">**</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">q_distr</span><span class="o">.</span><span class="n">gamma_largeq</span>
@@ -1043,7 +1043,7 @@
 
 <div class="viewcode-block" id="CompanionFrequencyDistribution.companion_frequency_q01">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.CompanionFrequencyDistribution.companion_frequency_q01">[docs]</a>
-    <span class="k">def</span> <span class="nf">companion_frequency_q01</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">companion_frequency_q01</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns companion frequency at ``0.1&lt;=q&lt;=1.0``, ``logp``.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uncorrelated</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uncorrelated_prob_distribution</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">logp</span><span class="p">)</span>
@@ -1061,7 +1061,7 @@
 <span class="c1"># TODO: add logger to MultipleFraction and replace print statements</span>
 <div class="viewcode-block" id="MultipleFraction">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.MultipleFraction">[docs]</a>
-<span class="k">class</span> <span class="nc">MultipleFraction</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MultipleFraction</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Multiplicity fractions as a function of primary mass.</span>
 
 <span class="sd">    For a given primary mass ``m1``, compute the probability of having</span>
@@ -1196,7 +1196,7 @@
 <span class="sd">    interpolator is then built.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">mmax</span> <span class="p">:</span> <span class="nb">float</span>  <span class="o">=</span> <span class="mf">150.</span><span class="p">,</span> <span class="n">nmax</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mmin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">mmax</span> <span class="p">:</span> <span class="nb">float</span>  <span class="o">=</span> <span class="mf">150.</span><span class="p">,</span> <span class="n">nmax</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
                  <span class="n">nmean_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">11</span><span class="p">,</span> <span class="n">only_binaries</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">q_distr</span> <span class="o">=</span> <span class="n">MassRatioDistribution</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mmin</span> <span class="o">=</span> <span class="n">mmin</span>
@@ -1211,7 +1211,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">only_binaries</span> <span class="o">=</span> <span class="n">only_binaries</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_truncated_poisson_mdf</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">k_arr</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">k_max</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_truncated_poisson_mdf</span><span class="p">(</span><span class="n">l</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">k_arr</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">k_max</span><span class="p">:</span> <span class="nb">int</span>
                                <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate a Poissonian distribution.</span>
 
@@ -1229,7 +1229,7 @@
                 <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">distr</span><span class="o">.</span><span class="n">pmf</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm</span>
         <span class="k">return</span> <span class="n">probs</span>
 
-    <span class="k">def</span> <span class="nf">_nmean_to_multfreq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nmean</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_nmean_to_multfreq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nmean</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the multiplicity frequency corresponding to ``nmean``.</span>
 
 <span class="sd">        By assuming that the companion number ``n`` is distributed as a</span>
@@ -1243,7 +1243,7 @@
         <span class="n">a</span> <span class="o">=</span> <span class="n">nmean</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">nmax</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">math</span><span class="o">.</span><span class="n">factorial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nmax</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">nmean</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">a</span><span class="o">/</span><span class="n">b</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_m1_to_multfreq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_m1_to_multfreq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the multiplicity frequency corresponding to ``m1``.</span>
 
 <span class="sd">        Integrating the companion frequency at ``m1`` over orbital</span>
@@ -1256,7 +1256,7 @@
             <span class="n">multfreq</span> <span class="o">+=</span> <span class="n">quad</span><span class="p">(</span><span class="n">freq_distr</span><span class="o">.</span><span class="n">companion_frequency_q01</span><span class="p">,</span> <span class="n">logp0</span><span class="p">,</span> <span class="n">logp1</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">100</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">multfreq</span>
 
-    <span class="k">def</span> <span class="nf">_set_m1_to_nmean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_m1_to_nmean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup a ``m1`` to ``nmean`` interpolator.</span>
 
 <span class="sd">        First computes the multiplicity frequencies for :attr:`m1_array`</span>
@@ -1274,13 +1274,13 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Done setting up interpolator. &#39;</span>
               <span class="sa">f</span><span class="s1">&#39;Elapsed time: </span><span class="si">{</span><span class="n">time1</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_set_multfreq_to_nmean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_multfreq_to_nmean</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup multiplicity frequency to ``nmean`` interpolator.&quot;&quot;&quot;</span>
         <span class="n">nmeans</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nmean_max</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
         <span class="n">multfreqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_nmean_to_multfreq</span><span class="p">(</span><span class="n">nmean</span><span class="p">)</span> <span class="k">for</span> <span class="n">nmean</span> <span class="ow">in</span> <span class="n">nmeans</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">multfreq_to_nmean</span> <span class="o">=</span> <span class="n">interp1d</span><span class="p">(</span><span class="n">multfreqs</span><span class="p">,</span> <span class="n">nmeans</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_set_mmax</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_mmax</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the maximum mass and mass array.</span>
 
 <span class="sd">        The maximum mass is set to either 150.0 or to the maximum mass</span>
@@ -1295,7 +1295,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">m1_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mmin</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mmax</span><span class="p">),</span> <span class="mi">20</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">m1_array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mmax</span>
             <span class="k">return</span>
-        <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">m1</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">m1</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">m1</span> <span class="o">&lt;</span> <span class="mf">0.8</span><span class="p">:</span>
                 <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="mf">1e3</span><span class="p">)</span>
             <span class="n">multfreq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m1_to_multfreq</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
@@ -1320,7 +1320,7 @@
 
 <div class="viewcode-block" id="MultipleFraction.solve">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.MultipleFraction.solve">[docs]</a>
-    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up companion number probability distribution.</span>
 
 <span class="sd">        Sets up a series of interpolators necessary for computing the</span>
@@ -1351,7 +1351,7 @@
 
 <div class="viewcode-block" id="MultipleFraction.ncomp_mean">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.MultipleFraction.ncomp_mean">[docs]</a>
-    <span class="k">def</span> <span class="nf">ncomp_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ncomp_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return mean companion number for a primary mass ``m1``.</span>
 
 <span class="sd">        Parameters</span>
@@ -1379,7 +1379,7 @@
 
 <div class="viewcode-block" id="MultipleFraction.prob">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.MultipleFraction.prob">[docs]</a>
-    <span class="k">def</span> <span class="nf">prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return probability of ``k`` companions given mean ``l``.&quot;&quot;&quot;</span>
         <span class="n">k_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
         <span class="n">prob_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">k_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -1394,7 +1394,7 @@
 
 <div class="viewcode-block" id="MultipleFraction.get_multiple_fraction">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.MultipleFraction.get_multiple_fraction">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_multiple_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_multiple_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return fraction of order n multiples for :attr:`m1_array`.</span>
 
 <span class="sd">        Parameters</span>
@@ -1422,7 +1422,7 @@
 <span class="c1"># TODO: import tables for proper File, Group, etc. typing</span>
 <div class="viewcode-block" id="ZAMSSystemGenerator">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.ZAMSSystemGenerator">[docs]</a>
-<span class="k">class</span> <span class="nc">ZAMSSystemGenerator</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ZAMSSystemGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate ZAMS multiples from a shared mass pool.</span>
 
 <span class="sd">    Receives an array of pre-sampled initial masses :attr:`imf_array`</span>
@@ -1552,7 +1552,7 @@
 <span class="sd">    &gt;&gt;&gt; systemgenerator.close_pairs_table()</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imf_array</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imf_array</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">,</span>
                  <span class="n">pairs_table_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">PathLike</span> <span class="o">=</span> <span class="n">BINARIES_UNCORRELATED_TABLE_PATH</span><span class="p">,</span>
                  <span class="n">m1_min</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">,</span> <span class="n">qe_max_tries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dmcomp_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
                  <span class="n">parent_logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -1572,7 +1572,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">m1group</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logger</span><span class="p">(</span><span class="n">parent_logger</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create and return a class logger.</span>
 
 <span class="sd">        Will be a child of ``parent_logger`` if provided.</span>
@@ -1591,7 +1591,7 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">logger</span>
 
-    <span class="k">def</span> <span class="nf">_set_m1array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_m1array</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set :attr:`m1array_i` and :attr:`m1_array`.</span>
 
 <span class="sd">        `index` should be less than :attr:`m1array_n`.</span>
@@ -1600,7 +1600,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">m1array_i</span> <span class="o">=</span> <span class="n">index</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m1_array</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">highmass_imf_array</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_set_m1_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_m1_options</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load mass options from :attr:`pairs_table`.</span>
 
 <span class="sd">        The primary mass corresponding to each group in</span>
@@ -1617,7 +1617,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_m1group_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m1group_options</span><span class="p">[</span><span class="n">m1sort</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_m1_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_m1_options</span><span class="p">[</span><span class="n">m1sort</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">_get_m1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">Group</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_m1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">tables</span><span class="o">.</span><span class="n">Group</span><span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns table mass and group closest to :attr:`m1_array`.&quot;&quot;&quot;</span>
         <span class="n">m1_closest_i</span><span class="p">,</span> <span class="n">m1_closest</span> <span class="o">=</span> <span class="n">valley_minimum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m1_options</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">m1_array</span><span class="p">),</span>
                                                   <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_m1_options</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
@@ -1628,7 +1628,7 @@
 
 <div class="viewcode-block" id="ZAMSSystemGenerator.setup_sampler">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.ZAMSSystemGenerator.setup_sampler">[docs]</a>
-    <span class="k">def</span> <span class="nf">setup_sampler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_sampler</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up attributes for the sampler.</span>
 
 <span class="sd">        Loads data from :attr:`table_path`. Sets two mass sub-arrays,</span>
@@ -1648,14 +1648,14 @@
 
 <div class="viewcode-block" id="ZAMSSystemGenerator.close_pairs_table">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.ZAMSSystemGenerator.close_pairs_table">[docs]</a>
-    <span class="k">def</span> <span class="nf">close_pairs_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">close_pairs_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Close the :attr:`pairs_table` file.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pairs_table</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="ZAMSSystemGenerator.open_m1group">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.ZAMSSystemGenerator.open_m1group">[docs]</a>
-    <span class="k">def</span> <span class="nf">open_m1group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_m1group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the primary mass and open the corresponding group.</span>
 
 <span class="sd">        Sets :attr:`m1_array` to the the element of</span>
@@ -1670,7 +1670,7 @@
 
 <div class="viewcode-block" id="ZAMSSystemGenerator.sample_system">
 <a class="viewcode-back" href="../../bossa.html#bossa.zams.ZAMSSystemGenerator.sample_system">[docs]</a>
-    <span class="k">def</span> <span class="nf">sample_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ncomp</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ncomp_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_system</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ncomp</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ncomp_max</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NDArray</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return parameters of a multiple system.</span>
 
 <span class="sd">        Generates a multiple system with ``ncomp`` companions for</span>

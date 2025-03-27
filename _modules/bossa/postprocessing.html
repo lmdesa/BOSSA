@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>bossa.postprocessing &mdash; BOSSA 1.0.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -73,35 +73,35 @@
 <span class="c1"># TODO: Complete documentation</span>
 
 
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">import</span> <span class="nn">gc</span>
-<span class="kn">import</span> <span class="nn">fnmatch</span>
-<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ProcessPoolExecutor</span>
-<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">sleep</span>
-<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessPoolExecutor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">time</span><span class="w"> </span><span class="kn">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">sleep</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">import</span> <span class="nn">inquirer</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">tables</span> <span class="k">as</span> <span class="nn">tb</span>
-<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">inquirer</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tables</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tb</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="c1">#from pandarallel import pandarallel  # pandarallel breaks float types</span>
-<span class="kn">import</span> <span class="nn">astropy.constants</span> <span class="k">as</span> <span class="nn">ct</span>
-<span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
-<span class="kn">from</span> <span class="nn">astropy.cosmology</span> <span class="kn">import</span> <span class="n">WMAP9</span> <span class="k">as</span> <span class="n">cosmo</span>
-<span class="kn">from</span> <span class="nn">scipy.integrate</span> <span class="kn">import</span> <span class="n">quad</span>
-<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">newton</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.constants</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.cosmology</span><span class="w"> </span><span class="kn">import</span> <span class="n">WMAP9</span> <span class="k">as</span> <span class="n">cosmo</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.integrate</span><span class="w"> </span><span class="kn">import</span> <span class="n">quad</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">newton</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
 
 <span class="c1">#import sys</span>
 <span class="c1">#sys.path.append(&#39;..&#39;)</span>
-<span class="kn">from</span> <span class="nn">bossa.sfh</span> <span class="kn">import</span> <span class="n">ChruslinskaSFRD</span>
-<span class="kn">from</span> <span class="nn">bossa.imf</span> <span class="kn">import</span> <span class="n">Star</span><span class="p">,</span> <span class="n">IGIMF</span>
-<span class="kn">from</span> <span class="nn">bossa.zams</span> <span class="kn">import</span> <span class="n">ZAMSSystemGenerator</span>
-<span class="kn">from</span> <span class="nn">bossa.utils</span> <span class="kn">import</span> <span class="n">pull_snmass1</span><span class="p">,</span> <span class="n">pull_snmass2</span><span class="p">,</span> <span class="n">chirp_mass</span><span class="p">,</span> <span class="n">bintype</span><span class="p">,</span> <span class="n">mass_ratio</span><span class="p">,</span> <span class="n">create_logger</span><span class="p">,</span> \
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.sfh</span><span class="w"> </span><span class="kn">import</span> <span class="n">ChruslinskaSFRD</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.imf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Star</span><span class="p">,</span> <span class="n">IGIMF</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.zams</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZAMSSystemGenerator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">pull_snmass1</span><span class="p">,</span> <span class="n">pull_snmass2</span><span class="p">,</span> <span class="n">chirp_mass</span><span class="p">,</span> <span class="n">bintype</span><span class="p">,</span> <span class="n">mass_ratio</span><span class="p">,</span> <span class="n">create_logger</span><span class="p">,</span> \
     <span class="n">ZOH_to_FeH</span><span class="p">,</span> <span class="n">format_time</span>
-<span class="kn">from</span> <span class="nn">bossa.constants</span> <span class="kn">import</span> <span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">COMPAS_PROC_OUTPUT_DIR_PATH</span><span class="p">,</span> <span class="n">COMPAS_WORK_PATH</span><span class="p">,</span> \
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">COMPAS_PROC_OUTPUT_DIR_PATH</span><span class="p">,</span> <span class="n">COMPAS_WORK_PATH</span><span class="p">,</span> \
     <span class="n">BINARIES_CORRELATED_TABLE_PATH</span><span class="p">,</span> <span class="n">COMPAS_21XX_PROC_OUTPUT_DIR_PATH</span><span class="p">,</span> \
     <span class="n">COMPAS_12XX_PROC_OUTPUT_DIR_PATH</span><span class="p">,</span> <span class="n">COMPAS_21XX_GRIDS_PATH</span><span class="p">,</span> <span class="n">COMPAS_12XX_GRIDS_PATH</span><span class="p">,</span> \
     <span class="n">IGIMF_ZAMS_DIR_PATH</span><span class="p">,</span> <span class="n">COMPACT_OBJ_DIR_PATH</span>
@@ -116,7 +116,7 @@
 
 <div class="viewcode-block" id="COMPASOutputTrimmer">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.COMPASOutputTrimmer">[docs]</a>
-<span class="k">class</span> <span class="nc">COMPASOutputTrimmer</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">COMPASOutputTrimmer</span><span class="p">:</span>
     <span class="n">SNTAB_BASE_COLS_TOLOAD</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s1">&#39;Mass(SN)&#39;</span><span class="p">,</span>
         <span class="s1">&#39;Mass(CP)&#39;</span><span class="p">,</span>
@@ -220,7 +220,7 @@
         <span class="s1">&#39;PSR_dT&#39;</span><span class="p">,</span>
     <span class="p">]</span> <span class="o">+</span> <span class="n">PSR_SN_DOUBLE_COLS_TOSAVE</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compas_output_option</span><span class="p">,</span> <span class="n">compas_sample_option</span><span class="p">,</span> <span class="n">only_load_dcos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">load_unbound_systems</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">compas_output_option</span><span class="p">,</span> <span class="n">compas_sample_option</span><span class="p">,</span> <span class="n">only_load_dcos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">load_unbound_systems</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">save_pulsar_columns</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parent_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compas_output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">COMPAS_WORK_PATH</span><span class="p">,</span> <span class="n">compas_output_option</span><span class="p">,</span> <span class="n">compas_sample_option</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">trimmed_output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">COMPAS_PROC_OUTPUT_DIR_PATH</span><span class="p">,</span> <span class="n">compas_output_option</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.snappy.parquet&#39;</span><span class="p">)</span>
@@ -234,7 +234,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logger</span><span class="p">(</span><span class="n">parent_logger</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">columns_to_save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">columns_to_save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_columns_to_save</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_pulsar_columns</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_columns_to_save</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PSR_COLS_TOSAVE</span>
@@ -243,7 +243,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_columns_to_save</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">float32_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">float32_cols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_float32_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_float32_cols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns_to_save</span> <span class="k">if</span> <span class="n">col</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span>
                 <span class="s1">&#39;Stellar_Type1&#39;</span><span class="p">,</span>
@@ -257,7 +257,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_float32_cols</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">columns_to_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">columns_to_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_columns_to_load</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">only_load_dcos</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_columns_to_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SYSPARAMTAB_COLS_TOLOAD</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">DCOTAB_COLS_TOLOAD</span>
@@ -271,13 +271,13 @@
                                          <span class="bp">self</span><span class="o">.</span><span class="n">SNTAB_BASE_COLS_TOLOAD</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_columns_to_load</span>
 
-    <span class="k">def</span> <span class="nf">_set_save_pulsar_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_pulsar_columns</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_save_pulsar_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_pulsar_columns</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">save_pulsar_columns</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">only_load_dcos</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;save_pulsar_columns was passed as True but only_load_dcos is also True.&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">save_pulsar_columns</span>
 
-    <span class="k">def</span> <span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">parent_logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loggername</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">])</span>
             <span class="n">log_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">loggername</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-%m-%Y_%H:%M:%S.log&#39;</span><span class="p">))</span>
@@ -289,10 +289,10 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">logger</span>
 
-    <span class="k">def</span> <span class="nf">_set_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">input_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compas_output_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;COMPAS_Output*.h5&#39;</span><span class="p">))</span>
 
-    <span class="k">def</span> <span class="nf">_get_psr_sn_double_cols_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">no</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_psr_sn_double_cols_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">no</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">no</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">no</span><span class="p">)</span>
         <span class="n">col_dict</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;Mass_Core@CO(SN)&#39;</span><span class="p">:</span> <span class="sa">f</span><span class="s1">&#39;PSR_SN_Mass_Core</span><span class="si">{</span><span class="n">no</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
@@ -301,7 +301,7 @@
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">col_dict</span>
 
-    <span class="k">def</span> <span class="nf">_get_df_from_hdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdf_path</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_df_from_hdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hdf_path</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Attempting to load </span><span class="si">{</span><span class="n">hdf_path</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Columns to load: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">columns_to_load</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
@@ -530,7 +530,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Done loading table </span><span class="si">{</span><span class="n">hdf_path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">. Elapsed time: </span><span class="si">{</span><span class="n">total_time</span><span class="si">:</span><span class="s1">.6f</span><span class="si">}</span><span class="s1"> s.&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">df</span><span class="p">,</span> <span class="n">psr_df</span>
 
-    <span class="k">def</span> <span class="nf">_process_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">psr_df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_process_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">psr_df</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Processing table...&#39;</span><span class="p">)</span>
         <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
 
@@ -642,7 +642,7 @@
 
 <div class="viewcode-block" id="COMPASOutputTrimmer.gen_subdfs">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.COMPASOutputTrimmer.gen_subdfs">[docs]</a>
-    <span class="k">def</span> <span class="nf">gen_subdfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">gen_subdfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
         <span class="n">all_soft_cos_df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Stellar_Type1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">CO_CODES</span><span class="p">)</span> <span class="o">|</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Stellar_Type2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">CO_CODES</span><span class="p">)]</span>
         <span class="n">bound_soft_cos_df</span> <span class="o">=</span> <span class="n">all_soft_cos_df</span><span class="p">[</span><span class="n">all_soft_cos_df</span><span class="p">[</span><span class="s1">&#39;Unbound&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">bound_hard_cos_df</span> <span class="o">=</span> <span class="n">bound_soft_cos_df</span><span class="p">[</span><span class="n">bound_soft_cos_df</span><span class="p">[</span><span class="s1">&#39;Stellar_Type1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="mi">13</span><span class="p">,</span> <span class="mi">14</span><span class="p">])</span> <span class="o">&amp;</span> \
@@ -652,7 +652,7 @@
 
 <div class="viewcode-block" id="COMPASOutputTrimmer.trim">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.COMPASOutputTrimmer.trim">[docs]</a>
-    <span class="k">def</span> <span class="nf">trim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">trim</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Initializing trimmer...&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_paths</span><span class="p">()</span>
         <span class="c1">#pandarallel.initialize()</span>
@@ -684,9 +684,9 @@
 
 <div class="viewcode-block" id="LogPFinder">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.LogPFinder">[docs]</a>
-<span class="k">class</span> <span class="nc">LogPFinder</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">LogPFinder</span><span class="p">:</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zams</span> <span class="o">=</span> <span class="n">ZAMSSystemGenerator</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">150</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">BINARIES_CORRELATED_TABLE_PATH</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zams</span><span class="o">.</span><span class="n">setup_sampler</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m1group</span> <span class="o">=</span> <span class="kc">None</span>
@@ -695,7 +695,7 @@
 
 <div class="viewcode-block" id="LogPFinder.set_m1">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.LogPFinder.set_m1">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_m1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_m1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zams</span><span class="o">.</span><span class="n">m1_array</span> <span class="o">=</span> <span class="n">m1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">m1group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zams</span><span class="o">.</span><span class="n">_get_m1</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logp_options</span> <span class="o">=</span> <span class="p">[]</span>
@@ -712,7 +712,7 @@
 
 <div class="viewcode-block" id="LogPFinder.get_closest_logp">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.LogPFinder.get_closest_logp">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_closest_logp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_closest_logp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logp</span><span class="p">):</span>
         <span class="n">closest_logp_i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logp_options</span> <span class="o">-</span> <span class="n">logp</span><span class="p">))</span>
         <span class="n">closest_logp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logp_categories</span><span class="p">[</span><span class="n">closest_logp_i</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">closest_logp</span></div>
@@ -720,7 +720,7 @@
 
 <div class="viewcode-block" id="LogPFinder.a_to_logp_table">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.LogPFinder.a_to_logp_table">[docs]</a>
-    <span class="k">def</span> <span class="nf">a_to_logp_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">a_to_logp_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">):</span>
         <span class="n">cgs_a</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">au</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">)</span>
         <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">cgs</span> <span class="o">*</span> <span class="n">m_tot</span> <span class="o">*</span> <span class="n">ct</span><span class="o">.</span><span class="n">M_sun</span><span class="p">))</span>
         <span class="n">cgs_p</span> <span class="o">=</span> <span class="n">g</span> <span class="o">*</span> <span class="n">cgs_a</span> <span class="o">**</span> <span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
@@ -734,10 +734,10 @@
 
 <div class="viewcode-block" id="CompactBinaryPopulation">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.CompactBinaryPopulation">[docs]</a>
-<span class="k">class</span> <span class="nc">CompactBinaryPopulation</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CompactBinaryPopulation</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Cross-match generated ZAMS populations and COMPAS output to produce a binary compact object population.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">print_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parent_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">canonical_distributions</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">print_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parent_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">canonical_distributions</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">zams_population_path</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compas_feh_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compas_feh_options</span> <span class="o">=</span> <span class="kc">None</span>
@@ -751,7 +751,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logger</span><span class="p">(</span><span class="n">parent_logger</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">compas_proc_output_dir_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compas_proc_output_dir_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compas_proc_output_dir_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canonical_initial_distributions</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_compas_proc_output_dir_path</span> <span class="o">=</span> <span class="n">COMPAS_21XX_PROC_OUTPUT_DIR_PATH</span>
@@ -760,7 +760,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compas_proc_output_dir_path</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">compas_grids_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compas_grids_folder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compas_grids_folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">canonical_initial_distributions</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_compas_grids_folder</span> <span class="o">=</span> <span class="n">COMPAS_21XX_GRIDS_PATH</span>
@@ -768,7 +768,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_compas_grids_folder</span> <span class="o">=</span> <span class="n">COMPAS_12XX_GRIDS_PATH</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compas_grids_folder</span>
 
-    <span class="k">def</span> <span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">parent_logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loggername</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">])</span>
             <span class="n">log_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">loggername</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-%m-%Y_%H:%M:%S.log&#39;</span><span class="p">))</span>
@@ -780,14 +780,14 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">logger</span>
 
-    <span class="k">def</span> <span class="nf">_get_compas_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_compas_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load COMPAS output paths and corresponding metallicities.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">sample_folder</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compas_proc_output_dir_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.parquet&#39;</span><span class="p">):</span>
             <span class="n">feh</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sample_folder</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="mf">1e2</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">compas_feh_dict</span><span class="p">[</span><span class="n">feh</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_folder</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">compas_feh_options</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">compas_feh_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
 
-    <span class="k">def</span> <span class="nf">_get_zams_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_zams_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Load ZAMS sample paths and corresponding redshift, metallicity and other parameters.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">sample_file</span> <span class="ow">in</span> <span class="n">IGIMF_ZAMS_DIR_PATH</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;z=*_feh=*_logsfr=*_1e4ZOH=*_1e2Mgal=*_1e2logn=*_logpool=*_&#39;</span> \
                                                     <span class="s1">&#39;igimf_zams_sample.parquet&#39;</span><span class="p">):</span>
@@ -812,7 +812,7 @@
                              <span class="p">}</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">zams_redshift_feh_dict</span><span class="p">[</span><span class="n">z</span><span class="p">][</span><span class="n">feh</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_params</span>
 
-    <span class="k">def</span> <span class="nf">_crossmatch_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zams_df</span><span class="p">,</span> <span class="n">compas_sample_path</span><span class="p">,</span> <span class="n">feh</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_crossmatch_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zams_df</span><span class="p">,</span> <span class="n">compas_sample_path</span><span class="p">,</span> <span class="n">feh</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Cross-match a dataframe holding the ZAMS population with the nearest metallicity COMPAS output.&quot;&quot;&quot;</span>
         <span class="c1"># First, set up arrays to hold columns of the final cross-matched dataframe.</span>
         <span class="n">sample_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">zams_df</span><span class="p">)</span>
@@ -956,7 +956,7 @@
                     <span class="n">match_seeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">seed</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">match_seeds</span><span class="p">]</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Looking for </span><span class="si">{</span><span class="n">match_seeds</span><span class="si">}</span><span class="s1"> in </span><span class="si">{</span><span class="n">m1_grid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-                    <span class="k">def</span> <span class="nf">look_for_seeds</span><span class="p">(</span><span class="n">match_seeds</span><span class="p">):</span>
+                    <span class="k">def</span><span class="w"> </span><span class="nf">look_for_seeds</span><span class="p">(</span><span class="n">match_seeds</span><span class="p">):</span>
                         <span class="n">match_lines</span> <span class="o">=</span> <span class="p">[]</span>
                         <span class="k">with</span> <span class="n">m1_grid</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                             <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">():</span>
@@ -1114,7 +1114,7 @@
         <span class="n">zams_df</span><span class="p">[</span><span class="s1">&#39;Binary_Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">binary_type_col</span>
         <span class="k">return</span> <span class="n">zams_df</span>
 
-    <span class="k">def</span> <span class="nf">_pick_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_pick_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">sample_options</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">zams_redshift_feh_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">zams_feh_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zams_redshift_feh_dict</span><span class="p">[</span><span class="n">z</span><span class="p">]</span>
@@ -1136,7 +1136,7 @@
         <span class="n">sample_choice</span> <span class="o">=</span> <span class="n">inquirer</span><span class="o">.</span><span class="n">prompt</span><span class="p">(</span><span class="n">question</span><span class="p">)[</span><span class="s1">&#39;choice&#39;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">sample_choice</span>
 
-    <span class="k">def</span> <span class="nf">_crossmatch_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zams_sample_redshift</span><span class="p">,</span> <span class="n">zams_sample_feh</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_crossmatch_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zams_sample_redshift</span><span class="p">,</span> <span class="n">zams_sample_feh</span><span class="p">):</span>
         <span class="n">zams_sample_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zams_redshift_feh_dict</span><span class="p">[</span><span class="n">zams_sample_redshift</span><span class="p">][</span><span class="n">zams_sample_feh</span><span class="p">]</span>
         <span class="n">zams_sample_path</span> <span class="o">=</span> <span class="n">zams_sample_dict</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">]</span>
 
@@ -1182,11 +1182,11 @@
         <span class="k">del</span> <span class="n">matched_df</span>
         <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">_crossmatch_single_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_crossmatch_single_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">sample_choice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pick_sample</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_crossmatch_sample</span><span class="p">(</span><span class="o">*</span><span class="n">sample_choice</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_crossmatch_full_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_crossmatch_full_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">zams_redshift_feh_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">zams_feh_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zams_redshift_feh_dict</span><span class="p">[</span><span class="n">z</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">feh</span> <span class="ow">in</span> <span class="n">zams_feh_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -1194,7 +1194,7 @@
 
 <div class="viewcode-block" id="CompactBinaryPopulation.crossmatch_sample">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.CompactBinaryPopulation.crossmatch_sample">[docs]</a>
-    <span class="k">def</span> <span class="nf">crossmatch_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">crossmatch_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Initializing...&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_zams_samples</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_get_compas_samples</span><span class="p">()</span>
@@ -1222,7 +1222,7 @@
 
 <div class="viewcode-block" id="MergerRates">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.MergerRates">[docs]</a>
-<span class="k">class</span> <span class="nc">MergerRates</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MergerRates</span><span class="p">:</span>
     <span class="n">COLS_TO_LOAD_ESSENTIAL</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s1">&#39;Unbound&#39;</span><span class="p">,</span>
         <span class="s1">&#39;Coalescence_Time&#39;</span><span class="p">,</span>
@@ -1247,7 +1247,7 @@
         <span class="s1">&#39;CompanionNumber&#39;</span>
     <span class="p">]</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_dir_path</span><span class="p">,</span> <span class="n">zams_grid_path</span><span class="p">,</span> <span class="n">sfrd_model</span><span class="p">,</span> <span class="n">invariant_imf</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_dir_path</span><span class="p">,</span> <span class="n">zams_grid_path</span><span class="p">,</span> <span class="n">sfrd_model</span><span class="p">,</span> <span class="n">invariant_imf</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">extended_load</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">load_bcos_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">min_redshift</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_redshift</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">min_feh</span><span class="o">=-</span><span class="mf">5.0</span><span class="p">,</span>
                  <span class="n">max_feh</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">progenitor_m_min</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">progenitor_m_max</span><span class="o">=</span><span class="mf">150.0</span><span class="p">,</span> <span class="n">convert_time</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">new_method</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">parent_logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1300,7 +1300,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mrate_arr</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_logger</span><span class="p">(</span><span class="n">parent_logger</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_logger</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">parent_logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loggername</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">])</span>
             <span class="n">log_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">LOG_PATH</span><span class="p">,</span> <span class="n">loggername</span><span class="p">,</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">-%m-%Y_%H:%M:%S.log&#39;</span><span class="p">))</span>
@@ -1313,12 +1313,12 @@
         <span class="k">return</span> <span class="n">logger</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_total_bco_mass</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_total_bco_mass</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the total binary compact object mass for a dataframe row.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">row</span><span class="o">.</span><span class="n">Mass_PostSN1</span> <span class="o">+</span> <span class="n">row</span><span class="o">.</span><span class="n">Mass_PostSN2</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_chirp_mass</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_chirp_mass</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the chirp mass for a dataframe row.&quot;&quot;&quot;</span>
         <span class="n">m1</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">Mass_PostSN1</span>
         <span class="n">m2</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">Mass_PostSN2</span>
@@ -1328,7 +1328,7 @@
             <span class="k">return</span> <span class="p">(</span><span class="n">m1</span> <span class="o">*</span> <span class="n">m2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">3</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">m1</span> <span class="o">+</span> <span class="n">m2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">5</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_merger_age</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_merger_age</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate Universe age at merger for a dataframe row.&quot;&quot;&quot;</span>
         <span class="n">redshift_zams</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">Redshift_ZAMS</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
         <span class="n">age_zams</span> <span class="o">=</span> <span class="n">cosmo</span><span class="o">.</span><span class="n">age</span><span class="p">(</span><span class="n">redshift_zams</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
@@ -1337,13 +1337,13 @@
         <span class="k">return</span> <span class="n">age_merger</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_redshift_from_age</span><span class="p">(</span><span class="n">age_arr</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_redshift_from_age</span><span class="p">(</span><span class="n">age_arr</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate redshift from Universe age.&quot;&quot;&quot;</span>
         <span class="n">redshift_arr</span> <span class="o">=</span> <span class="n">newton</span><span class="p">(</span><span class="k">lambda</span> <span class="n">z_arr</span><span class="p">:</span> <span class="n">cosmo</span><span class="o">.</span><span class="n">age</span><span class="p">(</span><span class="n">z_arr</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="o">-</span> <span class="n">age_arr</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">age_arr</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">redshift_arr</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_bin_frequency_heights</span><span class="p">(</span><span class="n">x_arr</span><span class="p">,</span> <span class="n">x_bin_edges</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_bin_frequency_heights</span><span class="p">(</span><span class="n">x_arr</span><span class="p">,</span> <span class="n">x_bin_edges</span><span class="p">):</span>
         <span class="n">bin_frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">x_bin_edges</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">previous_x_arr_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_arr</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">edge0</span><span class="p">,</span> <span class="n">edge1</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x_bin_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">x_bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])):</span>
@@ -1355,7 +1355,7 @@
         <span class="k">return</span> <span class="n">bin_frequencies</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_linear_fit</span><span class="p">(</span><span class="n">xy0</span><span class="p">,</span> <span class="n">xy1</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_linear_fit</span><span class="p">(</span><span class="n">xy0</span><span class="p">,</span> <span class="n">xy1</span><span class="p">):</span>
         <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">xy0</span>
         <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">xy1</span>
         <span class="n">slope</span> <span class="o">=</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span>
@@ -1363,7 +1363,7 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">])</span>
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_get_linear_fit_area</span><span class="p">(</span><span class="n">linear_fit</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_linear_fit_area</span><span class="p">(</span><span class="n">linear_fit</span><span class="p">):</span>
         <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span> <span class="o">=</span> <span class="n">linear_fit</span>
         <span class="k">if</span> <span class="n">x0</span> <span class="o">==</span> <span class="n">x1</span><span class="p">:</span>
             <span class="k">return</span> <span class="mf">0.0</span>
@@ -1371,31 +1371,31 @@
             <span class="k">return</span> <span class="n">slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">*</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span> <span class="o">*</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">intercept</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">sfrd_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sfrd_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Which star formation rate density model from Chrulinska et al. (2020) to use.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sfrd_model</span>
 
     <span class="nd">@sfrd_model</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">sfrd_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sfrd_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
         <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lowmet&#39;</span><span class="p">,</span> <span class="s1">&#39;midmet&#39;</span><span class="p">,</span> <span class="s1">&#39;highmet&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">model</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;sfrd_model must be one of </span><span class="si">{</span><span class="n">models</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sfrd_model</span> <span class="o">=</span> <span class="n">model</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">canon_sfrd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">canon_sfrd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Whether the star formation rate grid to be loaded should assume a Canonical Kroupa IMF.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_canon_sfrd</span>
 
     <span class="nd">@canon_sfrd</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">canon_sfrd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">invariant_imf</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">canon_sfrd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">invariant_imf</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">invariant_imf</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_canon_sfrd</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_canon_sfrd</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">cols_to_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cols_to_load</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cols_to_load</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extended_load</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_cols_to_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">COLS_TO_LOAD_EXTENDED</span>
@@ -1404,17 +1404,17 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cols_to_load</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">sample_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_paths</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_sample_paths</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_dir_path</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.parquet&#39;</span><span class="p">))</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_paths</span>
 
-    <span class="k">def</span> <span class="nf">_get_sfrd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_sfrd</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">sfrd</span> <span class="o">=</span> <span class="n">ChruslinskaSFRD</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sfrd_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">canon_sfrd</span><span class="p">,</span> <span class="n">per_redshift_met_bin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_new_method</span><span class="p">)</span>
         <span class="n">sfrd</span><span class="o">.</span><span class="n">set_grid</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">sfrd</span>
 
-    <span class="k">def</span> <span class="nf">_set_merger_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_merger_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_</span><span class="p">):</span>
         <span class="n">classes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;BHBH&#39;</span><span class="p">,</span> <span class="s1">&#39;BHNS&#39;</span><span class="p">,</span> <span class="s1">&#39;NSBH&#39;</span><span class="p">,</span> <span class="s1">&#39;NSNS&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">class_</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;merger_class must be one of </span><span class="si">{</span><span class="n">classes</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
@@ -1424,7 +1424,7 @@
             <span class="n">class_</span> <span class="o">=</span> <span class="p">[</span><span class="n">class_</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">merger_class</span> <span class="o">=</span> <span class="n">class_</span>
 
-    <span class="k">def</span> <span class="nf">_set_sample_properties_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_sample_properties_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_paths</span><span class="p">:</span>
             <span class="n">redshift</span><span class="p">,</span> <span class="n">feh</span><span class="p">,</span> <span class="n">logsfr</span><span class="p">,</span> <span class="n">zoh1e4</span><span class="p">,</span> <span class="n">mgal1e2</span><span class="p">,</span> <span class="n">logn1e2</span><span class="p">,</span> <span class="n">logpool</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="n">compasfeh</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
             <span class="n">redshift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">redshift</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># z_{ZAMS}</span>
@@ -1451,7 +1451,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">sample_properties_dict</span><span class="p">[</span><span class="n">redshift</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sample_properties_dict</span><span class="p">[</span><span class="n">redshift</span><span class="p">][</span><span class="n">feh</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample_properties</span>
 
-    <span class="k">def</span> <span class="nf">_fix_df_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_fix_df_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">CATEGORY_COLS</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="s1">&#39;category&#39;</span><span class="p">:</span>
                 <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">)</span>
@@ -1460,7 +1460,7 @@
                 <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">df</span>
 
-    <span class="k">def</span> <span class="nf">_get_sample_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift_batch</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_sample_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">redshift_batch</span><span class="p">):</span>
         <span class="n">sample_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cols_to_load</span><span class="p">)</span>
 
         <span class="n">sample_n</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_properties_dict</span><span class="p">[</span><span class="n">redshift</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="k">for</span> <span class="n">redshift</span> <span class="ow">in</span> <span class="n">redshift_batch</span><span class="p">])</span>
@@ -1501,7 +1501,7 @@
         <span class="n">sample_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fix_df_dtypes</span><span class="p">(</span><span class="n">sample_df</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">sample_df</span>
 
-    <span class="k">def</span> <span class="nf">_set_sample_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batches_n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_sample_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batches_n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">redshift_batches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array_split</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_properties_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]),</span> <span class="n">batches_n</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sample_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cols_to_load</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sample_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fix_df_dtypes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_df</span><span class="p">)</span>
@@ -1523,7 +1523,7 @@
 
 <div class="viewcode-block" id="MergerRates.load_sample_to_memory">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.MergerRates.load_sample_to_memory">[docs]</a>
-    <span class="k">def</span> <span class="nf">load_sample_to_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batches_n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_sample_to_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batches_n</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Search sample folder for valid files...&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_sample_properties_dict</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Found </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_paths</span><span class="p">)</span><span class="si">}</span><span class="s1"> valid files, loading to sample dataframe...&#39;</span><span class="p">)</span>
@@ -1536,7 +1536,7 @@
 
 <div class="viewcode-block" id="MergerRates.get_mtot_per_ncomp">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.MergerRates.get_mtot_per_ncomp">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_mtot_per_ncomp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_mtot_per_ncomp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Getting raw sample star-forming masses...&#39;</span><span class="p">)</span>
         <span class="n">sample_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_paths</span><span class="p">)</span>
         <span class="n">sample_counter</span> <span class="o">=</span> <span class="mi">1</span>
@@ -1561,7 +1561,7 @@
 
 
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_kroupa_integral</span><span class="p">(</span><span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;number&#39;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_kroupa_integral</span><span class="p">(</span><span class="n">k1</span><span class="p">,</span> <span class="n">k2</span><span class="p">,</span> <span class="n">m0</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">variable</span><span class="o">=</span><span class="s1">&#39;number&#39;</span><span class="p">):</span>
         <span class="n">a1</span> <span class="o">=</span> <span class="mf">1.3</span>
         <span class="n">a2</span> <span class="o">=</span> <span class="mf">2.3</span>
         <span class="k">if</span> <span class="n">variable</span> <span class="o">==</span> <span class="s1">&#39;mass&#39;</span><span class="p">:</span>
@@ -1579,7 +1579,7 @@
 
 <div class="viewcode-block" id="MergerRates.get_starforming_masses">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.MergerRates.get_starforming_masses">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_starforming_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mass_normalization</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debugging</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_starforming_masses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mass_normalization</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">debugging</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Getting corresponding star-forming masses...&#39;</span><span class="p">)</span>
         <span class="n">sample_n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_paths</span><span class="p">)</span>
         <span class="n">sample_counter</span> <span class="o">=</span> <span class="mi">1</span>
@@ -1647,7 +1647,7 @@
 
 <div class="viewcode-block" id="MergerRates.set_merger_df">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.MergerRates.set_merger_df">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_merger_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merger_class</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_merger_df</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merger_class</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_merger_class</span><span class="p">(</span><span class="n">merger_class</span><span class="p">)</span>
         <span class="c1">#pandarallel.initialize(progress_bar=False)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">merger_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_df</span><span class="p">[(</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_df</span><span class="o">.</span><span class="n">Unbound</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
@@ -1667,7 +1667,7 @@
         <span class="c1">#    axis=1</span>
         <span class="c1">#)</span>
 
-    <span class="k">def</span> <span class="nf">_set_bins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_resolution</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_bins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_resolution</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">time_resolution</span> <span class="o">=</span> <span class="n">time_resolution</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_full_age_bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">cosmo</span><span class="o">.</span><span class="n">age</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_redshift</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                              <span class="bp">self</span><span class="o">.</span><span class="n">merger_df</span><span class="o">.</span><span class="n">Age_Merger</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_resolution</span><span class="p">,</span>
@@ -1722,7 +1722,7 @@
             <span class="n">new_limit</span> <span class="o">=</span> <span class="n">cosmo</span><span class="o">.</span><span class="n">age</span><span class="p">(</span><span class="n">min_sfrd_redshift</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_physical_age_bin_centers</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_limit</span>
 
-    <span class="k">def</span> <span class="nf">_set_dz_dfeh_dage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_dz_dfeh_dage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the volumetric merger rate per z_zams and [Fe/H] bin, in yr-1 Gpc-3.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dz_dfeh_dage_mrates_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_feh_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_full_age_bin_centers</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
                                                  <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -1762,7 +1762,7 @@
                 <span class="c1"># self._dz_dfeh_mrates_dict[redshift_zams][feh] = age_bin_heights</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_dz_dfeh_dage_mrates_arr</span><span class="p">[</span><span class="n">i_redshift_zams</span><span class="p">,</span> <span class="n">i_feh</span><span class="p">]</span> <span class="o">=</span> <span class="n">age_bin_heights</span>
 
-    <span class="k">def</span> <span class="nf">_get_feh_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_feh_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># We reorder the array columns to the order we must access them in for fitting over [Fe/H].</span>
         <span class="n">dage_dz_dfeh_mrates_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dz_dfeh_dage_mrates_arr</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">max_fehs_per_redshift</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_feh_arr</span><span class="p">])</span>
@@ -1787,7 +1787,7 @@
 
         <span class="k">return</span> <span class="n">per_age_redshift_feh_fits</span>
 
-    <span class="k">def</span> <span class="nf">_get_boundary_fit_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">boundary</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_boundary_fit_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fit</span><span class="p">,</span> <span class="n">variable</span><span class="p">,</span> <span class="n">boundary</span><span class="p">):</span>
         <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span> <span class="o">=</span> <span class="n">fit</span>
         <span class="k">if</span> <span class="n">variable</span> <span class="o">==</span> <span class="s1">&#39;feh&#39;</span><span class="p">:</span>
             <span class="n">min_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_feh</span>
@@ -1823,7 +1823,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Boundary parameter must be one of [&quot;lower&quot;,&quot;upper&quot;], not </span><span class="si">{</span><span class="n">boundary</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">boundary_fit</span><span class="p">,</span> <span class="n">fixed_fit_edge</span>
 
-    <span class="k">def</span> <span class="nf">_set_dz_dage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_dz_dage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the volumetric merger rate per z_zams bin, integrated over [Fe/H], in yr-1 Gpc-3.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_per_age_redshift_feh_fits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_feh_fits</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dz_dage_mrates_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_per_age_redshift_feh_fits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
@@ -1848,7 +1848,7 @@
                     <span class="n">per_redshift_age_mrate</span> <span class="o">+=</span> <span class="n">mrate</span> <span class="o">+</span> <span class="n">boundary_mrate</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_dz_dage_mrates_arr</span><span class="p">[</span><span class="n">i_redshift</span><span class="p">,</span> <span class="n">i_age</span><span class="p">]</span> <span class="o">=</span> <span class="n">per_redshift_age_mrate</span>
 
-    <span class="k">def</span> <span class="nf">_set_dz_dpopage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_dz_dpopage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_dz_dpopage_mrates_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dz_dage_mrates_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">i_redshift</span><span class="p">,</span> <span class="n">dage_mrates_arr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dz_dage_mrates_arr</span><span class="p">):</span>
@@ -1860,7 +1860,7 @@
             <span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_dz_dpopage_mrates_arr</span><span class="p">[</span><span class="n">i_redshift</span><span class="p">]</span> <span class="o">=</span> <span class="n">dpopage_mrates_arr</span>
 
-    <span class="k">def</span> <span class="nf">_set_ip_dz_dpopage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_ip_dz_dpopage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ip_redshift_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_redshift_from_age</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_physical_age_bin_centers</span><span class="p">)</span>
         <span class="c1">#self.ip_redshift_arr = np.array([self._get_redshift_from_age(age) for age in self._physical_age_bin_centers])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ip_dz_dpopage_mrates_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_redshift_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dz_dpopage_mrates_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span>
@@ -1872,7 +1872,7 @@
             <span class="n">ip_dpopage_dz_mrates_arr</span><span class="p">[</span><span class="n">i_age</span><span class="p">]</span> <span class="o">=</span> <span class="n">interpolator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ip_redshift_arr</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ip_dz_dpopage_mrates_arr</span> <span class="o">=</span> <span class="n">ip_dpopage_dz_mrates_arr</span><span class="o">.</span><span class="n">T</span>
 
-    <span class="k">def</span> <span class="nf">_set_ip_dz_dage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_ip_dz_dage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ip_dz_dage_mrates_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ip_dz_dpopage_mrates_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">ip_redshift_i</span><span class="p">,</span> <span class="n">dpopage_mrates_arr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ip_dz_dpopage_mrates_arr</span><span class="p">):</span>
             <span class="n">redshift</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ip_redshift_arr</span><span class="p">[</span><span class="n">ip_redshift_i</span><span class="p">]</span>
@@ -1887,7 +1887,7 @@
                                                        <span class="n">dage_mrates_arr</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_ip_dz_dage_mrates_arr</span><span class="p">[</span><span class="n">ip_redshift_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">dage_mrates_arr</span>
 
-    <span class="k">def</span> <span class="nf">_get_z_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_z_fits</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">ip_dage_dz_mrates_arr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_dz_dage_mrates_arr</span><span class="o">.</span><span class="n">T</span>
         <span class="n">per_age_redshift_fits</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_physical_age_bin_centers</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
                                           <span class="bp">self</span><span class="o">.</span><span class="n">ip_redshift_arr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span>
@@ -1912,7 +1912,7 @@
 
         <span class="k">return</span> <span class="n">per_age_redshift_fits</span>
 
-    <span class="k">def</span> <span class="nf">_set_dage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_set_dage_mrates_arr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="s2">&quot;Get the volumetric merger rate, integrated over z_zams and [Fe/H], in yr-1 Gpc-3.&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_per_age_redshift_fits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_z_fits</span><span class="p">()</span>
         <span class="n">dage_mrates_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_per_age_redshift_fits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -1939,7 +1939,7 @@
 
 <div class="viewcode-block" id="MergerRates.delete_sample_df_from_memory">
 <a class="viewcode-back" href="../../bossa.html#bossa.postprocessing.MergerRates.delete_sample_df_from_memory">[docs]</a>
-    <span class="k">def</span> <span class="nf">delete_sample_df_from_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_sample_df_from_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sample_df</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span></div>
 </div>

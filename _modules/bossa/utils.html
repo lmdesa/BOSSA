@@ -6,7 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>bossa.utils &mdash; BOSSA 1.0.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
 
   
@@ -72,36 +72,36 @@
 <span></span><span class="c1"># TODO: Add module documentation</span>
 <span class="c1"># TODO: Complete documentation</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">logging.config</span>
-<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">ceil</span>
-<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Annotated</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging.config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">ceil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">wraps</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Annotated</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy.typing</span> <span class="kn">import</span> <span class="n">NDArray</span>
-<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">fsolve</span>
-<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">interp1d</span>
-<span class="kn">import</span> <span class="nn">astropy.constants</span> <span class="k">as</span> <span class="nn">ct</span>
-<span class="kn">import</span> <span class="nn">astropy.units</span> <span class="k">as</span> <span class="nn">u</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.optimize</span><span class="w"> </span><span class="kn">import</span> <span class="n">fsolve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">interp1d</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.constants</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ct</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">astropy.units</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">u</span>
 
 <span class="c1">#import sys</span>
 <span class="c1">#sys.path.append(&#39;..&#39;)</span>
-<span class="kn">from</span> <span class="nn">bossa.constants</span> <span class="kn">import</span> <span class="n">ZOH_SUN</span><span class="p">,</span> <span class="n">Z_SUN</span><span class="p">,</span> <span class="n">stellar_types</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">bossa.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZOH_SUN</span><span class="p">,</span> <span class="n">Z_SUN</span><span class="p">,</span> <span class="n">stellar_types</span>
 
 <span class="n">Quantity</span> <span class="o">=</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">u</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">Quantity</span>
 
 <div class="viewcode-block" id="Length">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.Length">[docs]</a>
 <span class="nd">@dataclass</span>
-<span class="k">class</span> <span class="nc">Length</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Length</span><span class="p">:</span>
     <span class="n">length</span><span class="p">:</span> <span class="nb">int</span></div>
 
 
 <div class="viewcode-block" id="fix_unit">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.fix_unit">[docs]</a>
-<span class="k">def</span> <span class="nf">fix_unit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">unit</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">fix_unit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">unit</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;If x is an astropy Quantity, return x. Otherwise, return x with the astropy unit &#39;unit&#39;.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
         <span class="n">x</span> <span class="o">*=</span> <span class="n">unit</span>
@@ -112,11 +112,11 @@
 
 <div class="viewcode-block" id="input_unit">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.input_unit">[docs]</a>
-<span class="k">def</span> <span class="nf">input_unit</span><span class="p">(</span><span class="n">units</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">input_unit</span><span class="p">(</span><span class="n">units</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Decorator &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">decorator_unit</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">decorator_unit</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
         <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">wrapper_unit</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="o">*</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Annotated</span><span class="p">[</span><span class="o">*</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Length</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">units</span><span class="p">))],</span> <span class="o">*</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">wrapper_unit</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="o">*</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Annotated</span><span class="p">[</span><span class="o">*</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">Length</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">units</span><span class="p">))],</span> <span class="o">*</span><span class="nb">tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
             <span class="n">unit_args</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="n">arg</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">args</span><span class="p">)):</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">u</span><span class="o">.</span><span class="n">quantity</span><span class="o">.</span><span class="n">Quantity</span><span class="p">):</span>
@@ -131,12 +131,12 @@
 
 <div class="viewcode-block" id="float_or_arr_input">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.float_or_arr_input">[docs]</a>
-<span class="k">def</span> <span class="nf">float_or_arr_input</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">float_or_arr_input</span><span class="p">(</span>
         <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">float</span><span class="p">]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">object</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">],</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert first parameter from float to 1-dimensional array.&quot;&quot;&quot;</span>
     <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="nb">object</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="n">NDArray</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
         <span class="k">match</span> <span class="n">x</span><span class="p">:</span>
             <span class="k">case</span> <span class="nb">float</span><span class="p">()</span> <span class="o">|</span> <span class="nb">int</span><span class="p">():</span>
                 <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -150,46 +150,46 @@
 
 <div class="viewcode-block" id="FeH_to_OFe">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.FeH_to_OFe">[docs]</a>
-<span class="k">def</span> <span class="nf">FeH_to_OFe</span><span class="p">(</span><span class="n">FeH</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">FeH_to_OFe</span><span class="p">(</span><span class="n">FeH</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">FeH</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">0.5</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">FeH</span></div>
 
 
-<span class="k">def</span> <span class="nf">_FeH_from_ZOH</span><span class="p">(</span><span class="n">FeH</span><span class="p">,</span> <span class="n">ZOH</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_FeH_from_ZOH</span><span class="p">(</span><span class="n">FeH</span><span class="p">,</span> <span class="n">ZOH</span><span class="p">):</span>
     <span class="n">OFe</span> <span class="o">=</span> <span class="n">FeH_to_OFe</span><span class="p">(</span><span class="n">FeH</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">FeH</span> <span class="o">-</span> <span class="n">ZOH</span> <span class="o">+</span> <span class="n">ZOH_SUN</span> <span class="o">+</span> <span class="n">OFe</span>
 
 <div class="viewcode-block" id="ZOH_from_FeH">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.ZOH_from_FeH">[docs]</a>
-<span class="k">def</span> <span class="nf">ZOH_from_FeH</span><span class="p">(</span><span class="n">FeH</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">ZOH_from_FeH</span><span class="p">(</span><span class="n">FeH</span><span class="p">):</span>
     <span class="n">OFe</span> <span class="o">=</span> <span class="n">FeH_to_OFe</span><span class="p">(</span><span class="n">FeH</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">FeH</span> <span class="o">+</span> <span class="n">ZOH_SUN</span> <span class="o">+</span> <span class="n">OFe</span></div>
 
 
 <div class="viewcode-block" id="ZOH_to_FeH">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.ZOH_to_FeH">[docs]</a>
-<span class="k">def</span> <span class="nf">ZOH_to_FeH</span><span class="p">(</span><span class="n">ZOH</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">ZOH_to_FeH</span><span class="p">(</span><span class="n">ZOH</span><span class="p">):</span>
     <span class="p">[</span><span class="n">FeH</span><span class="p">]</span> <span class="o">=</span> <span class="n">fsolve</span><span class="p">(</span><span class="n">_FeH_from_ZOH</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">args</span><span class="o">=</span><span class="n">ZOH</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">FeH</span></div>
 
 
 <div class="viewcode-block" id="ZOH_to_FeH2">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.ZOH_to_FeH2">[docs]</a>
-<span class="k">def</span> <span class="nf">ZOH_to_FeH2</span><span class="p">(</span><span class="n">ZOH</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">ZOH_to_FeH2</span><span class="p">(</span><span class="n">ZOH</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">ZOH</span><span class="o">-</span><span class="n">ZOH_SUN</span></div>
 
 
 <div class="viewcode-block" id="FeH_to_Z">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.FeH_to_Z">[docs]</a>
-<span class="k">def</span> <span class="nf">FeH_to_Z</span><span class="p">(</span><span class="n">FeH</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">FeH_to_Z</span><span class="p">(</span><span class="n">FeH</span><span class="p">):</span>
     <span class="k">return</span> <span class="mi">10</span><span class="o">**</span><span class="n">FeH</span><span class="o">*</span><span class="n">Z_SUN</span></div>
 
 
 <div class="viewcode-block" id="interpolate">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.interpolate">[docs]</a>
-<span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="n">ipX</span><span class="p">,</span> <span class="n">ipY</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span><span class="n">ipX</span><span class="p">,</span> <span class="n">ipY</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolate between each line of a pair of arrays.</span>
 
 <span class="sd">    Parameters</span>
@@ -220,7 +220,7 @@
 
 <div class="viewcode-block" id="sample_histogram">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.sample_histogram">[docs]</a>
-<span class="k">def</span> <span class="nf">sample_histogram</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">m_min</span><span class="o">=</span><span class="mf">0.08</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_histogram</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">m_min</span><span class="o">=</span><span class="mf">0.08</span><span class="p">):</span>
     <span class="n">limits</span> <span class="o">=</span> <span class="p">[</span><span class="n">m_min</span><span class="p">]</span>
     <span class="n">csis</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -254,7 +254,7 @@
 
 <div class="viewcode-block" id="logp_to_a">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.logp_to_a">[docs]</a>
-<span class="k">def</span> <span class="nf">logp_to_a</span><span class="p">(</span><span class="n">logp</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">logp_to_a</span><span class="p">(</span><span class="n">logp</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">):</span>
     <span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="o">**</span><span class="n">logp</span><span class="p">)</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">d</span>
     <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">cgs</span><span class="o">*</span><span class="n">m_tot</span><span class="o">*</span><span class="n">ct</span><span class="o">.</span><span class="n">M_sun</span><span class="p">))</span>
     <span class="n">cgs_a</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span><span class="o">/</span><span class="n">g</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
@@ -264,7 +264,7 @@
 
 <div class="viewcode-block" id="a_to_logp">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.a_to_logp">[docs]</a>
-<span class="k">def</span> <span class="nf">a_to_logp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">a_to_logp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">m_tot</span><span class="p">):</span>
     <span class="n">cgs_a</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">*</span><span class="n">u</span><span class="o">.</span><span class="n">au</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">cm</span><span class="p">)</span>
     <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span><span class="p">(</span><span class="n">ct</span><span class="o">.</span><span class="n">G</span><span class="o">.</span><span class="n">cgs</span><span class="o">*</span><span class="n">m_tot</span><span class="o">*</span><span class="n">ct</span><span class="o">.</span><span class="n">M_sun</span><span class="p">))</span>
     <span class="n">cgs_p</span> <span class="o">=</span> <span class="n">g</span> <span class="o">*</span> <span class="n">cgs_a</span><span class="o">**</span><span class="p">(</span><span class="mi">3</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
@@ -273,7 +273,7 @@
 
 <div class="viewcode-block" id="symmetrize_masses">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.symmetrize_masses">[docs]</a>
-<span class="k">def</span> <span class="nf">symmetrize_masses</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">symmetrize_masses</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
     <span class="n">m1</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(1)&#39;</span><span class="p">]</span>
     <span class="n">m2</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(2)&#39;</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">m1</span> <span class="o">&lt;</span> <span class="n">m2</span><span class="p">:</span>
@@ -285,7 +285,7 @@
 
 <div class="viewcode-block" id="pull_snmass">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.pull_snmass">[docs]</a>
-<span class="k">def</span> <span class="nf">pull_snmass</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pull_snmass</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(1)&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(SN)&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(1)&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(SN)&#39;</span><span class="p">]</span>
@@ -295,7 +295,7 @@
 
 <div class="viewcode-block" id="pull_snmass1">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.pull_snmass1">[docs]</a>
-<span class="k">def</span> <span class="nf">pull_snmass1</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pull_snmass1</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
     <span class="n">snmass1</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(1)&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(SN)&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -307,7 +307,7 @@
 
 <div class="viewcode-block" id="pull_snmass2">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.pull_snmass2">[docs]</a>
-<span class="k">def</span> <span class="nf">pull_snmass2</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pull_snmass2</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
     <span class="n">snmass2</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(2)&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass(CP)&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
@@ -319,7 +319,7 @@
 
 <div class="viewcode-block" id="chirp_mass">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.chirp_mass">[docs]</a>
-<span class="k">def</span> <span class="nf">chirp_mass</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">chirp_mass</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the chirp mass for a dataframe row.&quot;&quot;&quot;</span>
     <span class="n">m1</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass_PostSN1&#39;</span><span class="p">]</span>
     <span class="n">m2</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Mass_PostSN2&#39;</span><span class="p">]</span>
@@ -332,7 +332,7 @@
 
 <div class="viewcode-block" id="bintype">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.bintype">[docs]</a>
-<span class="k">def</span> <span class="nf">bintype</span><span class="p">(</span><span class="n">bintype</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">bintype</span><span class="p">(</span><span class="n">bintype</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Translate the binary type from numeric ID to a string abbreviation.&quot;&quot;&quot;</span>
     <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">bintype</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;+&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">stellar_types</span><span class="p">[</span><span class="n">t1</span><span class="p">]</span> <span class="o">+</span> <span class="n">stellar_types</span><span class="p">[</span><span class="n">t2</span><span class="p">]</span></div>
@@ -340,7 +340,7 @@
 
 <div class="viewcode-block" id="mass_ratio">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.mass_ratio">[docs]</a>
-<span class="k">def</span> <span class="nf">mass_ratio</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">mass_ratio</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the mass ratio q as greater mass/lesser mass.&quot;&quot;&quot;</span>
     <span class="n">m1_</span> <span class="o">=</span> <span class="n">m1</span>
     <span class="n">m2_</span> <span class="o">=</span> <span class="n">m2</span>
@@ -355,7 +355,7 @@
 
 <div class="viewcode-block" id="format_time">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.format_time">[docs]</a>
-<span class="k">def</span> <span class="nf">format_time</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_time</span><span class="p">(</span><span class="n">time</span><span class="p">):</span>
     <span class="n">hours</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">//</span><span class="mi">3600</span><span class="p">)</span>
     <span class="n">minutes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">time</span><span class="o">%</span><span class="mi">3600</span><span class="p">)</span><span class="o">//</span><span class="mi">60</span><span class="p">)</span>
     <span class="n">seconds</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(((</span><span class="n">time</span><span class="o">%</span><span class="mi">3600</span><span class="p">)</span><span class="o">%</span><span class="mi">60</span><span class="p">))</span>
@@ -365,7 +365,7 @@
 
 <div class="viewcode-block" id="create_logger">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.create_logger">[docs]</a>
-<span class="k">def</span> <span class="nf">create_logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">propagate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fpath</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">propagate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -392,7 +392,7 @@
 
 <div class="viewcode-block" id="logp_from_row">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.logp_from_row">[docs]</a>
-<span class="k">def</span> <span class="nf">logp_from_row</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">logp_from_row</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Recovers the LogP from an appropriately written seed.&quot;&quot;&quot;</span>
     <span class="n">seed</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;SEED&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">e</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;Eccentricity@ZAMS&#39;</span><span class="p">]</span>
@@ -407,7 +407,7 @@
 
 <div class="viewcode-block" id="step">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.step">[docs]</a>
-<span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">index_array</span><span class="p">,</span> <span class="n">midpoint_i</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">index_array</span><span class="p">,</span> <span class="n">midpoint_i</span><span class="p">):</span>
     <span class="n">left_delta</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="n">midpoint_i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">array</span><span class="p">[</span><span class="n">midpoint_i</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">left_delta</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">sub_arr</span> <span class="o">=</span> <span class="n">array</span><span class="p">[:</span><span class="n">midpoint_i</span><span class="p">]</span>
@@ -421,7 +421,7 @@
 
 <div class="viewcode-block" id="valley_minimum">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.valley_minimum">[docs]</a>
-<span class="k">def</span> <span class="nf">valley_minimum</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">index_array</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">valley_minimum</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">index_array</span><span class="p">):</span>
     <span class="n">midpoint_i</span> <span class="o">=</span> <span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">sub_arr</span> <span class="o">=</span> <span class="n">array</span>
     <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub_arr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -431,7 +431,7 @@
 
 <div class="viewcode-block" id="get_uniform_bin_edges">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.get_uniform_bin_edges">[docs]</a>
-<span class="k">def</span> <span class="nf">get_uniform_bin_edges</span><span class="p">(</span><span class="n">x_array</span><span class="p">,</span> <span class="n">bin_size</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_uniform_bin_edges</span><span class="p">(</span><span class="n">x_array</span><span class="p">,</span> <span class="n">bin_size</span><span class="p">):</span>
     <span class="n">bin_count</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">bin_edges</span> <span class="o">=</span> <span class="p">[</span><span class="n">x_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
     <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">x_array</span><span class="p">:</span>
@@ -446,7 +446,7 @@
 
 <div class="viewcode-block" id="get_bin_frequency_heights">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.get_bin_frequency_heights">[docs]</a>
-<span class="k">def</span> <span class="nf">get_bin_frequency_heights</span><span class="p">(</span><span class="n">x_array</span><span class="p">,</span> <span class="n">bin_edges</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_bin_frequency_heights</span><span class="p">(</span><span class="n">x_array</span><span class="p">,</span> <span class="n">bin_edges</span><span class="p">):</span>
     <span class="n">bin_frequencies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">bin_edges</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
     <span class="n">prev_x_array_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_array</span><span class="p">)</span>
@@ -462,7 +462,7 @@
 
 <div class="viewcode-block" id="get_linear_fit">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.get_linear_fit">[docs]</a>
-<span class="k">def</span> <span class="nf">get_linear_fit</span><span class="p">(</span><span class="n">xy0</span><span class="p">,</span> <span class="n">xy1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_linear_fit</span><span class="p">(</span><span class="n">xy0</span><span class="p">,</span> <span class="n">xy1</span><span class="p">):</span>
     <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span> <span class="o">=</span> <span class="n">xy0</span>
     <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">xy1</span>
     <span class="n">slope</span> <span class="o">=</span> <span class="p">(</span><span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span>
@@ -472,21 +472,21 @@
 
 <div class="viewcode-block" id="get_linear_fit_area">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.get_linear_fit_area">[docs]</a>
-<span class="k">def</span> <span class="nf">get_linear_fit_area</span><span class="p">(</span><span class="n">linear_fit</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_linear_fit_area</span><span class="p">(</span><span class="n">linear_fit</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span><span class="p">):</span>
     <span class="n">fitx0</span><span class="p">,</span> <span class="n">fitx1</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span> <span class="o">=</span> <span class="n">linear_fit</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">slope</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span><span class="o">*</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="o">*</span><span class="n">x0</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">intercept</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span><span class="o">-</span><span class="n">x0</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="get_bin_centers">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.get_bin_centers">[docs]</a>
-<span class="k">def</span> <span class="nf">get_bin_centers</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_bin_centers</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">):</span>
     <span class="n">bin_centers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">x0</span><span class="o">+</span><span class="n">x1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="k">for</span> <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])])</span>
     <span class="k">return</span> <span class="n">bin_centers</span></div>
 
 
 <div class="viewcode-block" id="enumerate_bin_edges">
 <a class="viewcode-back" href="../../bossa.html#bossa.utils.enumerate_bin_edges">[docs]</a>
-<span class="k">def</span> <span class="nf">enumerate_bin_edges</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">enumerate_bin_edges</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">):</span>
     <span class="k">return</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">bin_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span></div>
 
 </pre></div>
