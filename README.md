@@ -4,7 +4,7 @@ The Binary Object environment-Sensitive Sampling Algorithm (BOSSA) generates sam
 
 This repository is under construction. The current version of the code (1.0.0) corresponds to that used in [de Sá et al. (2024a)](https://academic.oup.com/mnras/article/535/3/2019/7825861?login=false). Tutorial notebooks are still being completed. 
 
-05/08/2025: There is now a work in progress tutorial branch; feedback is appreciated!
+**05/08/2025**: There is now a work in progress tutorial branch; feedback is appreciated!
 
 ### Running BOSSA
 
