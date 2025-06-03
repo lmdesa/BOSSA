@@ -8,7 +8,7 @@ This repository is under construction. The current version of the code (1.0.0) c
 
 ### Running BOSSA
 
-If you intend to run one of the notebooks or use the code on your own, make sure to unpack the two tar.gz files in the ```data``` folder. They each contain a table of preset initial parameter values that ZAMS populations are generated from (see [zams.ZAMSSystemGenerator](https://lmdesa.github.io/BOSSA/bossa.html#bossa.zams.ZAMSSystemGenerator) in the docs). This process will be streamlined in the future.
+If you intend to run one of the notebooks or use the code on your own, make sure to unpack the two tar.gz files in the ```data``` folder. They each contain a table of preset initial parameter values that ZAMS populations are generated from (see [zams.ZAMSSystemGenerator](https://lucasmdesa.github.io/BOSSA/bossa.html#bossa.zams.ZAMSSystemGenerator) in the docs). This process will be streamlined in the future.
 
 ### Data
 
@@ -17,7 +17,7 @@ The ```data/C20_Results``` folder contains data from [Chruślińska & Nelemans (
 Data from the BOSSA methods paper and from [de Sá et al. (2024b)](https://arxiv.org/abs/2410.01451) is available at https://zenodo.org/records/13909307.
 
 ### Documentation
-Please find BOSSA's documentation at [https://lmdesa.github.io/BOSSA/](https://lmdesa.github.io/BOSSA/).
+Please find BOSSA's documentation at [https://lucasmdesa.github.io/BOSSA/](https://lucasmdesa.github.io/BOSSA/).
 Documentation and comments are gradually being added to the code. Progress:
 * `constants`: partially documented,
 * `utils`: not documented,
